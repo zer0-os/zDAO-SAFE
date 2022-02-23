@@ -6,6 +6,8 @@
       "@/components/*": ["components/*"],
       "@/config/*": ["config/*"],
       "@/hooks/*": ["hooks/*"],
+      "@/state/*": ["state/*"],
+      "@/theme/*": ["theme/*"],
       "@/utils/*": ["utils/*"],
       "@/views/*": ["views/*"],
     }
