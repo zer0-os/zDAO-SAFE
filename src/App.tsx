@@ -7,7 +7,7 @@ import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
 import { Header } from '@/components/Header';
 import styled from 'styled-components';
 import { useColorModeValue } from '@chakra-ui/color-mode';
-import { Box } from '@chakra-ui/react';
+import useEagerConnect from './hooks/useEagerConnect';
 
 const Landing = lazy(() => import('@/views/Landing'));
 const Voting = lazy(() => import('@/views/Voting'));
@@ -39,6 +39,7 @@ const BodyWrapper = styled.div<{ background: string }>`
 
 function App() {
   const color = useColorModeValue('gray.100', '#060514');
+  useEagerConnect();
 
   return (
     <AppWrapper>

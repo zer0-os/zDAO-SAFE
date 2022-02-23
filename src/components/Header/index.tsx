@@ -10,6 +10,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { IoMoon, IoSunny } from 'react-icons/io5';
+import { DesktopNav } from './DesktopNav';
 
 export const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -56,6 +57,7 @@ export const Header = () => {
             flex={{ base: 1, md: 'auto' }}
             justify={'flex-end'}
           >
+            <DesktopNav display={{ base: 'none', md: 'flex' }} />
             <IconButton
               size={'sm'}
               variant={'ghost'}
