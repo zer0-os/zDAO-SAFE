@@ -1,25 +1,31 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import BigNumber from 'bignumber.js';
+import { lazy } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
+import Loader from '@/components/Loader';
+import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
+
+const Landing = lazy(() => import('@/views/Landing'));
+const Voting = lazy(() => import('@/views/Voting'));
+const CreateProposal = lazy(() => import('@/views/CreateProposal'));
+
+// This config is required for number formatting
+BigNumber.config({
+  EXPONENTIAL_AT: 1000,
+  DECIMAL_PLACES: 80,
+});
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <SuspenseWithChunkError fallback={<Loader />}>
+        <Routes>
+          <Route path="/" element={<Landing />}></Route>
+          <Route path="/create" element={<CreateProposal />}></Route>
+          <Route path="/voting" element={<Voting />}></Route>
+        </Routes>
+      </SuspenseWithChunkError>
+    </BrowserRouter>
   );
 }
 
