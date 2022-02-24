@@ -12,6 +12,7 @@ import {
   Stack,
   useDisclosure,
   useBreakpointValue,
+  Flex,
 } from '@chakra-ui/react';
 import styled from 'styled-components';
 
@@ -32,7 +33,7 @@ const IconWrapper = styled.div<{ size?: number | null }>`
 
 const ConnectWalletButton = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const modalSize = useBreakpointValue({ base: 'md', lg: '2xl' });
+  const modalSize = useBreakpointValue({ base: 'sm' });
   const { login, error } = useAuth();
 
   useEffect(() => {
@@ -54,16 +55,19 @@ const ConnectWalletButton = () => {
           <ModalCloseButton />
           <ModalBody>
             <Text textAlign={'center'}>Connect with your favorite wallet.</Text>
-            <SimpleGrid columns={{ base: 1, lg: 3 }} spacing={8} pt={8}>
+            <Flex
+              flex={{ base: 1 }}
+              flexDirection={'column'}
+              alignItems={'flex-start'}
+            >
               {Object.keys(SUPPORTED_WALLETS).map((key) => {
                 const option: WalletInfo = SUPPORTED_WALLETS[key];
                 return (
                   <Stack
                     key={option.title}
-                    direction={'column'}
+                    direction={'row'}
                     spacing={3}
-                    alignItems={'center'}
-                    textAlign={'center'}
+                    paddingTop={'12px'}
                   >
                     <IconWrapper
                       size={64}
@@ -72,12 +76,14 @@ const ConnectWalletButton = () => {
                     >
                       <img src={option.icon} alt={'icon'} />
                     </IconWrapper>
-                    <Text>{option.title}</Text>
-                    <Text>{option.description}</Text>
+                    <Flex flexDirection={'column'}>
+                      <Text>{option.title}</Text>
+                      <Text>{option.description}</Text>
+                    </Flex>
                   </Stack>
                 );
               })}
-            </SimpleGrid>
+            </Flex>
           </ModalBody>
           <ModalFooter>
             <Button colorScheme="blue" mr={3} onClick={onClose}>

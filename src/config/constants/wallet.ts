@@ -33,12 +33,12 @@ export const SUPPORTED_WALLETS: { [key: string]: WalletInfo } = {
     description: 'Easy-to-use browser extension',
     connectorId: ConnectorNames.Injected,
   },
-  TrustWallet: {
-    title: 'TrustWallet',
-    icon: TrustWallet,
-    description: 'Use TrustWallet app on mobile device',
-    connectorId: ConnectorNames.Injected,
-  },
+  // TrustWallet: {
+  //   title: 'TrustWallet',
+  //   icon: TrustWallet,
+  //   description: 'Use TrustWallet app on mobile device',
+  //   connectorId: ConnectorNames.Injected,
+  // },
   // WalletConnect: {
   //   title: 'WalletConnect',
   //   icon: WalletConnect,
