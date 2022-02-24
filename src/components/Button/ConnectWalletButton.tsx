@@ -58,7 +58,7 @@ const ConnectWalletButton = () => {
             <Flex
               flex={{ base: 1 }}
               flexDirection={'column'}
-              alignItems={'flex-start'}
+              justifyContent={'center'}
             >
               {Object.keys(SUPPORTED_WALLETS).map((key) => {
                 const option: WalletInfo = SUPPORTED_WALLETS[key];
@@ -66,12 +66,13 @@ const ConnectWalletButton = () => {
                   <Stack
                     key={option.title}
                     direction={'row'}
-                    spacing={3}
+                    alignItems={'center'}
                     paddingTop={'12px'}
+                    spacing={3}
                   >
                     <IconWrapper
-                      size={64}
                       onClick={() => login(option.connectorId)}
+                      size={64}
                       style={{ cursor: 'pointer' }}
                     >
                       <img src={option.icon} alt={'icon'} />

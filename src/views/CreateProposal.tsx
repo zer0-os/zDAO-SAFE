@@ -7,12 +7,13 @@ import {
   Input,
   Link,
   SimpleGrid,
+  Spacer,
   Stack,
   Text,
   Textarea,
   VStack,
 } from '@chakra-ui/react';
-import { useState } from 'react';
+import { ChangeEvent, useState } from 'react';
 
 import { IoArrowBack } from 'react-icons/io5';
 import { HiOutlineExternalLink } from 'react-icons/hi';
@@ -58,6 +59,16 @@ const CreateProposal = () => {
     }));
   };
 
+  const handleTitleChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    const { name: inputName, value } = evt.currentTarget;
+    updateValue(inputName, value);
+  };
+
+  const handleBodyChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
+    const { name: inputName, value } = evt.currentTarget;
+    updateValue(inputName, value);
+  };
+
   const handleDateChange = (key: string) => (value: Date) => {
     updateValue(key, value);
   };
@@ -80,19 +91,26 @@ const CreateProposal = () => {
             {/* Proposal title & content */}
             <Input
               borderColor="gray.300"
+              name={'title'}
+              onChange={handleTitleChange}
+              placeholder="Proposal title"
+              size={'lg'}
+              value={title}
               _hover={{
                 borderRadius: 'gray.300',
               }}
-              placeholder="Proposal title"
-              size={'lg'}
+              required
             ></Input>
             <Textarea
               borderColor="gray.300"
+              name={'body'}
+              onChange={handleBodyChange}
+              placeholder="Proposal content"
+              height={'200px'}
+              value={body}
               _hover={{
                 borderRadius: 'gray.300',
               }}
-              placeholder="Proposal content"
-              height={'200px'}
             ></Textarea>
 
             {/* Choices */}
@@ -102,11 +120,11 @@ const CreateProposal = () => {
                   bg={'transparent'}
                   borderWidth={'1px'}
                   rounded={'full'}
-                  _hover={{
-                    bg: 'gray.100',
-                  }}
                   _focus={{
                     borderColor: 'gray.600',
+                  }}
+                  _hover={{
+                    bg: 'gray.100',
                   }}
                 >
                   Yes
