@@ -199,7 +199,7 @@ const CreateProposal = () => {
                     <Text>Creator</Text>
                     <LinkExternal
                       type={'account'}
-                      value={shortenAddress(account!)}
+                      value={shortenAddress(account)}
                     />
                   </SimpleGrid>
                 )}
