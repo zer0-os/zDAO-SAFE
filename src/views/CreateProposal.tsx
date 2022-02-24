@@ -1,5 +1,3 @@
-import Card from '@/components/Card';
-import { DatePicker, TimePicker } from '@/components/DatePicker';
 import {
   Button,
   Container,
@@ -7,16 +5,20 @@ import {
   Input,
   Link,
   SimpleGrid,
-  Spacer,
   Stack,
   Text,
   Textarea,
   VStack,
 } from '@chakra-ui/react';
 import { ChangeEvent, useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
-import { HiOutlineExternalLink } from 'react-icons/hi';
+import { ExternalLinkIcon } from '@chakra-ui/icons';
+import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
+import Card from '@/components/Card';
+import { DatePicker, TimePicker } from '@/components/DatePicker';
+import useActiveWeb3React from '@/hooks/useActiveWeb3React';
+import { shortenAddress } from '@/utils/address';
 
 interface ProposalFormat {
   title: string;
@@ -28,14 +30,20 @@ interface ProposalFormat {
   snapshot: number;
 }
 
-const LinkExternal = ({ type, value }: { type: string; value: string }) => {
+const LinkExternal = ({
+  type,
+  value,
+}: {
+  type: string;
+  value: string | number;
+}) => {
   return (
-    <Stack direction={'row'} spacing={2} alignItems={'center'}>
-      <Text>{value}</Text>
-      <Link href={'#'}>
-        <HiOutlineExternalLink size={15} />
-      </Link>
-    </Stack>
+    <Link href={'#'} isExternal>
+      <Stack direction={'row'} spacing={2} alignItems={'center'}>
+        <Text>{value}</Text>
+        <ExternalLinkIcon mx={'2px'} />
+      </Stack>
+    </Link>
   );
 };
 
@@ -51,6 +59,8 @@ const CreateProposal = () => {
   });
   const { title, body, startDate, startTime, endDate, endTime, snapshot } =
     state;
+  const { account } = useActiveWeb3React();
+  const navigate = useNavigate();
 
   const updateValue = (key: string, value: string | number | Date) => {
     setState((prevState) => ({
@@ -76,10 +86,12 @@ const CreateProposal = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Stack direction={'row'} align={'center'}>
-          <IoArrowBack size={15} />
-          <Heading size={'sm'}>Back</Heading>
-        </Stack>
+        <Link onClick={() => navigate(-1)}>
+          <Stack align={'center'} direction={'row'}>
+            <IoArrowBack size={15} />
+            <Heading size={'sm'}>Back</Heading>
+          </Stack>
+        </Link>
 
         <Stack
           spacing={12}
@@ -178,33 +190,42 @@ const CreateProposal = () => {
                   selected={endTime}
                   placeholderText="00:00"
                 />
-                <SimpleGrid
-                  columns={2}
-                  spacing={4}
-                  templateColumns={{ base: '1fr 2fr' }}
-                >
-                  <Text>Creator</Text>
-                  <LinkExternal type={'account'} value={'0x45...92c'} />
-                </SimpleGrid>
+                {account && (
+                  <SimpleGrid
+                    columns={2}
+                    spacing={4}
+                    templateColumns={{ base: '1fr 2fr' }}
+                  >
+                    <Text>Creator</Text>
+                    <LinkExternal
+                      type={'account'}
+                      value={shortenAddress(account!)}
+                    />
+                  </SimpleGrid>
+                )}
                 <SimpleGrid
                   columns={2}
                   spacing={4}
                   templateColumns={{ base: '1fr 2fr' }}
                 >
                   <Text>Snapshot</Text>
-                  <LinkExternal type={'block'} value={'154346235'} />
+                  <LinkExternal type={'block'} value={snapshot} />
                 </SimpleGrid>
-                <Button
-                  color={'white'}
-                  bg={'blue.400'}
-                  borderWidth={'1px'}
-                  rounded={'full'}
-                  _hover={{
-                    bg: 'blue.100',
-                  }}
-                >
-                  Publish
-                </Button>
+                {account ? (
+                  <Button
+                    color={'white'}
+                    bg={'blue.400'}
+                    borderWidth={'1px'}
+                    rounded={'full'}
+                    _hover={{
+                      bg: 'blue.100',
+                    }}
+                  >
+                    Publish
+                  </Button>
+                ) : (
+                  <ConnectWalletButton />
+                )}
               </Stack>
             </Card>
           </VStack>
