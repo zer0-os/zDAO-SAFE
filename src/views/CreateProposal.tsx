@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, SpinnerIcon } from '@chakra-ui/icons';
+import { SpinnerIcon } from '@chakra-ui/icons';
 import {
   Button,
   Container,
