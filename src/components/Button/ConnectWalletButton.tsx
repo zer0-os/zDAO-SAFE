@@ -7,19 +7,17 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  SimpleGrid,
   Text,
   Stack,
   useDisclosure,
   useBreakpointValue,
   Flex,
 } from '@chakra-ui/react';
-import styled from 'styled-components';
-
 import { SUPPORTED_WALLETS, WalletInfo } from '@/config/constants/wallet';
 import useAuth from '@/hooks/useAuth';
-import { useEffect } from 'react';
 import { UnsupportedChainIdError } from '@web3-react/core';
+import { useEffect } from 'react';
+import styled from 'styled-components';
 
 const IconWrapper = styled.div<{ size?: number | null }>`
   align-items: center;

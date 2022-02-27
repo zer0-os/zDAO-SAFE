@@ -1,4 +1,4 @@
-import { Box, Heading, Stack, useColorModeValue } from '@chakra-ui/react';
+import { Box, Heading, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {

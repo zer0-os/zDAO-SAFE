@@ -1,5 +1,3 @@
-import useActiveWeb3React from '@/hooks/useActiveWeb3React';
-import useAuth from '@/hooks/useAuth';
 import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   BoxProps,
@@ -10,9 +8,11 @@ import {
   MenuList,
   Text,
 } from '@chakra-ui/react';
-import { IoExitOutline } from 'react-icons/io5';
 import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
+import useActiveWeb3React from '@/hooks/useActiveWeb3React';
+import useAuth from '@/hooks/useAuth';
 import { shortenAddress } from '@/utils/address';
+import { IoExitOutline } from 'react-icons/io5';
 
 export const DesktopNav = (props: BoxProps) => {
   const { account } = useActiveWeb3React();

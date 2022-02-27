@@ -1,12 +1,11 @@
-import BigNumber from 'bignumber.js';
-import { lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
+import { useColorModeValue } from '@chakra-ui/color-mode';
 import Loader from '@/components/Loader';
 import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
 import { Header } from '@/components/Header';
+import BigNumber from 'bignumber.js';
+import { lazy } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
-import { useColorModeValue } from '@chakra-ui/color-mode';
 import useEagerConnect from './hooks/useEagerConnect';
 
 const Landing = lazy(() => import('@/views/Landing'));
