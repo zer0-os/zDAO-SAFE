@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { Web3ReactContextInterface } from '@web3-react/core/dist/types';
+import { useEffect, useState, useRef } from 'react';
 
 /**
  * Provides a web3 provider with or without user's signer

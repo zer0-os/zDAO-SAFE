@@ -7,19 +7,17 @@ import {
   ModalBody,
   ModalFooter,
   Button,
-  SimpleGrid,
   Text,
   Stack,
   useDisclosure,
   useBreakpointValue,
   Flex,
 } from '@chakra-ui/react';
-import styled from 'styled-components';
-
 import { SUPPORTED_WALLETS, WalletInfo } from '@/config/constants/wallet';
 import useAuth from '@/hooks/useAuth';
-import { useEffect } from 'react';
 import { UnsupportedChainIdError } from '@web3-react/core';
+import { useEffect } from 'react';
+import styled from 'styled-components';
 
 const IconWrapper = styled.div<{ size?: number | null }>`
   align-items: center;
@@ -58,7 +56,7 @@ const ConnectWalletButton = () => {
             <Flex
               flex={{ base: 1 }}
               flexDirection={'column'}
-              alignItems={'flex-start'}
+              justifyContent={'center'}
             >
               {Object.keys(SUPPORTED_WALLETS).map((key) => {
                 const option: WalletInfo = SUPPORTED_WALLETS[key];
@@ -66,12 +64,13 @@ const ConnectWalletButton = () => {
                   <Stack
                     key={option.title}
                     direction={'row'}
-                    spacing={3}
+                    alignItems={'center'}
                     paddingTop={'12px'}
+                    spacing={3}
                   >
                     <IconWrapper
-                      size={64}
                       onClick={() => login(option.connectorId)}
+                      size={64}
                       style={{ cursor: 'pointer' }}
                     >
                       <img src={option.icon} alt={'icon'} />

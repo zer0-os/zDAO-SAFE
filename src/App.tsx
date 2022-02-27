@@ -1,12 +1,11 @@
-import BigNumber from 'bignumber.js';
-import { lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-
+import { useColorModeValue } from '@chakra-ui/color-mode';
 import Loader from '@/components/Loader';
 import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
 import { Header } from '@/components/Header';
+import BigNumber from 'bignumber.js';
+import { lazy } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import styled from 'styled-components';
-import { useColorModeValue } from '@chakra-ui/color-mode';
 import useEagerConnect from './hooks/useEagerConnect';
 
 const Landing = lazy(() => import('@/views/Landing'));
@@ -30,7 +29,7 @@ const BodyWrapper = styled.div<{ background: string }>`
   flex-direction: column;
   width: 100%;
   min-height: 100vh;
-  padding: 60px 16px 0px 16px;
+  padding: 120px 16px 0px 16px;
   align-items: center;
   flex: 1;
   z-index: 1;
