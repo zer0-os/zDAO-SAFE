@@ -24,6 +24,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
 import useExtendedSpaces from '@/hooks/useExtendedSpaces';
+import LinkExternal from './components/LinkExternal';
 
 const combineDateAndTime = (date: Date, time: Date) => {
   if (!isValid(date) || !isValid(time)) {
@@ -47,23 +48,6 @@ interface ProposalFormat {
   endTime: Date;
   snapshot: number;
 }
-
-const LinkExternal = ({
-  type,
-  value,
-}: {
-  type: string;
-  value: string | number;
-}) => {
-  return (
-    <Link href={'#'} isExternal>
-      <Stack direction={'row'} spacing={2} alignItems={'center'}>
-        <Text>{value}</Text>
-        <ExternalLinkIcon mx={'2px'} />
-      </Stack>
-    </Link>
-  );
-};
 
 const CreateProposal = () => {
   const [state, setState] = useState<ProposalFormat>({
