@@ -23,6 +23,7 @@ import { format, isValid, parseISO } from 'date-fns';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
+import useExtendedSpaces from '@/hooks/useExtendedSpaces';
 
 const combineDateAndTime = (date: Date, time: Date) => {
   if (!isValid(date) || !isValid(time)) {
@@ -80,7 +81,13 @@ const CreateProposal = () => {
   const navigate = useNavigate();
   const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();
+  const { loadExtentedSpaces, extentedSpaces, spaceLoading } =
+    useExtendedSpaces();
   const [result, setResult] = useState<any>(undefined);
+
+  useEffect(() => {
+    loadExtentedSpaces(SPACE_ID);
+  }, [loadExtentedSpaces]);
 
   useEffect(() => {
     if (blockNumber)
@@ -131,7 +138,7 @@ const CreateProposal = () => {
       {
         id: SPACE_ID,
         network: chainId?.toString(),
-        strategies: [],
+        strategies: extentedSpaces,
       },
       'proposal',
       payload
@@ -270,7 +277,7 @@ const CreateProposal = () => {
                       color={'white'}
                       bg={'blue.400'}
                       borderWidth={'1px'}
-                      disabled={clientLoading}
+                      disabled={clientLoading || spaceLoading}
                       rounded={'full'}
                       _hover={{
                         bg: 'blue.100',
