@@ -127,14 +127,13 @@ const CreateProposal = () => {
       'proposal',
       payload
     );
-    setResult(resp);
-    console.log('result', resp);
+    navigate(`/voting/${resp.id}`);
   };
 
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Link onClick={() => navigate(-1)}>
+        <Link href={'/'}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>

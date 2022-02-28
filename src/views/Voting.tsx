@@ -3,6 +3,7 @@ import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useExtendedProposal from '@/hooks/useExtendedProposal';
 import useExtendedVotes from '@/hooks/useExtendedVotes';
 import { shortenAddress } from '@/utils/address';
+import { shortenProposalId } from '@/utils/proposal';
 import {
   Badge,
   Button,
@@ -20,29 +21,28 @@ import {
 import { format } from 'date-fns';
 import { useEffect } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import LinkExternal from './components/LinkExternal';
 
 const Voting = () => {
   const { account, chainId } = useActiveWeb3React();
   const navigate = useNavigate();
   const textColor = useColorModeValue('gray.700', 'gray.400');
-  const [searchParams] = useSearchParams();
+  const { id } = useParams();
   const { loadProposal, proposal, proposalLoading } = useExtendedProposal();
   const { loadVotes, votes, votesLoading } = useExtendedVotes();
 
   useEffect(() => {
-    const proposalId = searchParams.get('id');
-    if (proposalId) {
-      loadProposal(proposalId);
-      loadVotes(proposalId);
+    if (id) {
+      loadProposal(id);
+      loadVotes(id);
     }
-  }, [searchParams]);
+  }, [id]);
 
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Link onClick={() => navigate(-1)}>
+        <Link href={'/'}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
@@ -147,7 +147,10 @@ const Voting = () => {
                   >
                     {/* identifier */}
                     <Text>Identifier</Text>
-                    <LinkExternal type={'proposal'} value={proposal.id} />
+                    <LinkExternal
+                      type={'proposal'}
+                      value={shortenProposalId(proposal.id)}
+                    />
 
                     {/* creator */}
                     {account && (
@@ -178,11 +181,21 @@ const Voting = () => {
 
                     {/* start date */}
                     <Text>Start Date</Text>
-                    <Text>{format(proposal.created, 'yyyy-mm-dd HH:mm')}</Text>
+                    <Text>
+                      {format(
+                        new Date(proposal.start * 1000),
+                        'yyyy-MM-dd HH:mm'
+                      )}
+                    </Text>
 
                     {/* end date */}
                     <Text>End Date</Text>
-                    <Text>{format(proposal.end, 'yyyy-mm-dd HH:mm')}</Text>
+                    <Text>
+                      {format(
+                        new Date(proposal.end * 1000),
+                        'yyyy-MM-dd HH:mm'
+                      )}
+                    </Text>
                   </SimpleGrid>
                 </Stack>
               </Card>
@@ -190,22 +203,28 @@ const Voting = () => {
               {/* current results */}
               <Card title={'Current Results'}>
                 <Stack spacing={2} direction={'column'}>
-                  {proposal.scores.map((index, score) => (
-                    <>
-                      <Text>Yes</Text>
-                      <Progress
-                        min={0}
-                        max={100}
-                        value={
-                          proposal.scores_total > 0
-                            ? (score * 100) / proposal.scores_total
-                            : 0
-                        }
-                      ></Progress>
-                      <Text>{score} votes</Text>
-                      <Spacer />
-                    </>
-                  ))}
+                  {proposal.choices.map((choice, index) => {
+                    const score =
+                      proposal.scores.length > index
+                        ? proposal.scores[index]
+                        : 0;
+                    return (
+                      <>
+                        <Text>{choice}</Text>
+                        <Progress
+                          min={0}
+                          max={100}
+                          value={
+                            proposal.scores_total > 0
+                              ? (score * 100) / proposal.scores_total
+                              : 0
+                          }
+                        ></Progress>
+                        <Text>{score} votes</Text>
+                        <Spacer />
+                      </>
+                    );
+                  })}
                 </Stack>
               </Card>
             </Stack>

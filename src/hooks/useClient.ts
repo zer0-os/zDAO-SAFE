@@ -19,7 +19,7 @@ const useClient = () => {
     }
   };
 
-  const sendEIP712 = async (space, type, payload) => {
+  const sendEIP712 = async (space, type, payload): Promise<any | null> => {
     setLoading(true);
 
     try {
