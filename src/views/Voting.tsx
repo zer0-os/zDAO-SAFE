@@ -1,4 +1,5 @@
 import Card from '@/components/Card';
+import TransferAbi from '@/config/abi/transfer.json';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/space';
 import { getPower } from '@/helpers/snapshot';
@@ -34,6 +35,7 @@ import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal from './components/LinkExternal';
+import BigNumber from 'bignumber.js';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -58,6 +60,7 @@ const Voting = () => {
     resultsLoading,
   } = useExtendedResults(space, proposal, votes);
   const [myChoice, setMyChoice] = useState(-1);
+  const [isExecuting, setIsExecuting] = useState(false);
   const toast = useToast();
 
   const sortedVotes = useMemo(() => {
@@ -102,27 +105,35 @@ const Voting = () => {
   const handleExecuteProposal = async () => {
     console.log('handleExecuteProposal');
     if (!library) return;
-    console.log('Safe Service Url', SAFE_SERVICE_URL);
-    console.log('Safe Address', SAFE_ADDRESS);
-    const service = new SafeService(SAFE_SERVICE_URL);
-    const ethAdapter = new EthersAdapter({
-      ethers,
-      signer: library?.getSigner(),
-    });
-    const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
-    const safeSigner = new SafeEthersSigner(safe, service, library);
-    const contract = new ethers.Contract(
-      '0xe50c6391a6cb10f9B9Ef599aa1C68C82dD88Bd91',
-      ['function pin(string newMessage)'],
-      safeSigner
-    );
-    const proposedTx = await contract.functions.pin(
-      `Local time: ${new Date().toLocaleString()}`
-    );
-    console.log('USER ACTION REQUIRED');
-    console.log('Go to the Gnosis Safe Web App to confirm the transaction');
-    console.log(await proposedTx.wait());
-    console.log('Transaction has been executed');
+    setIsExecuting(true);
+    try {
+      console.log('Safe Service Url', SAFE_SERVICE_URL);
+      console.log('Safe Address', SAFE_ADDRESS);
+      const service = new SafeService(SAFE_SERVICE_URL);
+      const ethAdapter = new EthersAdapter({
+        ethers,
+        signer: library?.getSigner(),
+      });
+      const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
+      const safeSigner = new SafeEthersSigner(safe, service, library);
+      const contract = new ethers.Contract(
+        '0x4FAF1D85cf2f8aad2c53621cBD9752931fA8C7d3',
+        TransferAbi,
+        safeSigner
+      );
+      const proposedTx = await contract.functions.transferToken(
+        '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+        '0xD3b5134fef18b69e1ddB986338F2F80CD043a1AF',
+        '0xD53C3bddf27b32ad204e859EB677f709c80E6840', // zDAOTesting
+        ethers.utils.parseEther('300')
+      );
+      console.log('USER ACTION REQUIRED');
+      console.log('Go to the Gnosis Safe Web App to confirm the transaction');
+      console.log(await proposedTx.wait());
+      console.log('Transaction has been executed');
+    } finally {
+      setIsExecuting(false);
+    }
   };
 
   return (
@@ -322,7 +333,10 @@ const Voting = () => {
                 bg={'blue.100'}
                 borderWidth={'1px'}
                 disabled={
-                  proposalLoading || votesLoading || proposal.state !== 'closed'
+                  proposalLoading ||
+                  votesLoading ||
+                  proposal.state !== 'closed' ||
+                  isExecuting
                 }
                 rounded={'full'}
                 _focus={{
