@@ -1,9 +1,10 @@
-import gql from 'graphql-tag';
 import {
   ApolloClient,
   createHttpLink,
   InMemoryCache,
 } from '@apollo/client/core';
+import gql from 'graphql-tag';
+import cloneDeep from 'lodash/cloneDeep';
 import { hubUrl } from './client';
 
 // HTTP connection to the API
@@ -30,3 +31,9 @@ export const apolloClient = new ApolloClient({
     }
   `,
 });
+
+export const apolloQuery = async (options, path = '') => {
+  const response = await apolloClient.query(options);
+
+  return cloneDeep(!path ? response.data : response.data[path]);
+};

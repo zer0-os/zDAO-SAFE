@@ -1,4 +1,4 @@
-import { ExternalLinkIcon, SpinnerIcon } from '@chakra-ui/icons';
+import { SpinnerIcon } from '@chakra-ui/icons';
 import {
   Button,
   Container,
@@ -23,7 +23,7 @@ import { format, isValid, parseISO } from 'date-fns';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
-import useExtendedSpaces from '@/hooks/useExtendedSpaces';
+import useExtendedSpace from '@/hooks/useExtendedSpace';
 import LinkExternal from './components/LinkExternal';
 
 const combineDateAndTime = (date: Date, time: Date) => {
@@ -65,13 +65,7 @@ const CreateProposal = () => {
   const navigate = useNavigate();
   const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();
-  const { loadExtentedSpaces, extentedSpaces, spaceLoading } =
-    useExtendedSpaces();
-  const [result, setResult] = useState<any>(undefined);
-
-  useEffect(() => {
-    loadExtentedSpaces(SPACE_ID);
-  }, [loadExtentedSpaces]);
+  const { space, spaceLoading } = useExtendedSpace(SPACE_ID);
 
   useEffect(() => {
     if (blockNumber)
@@ -118,167 +112,150 @@ const CreateProposal = () => {
       metadata: {},
     };
     console.log(payload);
-    const resp = await sendEIP712(
-      {
-        id: SPACE_ID,
-        network: chainId?.toString(),
-        strategies: extentedSpaces,
-      },
-      'proposal',
-      payload
-    );
-    setResult(resp);
-    console.log('result', resp);
+    const resp = await sendEIP712(space, 'proposal', payload);
+    navigate(`/voting/${resp.id}`);
   };
 
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Link onClick={() => navigate(-1)}>
+        <Link href={'/'}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
           </Stack>
         </Link>
 
-        {result ? (
-          <Stack justifyContent={'center'}>
-            <Heading as={'h1'} fontSize={'xl'} fontFamily={'body'}>
-              proposal.id: {result.id}
-            </Heading>
-          </Stack>
-        ) : (
-          <Stack
-            spacing={12}
-            flex={2}
-            direction={{ base: 'column', sm: 'row' }}
-            w={'full'}
-          >
-            <VStack spacing={6} flex={1}>
-              {/* Proposal title & content */}
-              <Input
-                borderColor="gray.300"
-                name={'title'}
-                onChange={handleTitleChange}
-                placeholder="Proposal title"
-                size={'lg'}
-                value={title}
-                _hover={{
-                  borderRadius: 'gray.300',
-                }}
-                required
-              ></Input>
-              <Textarea
-                borderColor="gray.300"
-                name={'body'}
-                onChange={handleBodyChange}
-                placeholder="Proposal content"
-                height={'200px'}
-                value={body}
-                _hover={{
-                  borderRadius: 'gray.300',
-                }}
-              ></Textarea>
+        <Stack
+          spacing={12}
+          flex={2}
+          direction={{ base: 'column', sm: 'row' }}
+          w={'full'}
+        >
+          <VStack spacing={6} flex={1}>
+            {/* Proposal title & content */}
+            <Input
+              borderColor="gray.300"
+              name={'title'}
+              onChange={handleTitleChange}
+              placeholder="Proposal title"
+              size={'lg'}
+              value={title}
+              _hover={{
+                borderRadius: 'gray.300',
+              }}
+              required
+            ></Input>
+            <Textarea
+              borderColor="gray.300"
+              name={'body'}
+              onChange={handleBodyChange}
+              placeholder="Proposal content"
+              height={'200px'}
+              value={body}
+              _hover={{
+                borderRadius: 'gray.300',
+              }}
+            ></Textarea>
 
-              {/* Choices */}
-              <Card title={'Choices'}>
-                <Stack spacing={2} direction={'column'}>
-                  {Choices.map((choice) => (
-                    <Button
-                      key={choice}
-                      bg={'transparent'}
-                      borderWidth={'1px'}
-                      rounded={'full'}
-                      _focus={{
-                        borderColor: 'gray.600',
-                      }}
-                      _hover={{
-                        bg: 'gray.100',
-                      }}
-                    >
-                      {choice}
-                    </Button>
-                  ))}
-                </Stack>
-              </Card>
-            </VStack>
+            {/* Choices */}
+            <Card title={'Choices'}>
+              <Stack spacing={2} direction={'column'}>
+                {Choices.map((choice) => (
+                  <Button
+                    key={choice}
+                    bg={'transparent'}
+                    borderWidth={'1px'}
+                    rounded={'full'}
+                    _focus={{
+                      borderColor: 'gray.600',
+                    }}
+                    _hover={{
+                      bg: 'gray.100',
+                    }}
+                  >
+                    {choice}
+                  </Button>
+                ))}
+              </Stack>
+            </Card>
+          </VStack>
 
-            {/* Action */}
-            <VStack width={{ base: 'full', sm: '400px' }}>
-              <Card title={'Action'}>
-                <Stack spacing={2} direction={'column'}>
-                  <Text>Start Date</Text>
-                  <DatePicker
-                    name={'startDate'}
-                    onChange={handleDateChange('startDate')}
-                    selected={startDate}
-                    placeholderText="YYYY/MM/DD"
-                  />
-                  <Text>Start Time</Text>
-                  <TimePicker
-                    name={'startTime'}
-                    onChange={handleDateChange('startTime')}
-                    selected={startTime}
-                    placeholderText="00:00"
-                  />
-                  <Text>End Date</Text>
-                  <DatePicker
-                    name={'endDate'}
-                    onChange={handleDateChange('endDate')}
-                    selected={endDate}
-                    placeholderText="YYYY/MM/DD"
-                  />
-                  <Text>End Time</Text>
-                  <TimePicker
-                    name={'endTime'}
-                    onChange={handleDateChange('endTime')}
-                    selected={endTime}
-                    placeholderText="00:00"
-                  />
-                  {account && (
-                    <SimpleGrid
-                      columns={2}
-                      spacing={4}
-                      templateColumns={{ base: '1fr 2fr' }}
-                    >
-                      <Text>Creator</Text>
-                      <LinkExternal
-                        type={'account'}
-                        value={shortenAddress(account)}
-                      />
-                    </SimpleGrid>
-                  )}
+          {/* Action */}
+          <VStack width={{ base: 'full', sm: '400px' }}>
+            <Card title={'Action'}>
+              <Stack spacing={2} direction={'column'}>
+                <Text>Start Date</Text>
+                <DatePicker
+                  name={'startDate'}
+                  onChange={handleDateChange('startDate')}
+                  selected={startDate}
+                  placeholderText="YYYY/MM/DD"
+                />
+                <Text>Start Time</Text>
+                <TimePicker
+                  name={'startTime'}
+                  onChange={handleDateChange('startTime')}
+                  selected={startTime}
+                  placeholderText="00:00"
+                />
+                <Text>End Date</Text>
+                <DatePicker
+                  name={'endDate'}
+                  onChange={handleDateChange('endDate')}
+                  selected={endDate}
+                  placeholderText="YYYY/MM/DD"
+                />
+                <Text>End Time</Text>
+                <TimePicker
+                  name={'endTime'}
+                  onChange={handleDateChange('endTime')}
+                  selected={endTime}
+                  placeholderText="00:00"
+                />
+                {account && (
                   <SimpleGrid
                     columns={2}
                     spacing={4}
                     templateColumns={{ base: '1fr 2fr' }}
                   >
-                    <Text>Snapshot</Text>
-                    <LinkExternal type={'block'} value={snapshot} />
+                    <Text>Creator</Text>
+                    <LinkExternal
+                      type={'account'}
+                      value={shortenAddress(account)}
+                    />
                   </SimpleGrid>
-                  {account ? (
-                    <Button
-                      color={'white'}
-                      bg={'blue.400'}
-                      borderWidth={'1px'}
-                      disabled={clientLoading || spaceLoading}
-                      rounded={'full'}
-                      _hover={{
-                        bg: 'blue.100',
-                      }}
-                      onClick={handleSubmitProposal}
-                      leftIcon={clientLoading ? <SpinnerIcon /> : undefined}
-                    >
-                      Publish
-                    </Button>
-                  ) : (
-                    <ConnectWalletButton />
-                  )}
-                </Stack>
-              </Card>
-            </VStack>
-          </Stack>
-        )}
+                )}
+                <SimpleGrid
+                  columns={2}
+                  spacing={4}
+                  templateColumns={{ base: '1fr 2fr' }}
+                >
+                  <Text>Snapshot</Text>
+                  <LinkExternal type={'block'} value={snapshot} />
+                </SimpleGrid>
+                {account ? (
+                  <Button
+                    color={'white'}
+                    bg={'blue.400'}
+                    borderWidth={'1px'}
+                    disabled={clientLoading || spaceLoading}
+                    rounded={'full'}
+                    _hover={{
+                      bg: 'blue.100',
+                    }}
+                    onClick={handleSubmitProposal}
+                    leftIcon={clientLoading ? <SpinnerIcon /> : undefined}
+                  >
+                    Publish
+                  </Button>
+                ) : (
+                  <ConnectWalletButton />
+                )}
+              </Stack>
+            </Card>
+          </VStack>
+        </Stack>
       </VStack>
     </Container>
   );

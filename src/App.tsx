@@ -49,7 +49,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Landing />}></Route>
               <Route path="/create" element={<CreateProposal />}></Route>
-              <Route path="/voting" element={<Voting />}></Route>
+              <Route path="/voting/:id" element={<Voting />}></Route>
             </Routes>
           </SuspenseWithChunkError>
         </BrowserRouter>
