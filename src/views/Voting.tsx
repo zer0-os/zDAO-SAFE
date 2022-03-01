@@ -30,6 +30,13 @@ import LinkExternal from './components/LinkExternal';
 
 const MAX_VISIBLE_COUNT = 10;
 
+const getFormatedValue = (value) =>
+  parseFloat(value).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 3,
+  });
+const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
+
 const Voting = () => {
   const { account, chainId } = useActiveWeb3React();
   const textColor = useColorModeValue('gray.700', 'gray.400');
@@ -51,6 +58,8 @@ const Voting = () => {
     }
     return votesEx.slice(0, MAX_VISIBLE_COUNT);
   }, [votesEx]);
+
+  console.log('results', results);
 
   // useEffect(() => {
   //   if (account) {
@@ -165,12 +174,9 @@ const Voting = () => {
                         <Text textAlign={'center'}>
                           {proposal.choices[vote.choice - 1]}
                         </Text>
-                        <Text textAlign={'right'}>{`${parseFloat(
+                        <Text textAlign={'right'}>{`${getFormatedValue(
                           vote.balance
-                        ).toLocaleString(undefined, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 3,
-                        })} ${space.symbol}`}</Text>
+                        )} ${space.symbol}`}</Text>
                       </SimpleGrid>
                     ))}
                 </Stack>
@@ -245,23 +251,17 @@ const Voting = () => {
               <Card title={'Current Results'}>
                 <Stack spacing={2} direction={'column'}>
                   {proposal.choices.map((choice, index) => {
-                    const score =
-                      proposal.scores.length > index
-                        ? proposal.scores[index]
-                        : 0;
+                    const balance = getPercentage(
+                      results.resultsByVoteBalance[index],
+                      results.sumOfResultsBalance
+                    );
                     return (
                       <>
                         <Text>{choice}</Text>
-                        <Progress
-                          min={0}
-                          max={100}
-                          value={
-                            proposal.scores_total > 0
-                              ? (score * 100) / proposal.scores_total
-                              : 0
-                          }
-                        ></Progress>
-                        <Text>{score} votes</Text>
+                        <Progress min={0} max={100} value={balance}></Progress>
+                        <Text>{`${getFormatedValue(
+                          results.resultsByVoteBalance[index]
+                        )} ${space.symbol}`}</Text>
                         <Spacer />
                       </>
                     );
