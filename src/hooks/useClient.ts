@@ -42,7 +42,7 @@ const useClient = () => {
           network: space.network,
           strategies: JSON.stringify(space.strategies),
           plugins: JSON.stringify(payload.plugins),
-          metadata: JSON.stringify({}),
+          metadata: JSON.stringify(payload.metadata),
         });
         return await clientEIP712.proposal(library, account, {
           from: payload.from,
@@ -58,7 +58,7 @@ const useClient = () => {
           network: space.network,
           strategies: JSON.stringify(space.strategies),
           plugins: JSON.stringify(payload.plugins),
-          metadata: JSON.stringify({}),
+          metadata: JSON.stringify(payload.metadata),
         });
       } else if (type === 'vote') {
         console.log('vote', {
@@ -66,14 +66,14 @@ const useClient = () => {
           proposal: payload.proposal.id,
           type: payload.proposal.type,
           choice: payload.choice,
-          metadata: JSON.stringify({}),
+          metadata: JSON.stringify(payload.metadata),
         });
         return await clientEIP712.vote(library, account, {
           space: space.id,
           proposal: payload.proposal.id,
           type: payload.proposal.type,
           choice: payload.choice,
-          metadata: JSON.stringify({}),
+          metadata: JSON.stringify(payload.metadata),
         });
       }
       return null;
