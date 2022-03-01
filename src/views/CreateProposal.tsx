@@ -11,19 +11,21 @@ import {
   Textarea,
   VStack,
 } from '@chakra-ui/react';
+import TransferAbi from '@/config/abi/transfer.json';
 import { SPACE_ID } from '@/config/constants/space';
 import Card from '@/components/Card';
 import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
 import { DatePicker, TimePicker } from '@/components/DatePicker';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useClient from '@/hooks/useClient';
+import useExtendedSpace from '@/hooks/useExtendedSpace';
 import { useBlockNumber } from '@/states/application/hooks';
 import { shortenAddress } from '@/utils/address';
+import BigNumber from 'bignumber.js';
 import { format, isValid, parseISO } from 'date-fns';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
-import useExtendedSpace from '@/hooks/useExtendedSpace';
 import LinkExternal from './components/LinkExternal';
 
 const combineDateAndTime = (date: Date, time: Date) => {
@@ -47,6 +49,12 @@ interface ProposalFormat {
   endDate: Date;
   endTime: Date;
   snapshot: number;
+  contract: string;
+  abi: string;
+  sender: string;
+  recipient: string;
+  token: string;
+  amount: BigNumber;
 }
 
 const CreateProposal = () => {
@@ -58,9 +66,28 @@ const CreateProposal = () => {
     endDate: new Date(),
     endTime: new Date(),
     snapshot: 0,
+    contract: '',
+    abi: JSON.stringify(TransferAbi),
+    sender: '',
+    recipient: '',
+    token: '',
+    amount: new BigNumber(0),
   });
-  const { title, body, startDate, startTime, endDate, endTime, snapshot } =
-    state;
+  const {
+    title,
+    body,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    snapshot,
+    contract,
+    abi,
+    sender,
+    recipient,
+    token,
+    amount,
+  } = state;
   const { account, chainId } = useActiveWeb3React();
   const navigate = useNavigate();
   const { sendEIP712, clientLoading } = useClient();
@@ -75,21 +102,29 @@ const CreateProposal = () => {
       }));
   }, [blockNumber]);
 
-  const updateValue = (key: string, value: string | number | Date) => {
+  const updateValue = (
+    key: string,
+    value: string | number | Date | BigNumber
+  ) => {
     setState((prevState) => ({
       ...prevState,
       [key]: value,
     }));
   };
 
-  const handleTitleChange = (evt: ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
     updateValue(inputName, value);
   };
 
-  const handleBodyChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleTextAreaChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
     const { name: inputName, value } = evt.currentTarget;
     updateValue(inputName, value);
+  };
+
+  const handleAmountChange = (evt: ChangeEvent<HTMLInputElement>) => {
+    const { name: inputName, value } = evt.currentTarget;
+    updateValue(inputName, new BigNumber(value));
   };
 
   const handleDateChange = (key: string) => (value: Date) => {
@@ -109,11 +144,20 @@ const CreateProposal = () => {
       end: combineDateAndTime(endDate, endTime),
       snapshot: blockNumber,
       plugins: {},
-      metadata: {},
+      metadata: {
+        contract,
+        abi,
+        sender,
+        recipient,
+        token,
+        amount: amount.toString(),
+      },
     };
     console.log(payload);
     const resp = await sendEIP712(space, 'proposal', payload);
-    navigate(`/voting/${resp.id}`);
+    if (resp && resp.id) {
+      navigate(`/voting/${resp.id}`);
+    }
   };
 
   return (
@@ -135,10 +179,11 @@ const CreateProposal = () => {
           <VStack spacing={6} flex={1}>
             {/* Proposal title & content */}
             <Input
-              borderColor="gray.300"
+              borderColor={'gray.300'}
+              fontSize={'md'}
               name={'title'}
-              onChange={handleTitleChange}
-              placeholder="Proposal title"
+              onChange={handleInputChange}
+              placeholder={'Proposal title'}
               size={'lg'}
               value={title}
               _hover={{
@@ -147,16 +192,100 @@ const CreateProposal = () => {
               required
             ></Input>
             <Textarea
-              borderColor="gray.300"
+              borderColor={'gray.300'}
+              fontSize={'md'}
               name={'body'}
-              onChange={handleBodyChange}
-              placeholder="Proposal content"
+              onChange={handleTextAreaChange}
+              placeholder={'Proposal content'}
               height={'200px'}
               value={body}
               _hover={{
                 borderRadius: 'gray.300',
               }}
             ></Textarea>
+
+            <Card title={'Transfer tokens'}>
+              <Stack spacing={2} direction={'column'}>
+                <Input
+                  borderColor={'gray.300'}
+                  fontSize={'md'}
+                  name={'contract'}
+                  onChange={handleInputChange}
+                  placeholder={'Target Contract Address'}
+                  size={'lg'}
+                  value={contract}
+                  _hover={{
+                    borderRadius: 'gray.300',
+                  }}
+                  required
+                ></Input>
+                <Textarea
+                  borderColor={'gray.300'}
+                  fontSize={'md'}
+                  name={'abi'}
+                  height={'200px'}
+                  onChange={handleTextAreaChange}
+                  placeholder={'Contract ABI'}
+                  readOnly
+                  value={abi}
+                  _hover={{
+                    borderRadius: 'gray.300',
+                  }}
+                ></Textarea>
+                <Input
+                  borderColor={'gray.300'}
+                  fontSize={'md'}
+                  name={'sender'}
+                  onChange={handleInputChange}
+                  placeholder={'Sender Address'}
+                  size={'lg'}
+                  value={sender}
+                  _hover={{
+                    borderRadius: 'gray.300',
+                  }}
+                  required
+                ></Input>
+                <Input
+                  borderColor={'gray.300'}
+                  fontSize={'md'}
+                  name={'recipient'}
+                  onChange={handleInputChange}
+                  placeholder={'Recipient Address'}
+                  size={'lg'}
+                  value={recipient}
+                  _hover={{
+                    borderRadius: 'gray.300',
+                  }}
+                  required
+                ></Input>
+                <Input
+                  borderColor={'gray.300'}
+                  fontSize={'md'}
+                  name={'token'}
+                  onChange={handleInputChange}
+                  placeholder={'ERC20 Token Address'}
+                  size={'lg'}
+                  value={token}
+                  _hover={{
+                    borderRadius: 'gray.300',
+                  }}
+                  required
+                ></Input>
+                <Input
+                  borderColor={'gray.300'}
+                  fontSize={'md'}
+                  name={'amount'}
+                  onChange={handleAmountChange}
+                  placeholder={'Trasnfer Token Amount'}
+                  size={'lg'}
+                  value={amount.toString()}
+                  _hover={{
+                    borderRadius: 'gray.300',
+                  }}
+                  required
+                ></Input>
+              </Stack>
+            </Card>
 
             {/* Choices */}
             <Card title={'Choices'}>

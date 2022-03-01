@@ -2,6 +2,7 @@ import Card from '@/components/Card';
 import { SPACE_ID } from '@/config/constants/space';
 import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
+import useClient from '@/hooks/useClient';
 import useExtendedProposal from '@/hooks/useExtendedProposal';
 import useExtendedResults from '@/hooks/useExtendedResults';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
@@ -20,6 +21,7 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
@@ -30,20 +32,28 @@ import LinkExternal from './components/LinkExternal';
 
 const MAX_VISIBLE_COUNT = 10;
 
+const getFormatedValue = (value) =>
+  parseFloat(value).toLocaleString(undefined, {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 3,
+  });
+const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
+
 const Voting = () => {
   const { account, chainId } = useActiveWeb3React();
+  const { sendEIP712 } = useClient();
   const textColor = useColorModeValue('gray.700', 'gray.400');
   const { id: proposalId } = useParams();
   const { space } = useExtendedSpace(SPACE_ID);
   const { proposal, proposalLoading } = useExtendedProposal(proposalId);
   const { votes, votesLoading } = useExtendedVotes(proposalId);
-  const [vp, setVp] = useState(0);
-
   const {
     results,
     votes: votesEx,
     resultsLoading,
   } = useExtendedResults(space, proposal, votes);
+  const [myChoice, setMyChoice] = useState(-1);
+  const toast = useToast();
 
   const sortedVotes = useMemo(() => {
     if (!votesEx) {
@@ -52,27 +62,37 @@ const Voting = () => {
     return votesEx.slice(0, MAX_VISIBLE_COUNT);
   }, [votesEx]);
 
-  // useEffect(() => {
-  //   if (account) {
-  //     const interval = setInterval(async () => {
-  //       try {
-  //         const response = await getPower(SPACE_ID, account, proposal);
-  //         setVp(response.totalScore);
-  //       } catch (e) {
-  //         console.error(e);
-  //       }
-  //     }, 3000);
-  //     return () => clearInterval(interval);
-  //   }
-  //   return () => null;
-  // }, [account]);
-
-  // useEffect(() => {
-  //   if (proposalLoading && votesLoading) {
-  //     if (proposal.value.scores_status === 'invalid') {
-  //     }
-  //   }
-  // }, [proposalLoading, votesLoading]);
+  const handleVote = async () => {
+    try {
+      const response = await getPower(SPACE_ID, account, proposal);
+      const vp = response.totalScore;
+      if (vp > 0 && myChoice >= 0) {
+        const result = await sendEIP712(space, 'vote', {
+          proposal,
+          choice: myChoice + 1,
+          metadata: {},
+        });
+        console.log('voting result', result);
+        if (result.id) {
+          toast({
+            title: 'You can cast your vote',
+            position: 'top-right',
+            isClosable: true,
+          });
+          window.location.reload();
+        }
+      } else {
+        toast({
+          title: 'You can not cast your vote',
+          position: 'top-right',
+          status: 'error',
+          isClosable: true,
+        });
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <Container as={Stack} maxW={'7xl'}>
@@ -119,10 +139,11 @@ const Voting = () => {
               {/* cast my vote */}
               <Card title={'Cast your vote'}>
                 <Stack spacing={2} direction={'column'}>
-                  {proposal.choices.map((choice) => (
+                  {proposal.choices.map((choice, index) => (
                     <Button
                       key={choice}
                       bg={'transparent'}
+                      borderColor={index === myChoice ? 'gray.600' : 'default'}
                       borderWidth={'1px'}
                       rounded={'full'}
                       _focus={{
@@ -131,6 +152,7 @@ const Voting = () => {
                       _hover={{
                         bg: 'gray.100',
                       }}
+                      onClick={() => setMyChoice(index)}
                     >
                       {choice}
                     </Button>
@@ -138,7 +160,7 @@ const Voting = () => {
                   <Button
                     bg={'blue.100'}
                     borderWidth={'1px'}
-                    disabled={vp === 0 || proposalLoading || votesLoading}
+                    disabled={proposalLoading || votesLoading}
                     rounded={'full'}
                     _focus={{
                       borderColor: 'blue.600',
@@ -146,6 +168,7 @@ const Voting = () => {
                     _hover={{
                       bg: 'blue.100',
                     }}
+                    onClick={handleVote}
                   >
                     Vote
                   </Button>
@@ -165,12 +188,9 @@ const Voting = () => {
                         <Text textAlign={'center'}>
                           {proposal.choices[vote.choice - 1]}
                         </Text>
-                        <Text textAlign={'right'}>{`${parseFloat(
+                        <Text textAlign={'right'}>{`${getFormatedValue(
                           vote.balance
-                        ).toLocaleString(undefined, {
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 3,
-                        })} ${space.symbol}`}</Text>
+                        )} ${space.symbol}`}</Text>
                       </SimpleGrid>
                     ))}
                 </Stack>
@@ -245,23 +265,17 @@ const Voting = () => {
               <Card title={'Current Results'}>
                 <Stack spacing={2} direction={'column'}>
                   {proposal.choices.map((choice, index) => {
-                    const score =
-                      proposal.scores.length > index
-                        ? proposal.scores[index]
-                        : 0;
+                    const balance = getPercentage(
+                      results.resultsByVoteBalance[index],
+                      results.sumOfResultsBalance
+                    );
                     return (
                       <>
                         <Text>{choice}</Text>
-                        <Progress
-                          min={0}
-                          max={100}
-                          value={
-                            proposal.scores_total > 0
-                              ? (score * 100) / proposal.scores_total
-                              : 0
-                          }
-                        ></Progress>
-                        <Text>{score} votes</Text>
+                        <Progress min={0} max={100} value={balance}></Progress>
+                        <Text>{`${getFormatedValue(
+                          results.resultsByVoteBalance[index]
+                        )} ${space.symbol}`}</Text>
                         <Spacer />
                       </>
                     );
