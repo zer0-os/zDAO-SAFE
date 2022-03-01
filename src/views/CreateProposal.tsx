@@ -12,7 +12,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import TransferAbi from '@/config/abi/transfer.json';
-import { SPACE_ID } from '@/config/constants/space';
+import { SPACE_ID } from '@/config/constants/snapshot';
 import Card from '@/components/Card';
 import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
 import { DatePicker, TimePicker } from '@/components/DatePicker';

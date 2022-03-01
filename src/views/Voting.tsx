@@ -1,7 +1,7 @@
 import Card from '@/components/Card';
 import TransferAbi from '@/config/abi/transfer.json';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
-import { SPACE_ID } from '@/config/constants/space';
+import { IPFS_GATEWAY, SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useClient from '@/hooks/useClient';
@@ -29,6 +29,7 @@ import {
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
+import Client from '@snapshot-labs/snapshot.js';
 import { format } from 'date-fns';
 import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
@@ -107,6 +108,18 @@ const Voting = () => {
     if (!library) return;
     setIsExecuting(true);
     try {
+      console.log('Fetching IPFS file', proposal.ipfs);
+      const ipfs = await Client.utils.ipfsGet(IPFS_GATEWAY, proposal.ipfs);
+      console.log('ipfs', ipfs);
+      const metadata = JSON.parse(ipfs.data.message.metadata);
+
+      const contract = metadata.contract;
+      const abi = metadata.abi;
+      const sender = metadata.sender;
+      const recipient = metadata.recipient;
+      const token = metadata.token;
+      const amount = metadata.amount;
+
       console.log('Safe Service Url', SAFE_SERVICE_URL);
       console.log('Safe Address', SAFE_ADDRESS);
       const service = new SafeService(SAFE_SERVICE_URL);
@@ -116,16 +129,12 @@ const Voting = () => {
       });
       const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
       const safeSigner = new SafeEthersSigner(safe, service, library);
-      const contract = new ethers.Contract(
-        '0x4FAF1D85cf2f8aad2c53621cBD9752931fA8C7d3',
-        TransferAbi,
-        safeSigner
-      );
-      const proposedTx = await contract.functions.transferToken(
-        '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-        '0xD3b5134fef18b69e1ddB986338F2F80CD043a1AF',
-        '0xD53C3bddf27b32ad204e859EB677f709c80E6840', // zDAOTesting
-        ethers.utils.parseEther('300')
+      const transferContract = new ethers.Contract(contract, abi, safeSigner);
+      const proposedTx = await transferContract.transferToken(
+        sender,
+        recipient,
+        token,
+        amount
       );
       console.log('USER ACTION REQUIRED');
       console.log('Go to the Gnosis Safe Web App to confirm the transaction');
