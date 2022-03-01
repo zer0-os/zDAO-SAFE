@@ -44,7 +44,6 @@ const useClient = () => {
           plugins: JSON.stringify(payload.plugins),
           metadata: JSON.stringify({}),
         });
-        console.log('library', library, account, clientEIP712);
         return await clientEIP712.proposal(library, account, {
           from: payload.from,
           space: space.id,

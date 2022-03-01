@@ -1,6 +1,10 @@
 import Card from '@/components/Card';
+import { SPACE_ID } from '@/config/constants/space';
+import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useExtendedProposal from '@/hooks/useExtendedProposal';
+import useExtendedResults from '@/hooks/useExtendedResults';
+import useExtendedSpace from '@/hooks/useExtendedSpace';
 import useExtendedVotes from '@/hooks/useExtendedVotes';
 import { shortenAddress } from '@/utils/address';
 import { shortenProposalId } from '@/utils/proposal';
@@ -19,25 +23,56 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { format } from 'date-fns';
-import { useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import LinkExternal from './components/LinkExternal';
+
+const MAX_VISIBLE_COUNT = 10;
 
 const Voting = () => {
   const { account, chainId } = useActiveWeb3React();
-  const navigate = useNavigate();
   const textColor = useColorModeValue('gray.700', 'gray.400');
-  const { id } = useParams();
-  const { loadProposal, proposal, proposalLoading } = useExtendedProposal();
-  const { loadVotes, votes, votesLoading } = useExtendedVotes();
+  const { id: proposalId } = useParams();
+  const { space } = useExtendedSpace(SPACE_ID);
+  const { proposal, proposalLoading } = useExtendedProposal(proposalId);
+  const { votes, votesLoading } = useExtendedVotes(proposalId);
+  const [vp, setVp] = useState(0);
 
-  useEffect(() => {
-    if (id) {
-      loadProposal(id);
-      loadVotes(id);
+  const {
+    results,
+    votes: votesEx,
+    resultsLoading,
+  } = useExtendedResults(space, proposal, votes);
+
+  const sortedVotes = useMemo(() => {
+    if (!votesEx) {
+      return undefined;
     }
-  }, [id]);
+    return votesEx.slice(0, MAX_VISIBLE_COUNT);
+  }, [votesEx]);
+
+  // useEffect(() => {
+  //   if (account) {
+  //     const interval = setInterval(async () => {
+  //       try {
+  //         const response = await getPower(SPACE_ID, account, proposal);
+  //         setVp(response.totalScore);
+  //       } catch (e) {
+  //         console.error(e);
+  //       }
+  //     }, 3000);
+  //     return () => clearInterval(interval);
+  //   }
+  //   return () => null;
+  // }, [account]);
+
+  // useEffect(() => {
+  //   if (proposalLoading && votesLoading) {
+  //     if (proposal.value.scores_status === 'invalid') {
+  //     }
+  //   }
+  // }, [proposalLoading, votesLoading]);
 
   return (
     <Container as={Stack} maxW={'7xl'}>
@@ -49,7 +84,7 @@ const Voting = () => {
           </Stack>
         </Link>
 
-        {proposal && votes ? (
+        {proposal && sortedVotes ? (
           <Stack
             spacing={12}
             flex={2}
@@ -103,6 +138,7 @@ const Voting = () => {
                   <Button
                     bg={'blue.100'}
                     borderWidth={'1px'}
+                    disabled={vp === 0 || proposalLoading || votesLoading}
                     rounded={'full'}
                     _focus={{
                       borderColor: 'blue.600',
@@ -119,17 +155,22 @@ const Voting = () => {
               {/* all the votes */}
               <Card title={`Votes(${votes.length})`}>
                 <Stack spacing={4} direction={'column'}>
-                  {votes &&
-                    votes.map((index, vote) => (
-                      <SimpleGrid columns={3} key={index} spacing={10}>
+                  {sortedVotes &&
+                    sortedVotes.map((vote, index) => (
+                      <SimpleGrid columns={3} key={`i-${index}`} spacing={10}>
                         <LinkExternal
                           type={'vote'}
                           value={shortenAddress(vote.voter)}
                         />
                         <Text textAlign={'center'}>
-                          {proposal.choices[vote.choice]}
+                          {proposal.choices[vote.choice - 1]}
                         </Text>
-                        <Text textAlign={'right'}>{vote.vp}</Text>
+                        <Text textAlign={'right'}>{`${parseFloat(
+                          vote.balance
+                        ).toLocaleString(undefined, {
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 3,
+                        })} ${space.symbol}`}</Text>
                       </SimpleGrid>
                     ))}
                 </Stack>
