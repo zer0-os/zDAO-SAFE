@@ -1,4 +1,6 @@
 import Card from '@/components/Card';
+import TransferAbi from '@/config/abi/transfer.json';
+import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/space';
 import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
@@ -24,11 +26,16 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import Safe from '@gnosis.pm/safe-core-sdk';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import { format } from 'date-fns';
+import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal from './components/LinkExternal';
+import BigNumber from 'bignumber.js';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -40,7 +47,7 @@ const getFormatedValue = (value) =>
 const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
 
 const Voting = () => {
-  const { account, chainId } = useActiveWeb3React();
+  const { account, library } = useActiveWeb3React();
   const { sendEIP712 } = useClient();
   const textColor = useColorModeValue('gray.700', 'gray.400');
   const { id: proposalId } = useParams();
@@ -53,6 +60,7 @@ const Voting = () => {
     resultsLoading,
   } = useExtendedResults(space, proposal, votes);
   const [myChoice, setMyChoice] = useState(-1);
+  const [isExecuting, setIsExecuting] = useState(false);
   const toast = useToast();
 
   const sortedVotes = useMemo(() => {
@@ -91,6 +99,40 @@ const Voting = () => {
       }
     } catch (e) {
       console.error(e);
+    }
+  };
+
+  const handleExecuteProposal = async () => {
+    console.log('handleExecuteProposal');
+    if (!library) return;
+    setIsExecuting(true);
+    try {
+      console.log('Safe Service Url', SAFE_SERVICE_URL);
+      console.log('Safe Address', SAFE_ADDRESS);
+      const service = new SafeService(SAFE_SERVICE_URL);
+      const ethAdapter = new EthersAdapter({
+        ethers,
+        signer: library?.getSigner(),
+      });
+      const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
+      const safeSigner = new SafeEthersSigner(safe, service, library);
+      const contract = new ethers.Contract(
+        '0x4FAF1D85cf2f8aad2c53621cBD9752931fA8C7d3',
+        TransferAbi,
+        safeSigner
+      );
+      const proposedTx = await contract.functions.transferToken(
+        '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
+        '0xD3b5134fef18b69e1ddB986338F2F80CD043a1AF',
+        '0xD53C3bddf27b32ad204e859EB677f709c80E6840', // zDAOTesting
+        ethers.utils.parseEther('300')
+      );
+      console.log('USER ACTION REQUIRED');
+      console.log('Go to the Gnosis Safe Web App to confirm the transaction');
+      console.log(await proposedTx.wait());
+      console.log('Transaction has been executed');
+    } finally {
+      setIsExecuting(false);
     }
   };
 
@@ -160,7 +202,11 @@ const Voting = () => {
                   <Button
                     bg={'blue.100'}
                     borderWidth={'1px'}
-                    disabled={proposalLoading || votesLoading}
+                    disabled={
+                      proposalLoading ||
+                      votesLoading ||
+                      proposal.state === 'closed'
+                    }
                     rounded={'full'}
                     _focus={{
                       borderColor: 'blue.600',
@@ -282,6 +328,27 @@ const Voting = () => {
                   })}
                 </Stack>
               </Card>
+
+              <Button
+                bg={'blue.100'}
+                borderWidth={'1px'}
+                disabled={
+                  proposalLoading ||
+                  votesLoading ||
+                  proposal.state !== 'closed' ||
+                  isExecuting
+                }
+                rounded={'full'}
+                _focus={{
+                  borderColor: 'blue.600',
+                }}
+                _hover={{
+                  bg: 'blue.100',
+                }}
+                onClick={handleExecuteProposal}
+              >
+                Execute Proposal
+              </Button>
             </Stack>
           </Stack>
         ) : (
