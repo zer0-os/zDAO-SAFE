@@ -1,4 +1,5 @@
 import Card from '@/components/Card';
+import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/space';
 import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
@@ -24,7 +25,11 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import Safe from '@gnosis.pm/safe-core-sdk';
+import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
+import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
 import { format } from 'date-fns';
+import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
@@ -40,7 +45,7 @@ const getFormatedValue = (value) =>
 const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
 
 const Voting = () => {
-  const { account, chainId } = useActiveWeb3React();
+  const { account, library } = useActiveWeb3React();
   const { sendEIP712 } = useClient();
   const textColor = useColorModeValue('gray.700', 'gray.400');
   const { id: proposalId } = useParams();
@@ -92,6 +97,32 @@ const Voting = () => {
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleExecuteProposal = async () => {
+    console.log('handleExecuteProposal');
+    if (!library) return;
+    console.log('Safe Service Url', SAFE_SERVICE_URL);
+    console.log('Safe Address', SAFE_ADDRESS);
+    const service = new SafeService(SAFE_SERVICE_URL);
+    const ethAdapter = new EthersAdapter({
+      ethers,
+      signer: library?.getSigner(),
+    });
+    const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
+    const safeSigner = new SafeEthersSigner(safe, service, library);
+    const contract = new ethers.Contract(
+      '0xe50c6391a6cb10f9B9Ef599aa1C68C82dD88Bd91',
+      ['function pin(string newMessage)'],
+      safeSigner
+    );
+    const proposedTx = await contract.functions.pin(
+      `Local time: ${new Date().toLocaleString()}`
+    );
+    console.log('USER ACTION REQUIRED');
+    console.log('Go to the Gnosis Safe Web App to confirm the transaction');
+    console.log(await proposedTx.wait());
+    console.log('Transaction has been executed');
   };
 
   return (
@@ -160,7 +191,11 @@ const Voting = () => {
                   <Button
                     bg={'blue.100'}
                     borderWidth={'1px'}
-                    disabled={proposalLoading || votesLoading}
+                    disabled={
+                      proposalLoading ||
+                      votesLoading ||
+                      proposal.state === 'closed'
+                    }
                     rounded={'full'}
                     _focus={{
                       borderColor: 'blue.600',
@@ -282,6 +317,24 @@ const Voting = () => {
                   })}
                 </Stack>
               </Card>
+
+              <Button
+                bg={'blue.100'}
+                borderWidth={'1px'}
+                disabled={
+                  proposalLoading || votesLoading || proposal.state !== 'closed'
+                }
+                rounded={'full'}
+                _focus={{
+                  borderColor: 'blue.600',
+                }}
+                _hover={{
+                  bg: 'blue.100',
+                }}
+                onClick={handleExecuteProposal}
+              >
+                Execute Proposal
+              </Button>
             </Stack>
           </Stack>
         ) : (
