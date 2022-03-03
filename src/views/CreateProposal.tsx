@@ -27,6 +27,7 @@ import { ChangeEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
 import LinkExternal from './components/LinkExternal';
+import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
 
 const combineDateAndTime = (date: Date, time: Date) => {
   if (!isValid(date) || !isValid(time)) {
@@ -49,7 +50,6 @@ interface ProposalFormat {
   endDate: Date;
   endTime: Date;
   snapshot: number;
-  contract: string;
   abi: string;
   sender: string;
   recipient: string;
@@ -66,9 +66,8 @@ const CreateProposal = () => {
     endDate: new Date(),
     endTime: new Date(),
     snapshot: 0,
-    contract: '',
     abi: JSON.stringify(TransferAbi),
-    sender: '',
+    sender: SAFE_ADDRESS,
     recipient: '',
     token: '',
     amount: new BigNumber(0),
@@ -81,7 +80,6 @@ const CreateProposal = () => {
     endDate,
     endTime,
     snapshot,
-    contract,
     abi,
     sender,
     recipient,
@@ -145,7 +143,6 @@ const CreateProposal = () => {
       snapshot: blockNumber,
       plugins: {},
       metadata: {
-        contract,
         abi,
         sender,
         recipient,
@@ -209,11 +206,11 @@ const CreateProposal = () => {
                 <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}
-                  name={'contract'}
+                  name={'token'}
                   onChange={handleInputChange}
-                  placeholder={'Target Contract Address'}
+                  placeholder={'ERC20 Token Address'}
                   size={'lg'}
-                  value={contract}
+                  value={token}
                   _hover={{
                     borderRadius: 'gray.300',
                   }}
@@ -232,7 +229,7 @@ const CreateProposal = () => {
                     borderRadius: 'gray.300',
                   }}
                 ></Textarea>
-                <Input
+                {/* <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}
                   name={'sender'}
@@ -240,11 +237,12 @@ const CreateProposal = () => {
                   placeholder={'Sender Address'}
                   size={'lg'}
                   value={sender}
+                  isDisabled={true}
                   _hover={{
                     borderRadius: 'gray.300',
                   }}
                   required
-                ></Input>
+                ></Input> */}
                 <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}
@@ -253,19 +251,6 @@ const CreateProposal = () => {
                   placeholder={'Recipient Address'}
                   size={'lg'}
                   value={recipient}
-                  _hover={{
-                    borderRadius: 'gray.300',
-                  }}
-                  required
-                ></Input>
-                <Input
-                  borderColor={'gray.300'}
-                  fontSize={'md'}
-                  name={'token'}
-                  onChange={handleInputChange}
-                  placeholder={'ERC20 Token Address'}
-                  size={'lg'}
-                  value={token}
                   _hover={{
                     borderRadius: 'gray.300',
                   }}
