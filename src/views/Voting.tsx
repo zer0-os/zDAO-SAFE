@@ -113,12 +113,17 @@ const Voting = () => {
       console.log('ipfs', ipfs);
       const metadata = JSON.parse(ipfs.data.message.metadata);
 
-      const contract = metadata.contract;
       const abi = metadata.abi;
       const sender = metadata.sender;
       const recipient = metadata.recipient;
       const token = metadata.token;
       const amount = metadata.amount;
+
+      console.log('abi', abi);
+      console.log('sender', sender);
+      console.log('recipient', recipient);
+      console.log('token', token);
+      console.log('amount', amount);
 
       console.log('Safe Service Url', SAFE_SERVICE_URL);
       console.log('Safe Address', SAFE_ADDRESS);
@@ -129,13 +134,11 @@ const Voting = () => {
       });
       const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
       const safeSigner = new SafeEthersSigner(safe, service, library);
-      const transferContract = new ethers.Contract(contract, abi, safeSigner);
-      const proposedTx = await transferContract.transferToken(
-        sender,
-        recipient,
-        token,
-        amount
-      );
+      const transferContract = new ethers.Contract(token, abi, safeSigner);
+      console.log('transferContract', transferContract);
+      const proposedTx = await transferContract
+        .connect(safeSigner)
+        .transfer(recipient, amount);
       console.log('USER ACTION REQUIRED');
       console.log('Go to the Gnosis Safe Web App to confirm the transaction');
       console.log(await proposedTx.wait());
@@ -214,7 +217,7 @@ const Voting = () => {
                     disabled={
                       proposalLoading ||
                       votesLoading ||
-                      proposal.state === 'closed'
+                      proposal.state !== 'active'
                     }
                     rounded={'full'}
                     _focus={{
