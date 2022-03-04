@@ -2,17 +2,11 @@
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import {
   Badge,
-  Button,
   Container,
   Heading,
   Link,
-  Progress,
-  SimpleGrid,
-  Spacer,
   Stack,
   Text,
-  useColorModeValue,
-  useToast,
   VStack,
   Flex,
 } from '@chakra-ui/react';
