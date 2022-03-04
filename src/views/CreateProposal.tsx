@@ -86,7 +86,7 @@ const CreateProposal = () => {
     token,
     amount,
   } = state;
-  const { account, chainId } = useActiveWeb3React();
+  const { account } = useActiveWeb3React();
   const navigate = useNavigate();
   const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();

@@ -2,7 +2,7 @@ import { AbstractConnector } from '@web3-react/abstract-connector';
 import { injected } from './connectors';
 
 import MetaMask from '@/assets/icons/metamask.svg';
-import TrustWallet from '@/assets/icons/trustwallet.svg';
+// import TrustWallet from '@/assets/icons/trustwallet.svg';
 // import WalletConnect from '@/assets/icons/walletconnect.svg';
 
 export enum ConnectorNames {

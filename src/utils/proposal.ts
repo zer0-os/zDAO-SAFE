@@ -1,5 +1,5 @@
 export const shortenProposalId = (proposalId: string, chars = 4): string => {
-  const parsed = proposalId.startsWith('0x');
+  // const parsed = proposalId.startsWith('0x');
   // if (!parsed) {
   //   throw Error(`Invalid 'proposalId' parameter '${proposalId}'.`);
   // }

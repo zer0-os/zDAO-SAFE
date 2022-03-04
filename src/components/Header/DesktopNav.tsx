@@ -23,7 +23,7 @@ export const DesktopNav = (props: BoxProps) => {
       {!account ? (
         <ConnectWalletButton />
       ) : (
-        <Menu>
+        <Menu {...props}>
           <MenuButton as={Button} rightIcon={<ChevronDownIcon />} size={'sm'}>
             <Text>{shortenAddress(account)}</Text>
           </MenuButton>

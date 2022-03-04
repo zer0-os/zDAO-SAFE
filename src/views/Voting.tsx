@@ -1,5 +1,4 @@
 import Card from '@/components/Card';
-import TransferAbi from '@/config/abi/transfer.json';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { IPFS_GATEWAY, SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
@@ -36,7 +35,6 @@ import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal from './components/LinkExternal';
-import BigNumber from 'bignumber.js';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -55,11 +53,11 @@ const Voting = () => {
   const { space } = useExtendedSpace(SPACE_ID);
   const { proposal, proposalLoading } = useExtendedProposal(proposalId);
   const { votes, votesLoading } = useExtendedVotes(proposalId);
-  const {
-    results,
-    votes: votesEx,
-    resultsLoading,
-  } = useExtendedResults(space, proposal, votes);
+  const { results, votes: votesEx } = useExtendedResults(
+    space,
+    proposal,
+    votes
+  );
   const [myChoice, setMyChoice] = useState(-1);
   const [isExecuting, setIsExecuting] = useState(false);
   const toast = useToast();

@@ -9,7 +9,7 @@ const LinkExternal = ({
   value: string | number;
 }) => {
   return (
-    <Link href={'#'} isExternal>
+    <Link href={type === '' ? '#' : '#'} isExternal>
       <Stack direction={'row'} spacing={2} alignItems={'center'}>
         <Text>{value}</Text>
         <ExternalLinkIcon mx={'2px'} />
