@@ -2,6 +2,7 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   BoxProps,
   Button,
+  Link,
   Menu,
   MenuButton,
   MenuItem,
@@ -20,6 +21,21 @@ export const DesktopNav = (props: BoxProps) => {
 
   return (
     <>
+      <Link href={'/create'} style={{ textDecoration: 'none' }}>
+        <Text
+          bg={'blue.400'}
+          color={'white'}
+          fontWeight={'bold'}
+          px={5}
+          py={1}
+          rounded={'full'}
+          _hover={{
+            bg: 'blue.100',
+          }}
+        >
+          Create
+        </Text>
+      </Link>
       {!account ? (
         <ConnectWalletButton />
       ) : (
