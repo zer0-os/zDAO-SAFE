@@ -4,7 +4,7 @@ import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
 import { Header } from '@/components/Header';
 import BigNumber from 'bignumber.js';
 import { lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useEagerConnect from './hooks/useEagerConnect';
 
@@ -50,6 +50,7 @@ function App() {
               <Route path="/" element={<Landing />}></Route>
               <Route path="/create" element={<CreateProposal />}></Route>
               <Route path="/voting/:id" element={<Voting />}></Route>
+              <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </SuspenseWithChunkError>
         </BrowserRouter>

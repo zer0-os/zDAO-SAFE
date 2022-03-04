@@ -44,6 +44,31 @@ export const SPACES_QUERY = gql`
   }
 `;
 
+export const PROPOSALS_QUERY = gql`
+  query Proposals($spaceId: String!) {
+    proposals(
+      first: 20
+      skip: 0
+      where: { space_in: [$spaceId] }
+      orderBy: "created"
+      orderDirection: desc
+    ) {
+      id
+      title
+      body
+      choices
+      start
+      end
+      snapshot
+      state
+      author
+      space {
+        name
+      }
+    }
+  }
+`;
+
 export const PROPOSAL_QUERY = gql`
   query Proposal($id: String!) {
     proposal(id: $id) {
