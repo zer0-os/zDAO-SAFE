@@ -1,3 +1,4 @@
+import { PROPOSALS_QUERY } from './../config/constants/queries';
 import {
   PROPOSAL_QUERY,
   SPACES_QUERY,
@@ -19,6 +20,27 @@ export const getSpaces = async (spaceIds: string[]) => {
       'spaces'
     );
     console.timeEnd('getSpaces');
+    return response;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+};
+
+export const getProposals = async () => {
+  const spaceId = process.env.REACT_APP_SPACE_ID;
+  try {
+    console.time('getProposal');
+    const response = await apolloQuery(
+      {
+        query: PROPOSALS_QUERY,
+        variables: {
+          spaceId,
+        },
+      },
+      'proposals'
+    );
+    console.timeEnd('getProposal');
     return response;
   } catch (e) {
     console.error(e);
