@@ -183,25 +183,29 @@ const Voting = () => {
                 {proposal.body}
               </Text>
               {/* proposal execution meta data */}
-              {metaData && (
-                <Text
-                  as={'div'}
-                  borderColor={'gray.300'}
-                  borderWidth={'1px'}
-                  color={textColor}
-                  minHeight={12}
-                  p={4}
-                  rounded={'md'}
-                  textAlign={'left'}
-                >
-                  <div>
-                    {`Let's send 
+              <Text
+                as={'div'}
+                borderColor={'gray.300'}
+                borderWidth={'1px'}
+                color={textColor}
+                minHeight={12}
+                p={4}
+                rounded={'md'}
+                textAlign={'left'}
+              >
+                {ipfsLoading || !metaData ? (
+                  <Text>Loading Meta Data ...</Text>
+                ) : (
+                  <>
+                    <div>
+                      {`Let's send 
                   ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
                   token to this address: ${metaData.recipient}`}
-                  </div>
-                  <div>{`ERC20 token address: ${metaData.token}`}</div>
-                </Text>
-              )}
+                    </div>
+                    <div>{`ERC20 token address: ${metaData.token}`}</div>
+                  </>
+                )}
+              </Text>
 
               {/* cast my vote */}
               <Card title={'Cast your vote'}>
