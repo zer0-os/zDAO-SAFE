@@ -57,7 +57,7 @@ export const Header = () => {
             flex={{ base: 1, md: 'auto' }}
             justify={'flex-end'}
           >
-            <DesktopNav />
+            <DesktopNav display={{ base: 'none', md: 'flex' }} />
             <IconButton
               size={'sm'}
               variant={'ghost'}

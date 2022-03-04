@@ -147,7 +147,7 @@ const CreateProposal = () => {
         sender,
         recipient,
         token,
-        amount: amount.toString(),
+        amount: amount.multipliedBy(new BigNumber(10).pow(18)).toString(),
       },
     };
     console.log(payload);
@@ -256,19 +256,28 @@ const CreateProposal = () => {
                   }}
                   required
                 ></Input>
-                <Input
-                  borderColor={'gray.300'}
-                  fontSize={'md'}
-                  name={'amount'}
-                  onChange={handleAmountChange}
-                  placeholder={'Trasnfer Token Amount'}
-                  size={'lg'}
-                  value={amount.toString()}
-                  _hover={{
-                    borderRadius: 'gray.300',
-                  }}
-                  required
-                ></Input>
+                <SimpleGrid
+                  columns={2}
+                  spacing={4}
+                  templateColumns={{ base: '1fr 100px' }}
+                  justifyContent={'center'}
+                  alignItems={'center'}
+                >
+                  <Input
+                    borderColor={'gray.300'}
+                    fontSize={'md'}
+                    name={'amount'}
+                    onChange={handleAmountChange}
+                    placeholder={'Trasnfer Token Amount'}
+                    size={'lg'}
+                    value={amount.toString()}
+                    _hover={{
+                      borderRadius: 'gray.300',
+                    }}
+                    required
+                  ></Input>
+                  <Text textAlign={'center'}>Tokens</Text>
+                </SimpleGrid>
               </Stack>
             </Card>
 
