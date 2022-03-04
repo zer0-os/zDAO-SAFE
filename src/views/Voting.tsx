@@ -1,6 +1,6 @@
 import Card from '@/components/Card';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
-import { IPFS_GATEWAY, SPACE_ID } from '@/config/constants/snapshot';
+import { SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useClient from '@/hooks/useClient';
@@ -28,13 +28,14 @@ import {
 import Safe from '@gnosis.pm/safe-core-sdk';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
 import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
-import Client from '@snapshot-labs/snapshot.js';
 import { format } from 'date-fns';
 import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal from './components/LinkExternal';
+import useExtendedIpfs from '@/hooks/useExtendedIpfs';
+import { BIG_EITEEN } from '@/config/constants/number';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -58,6 +59,7 @@ const Voting = () => {
     proposal,
     votes
   );
+  const { metaData, ipfsLoading } = useExtendedIpfs(proposal?.ipfs);
   const [myChoice, setMyChoice] = useState(-1);
   const [isExecuting, setIsExecuting] = useState(false);
   const toast = useToast();
@@ -103,25 +105,14 @@ const Voting = () => {
 
   const handleExecuteProposal = async () => {
     console.log('handleExecuteProposal');
-    if (!library) return;
+    if (!library || ipfsLoading || !metaData) return;
     setIsExecuting(true);
     try {
-      console.log('Fetching IPFS file', proposal.ipfs);
-      const ipfs = await Client.utils.ipfsGet(IPFS_GATEWAY, proposal.ipfs);
-      console.log('ipfs', ipfs);
-      const metadata = JSON.parse(ipfs.data.message.metadata);
-
-      const abi = metadata.abi;
-      const sender = metadata.sender;
-      const recipient = metadata.recipient;
-      const token = metadata.token;
-      const amount = metadata.amount;
-
-      console.log('abi', abi);
-      console.log('sender', sender);
-      console.log('recipient', recipient);
-      console.log('token', token);
-      console.log('amount', amount);
+      console.log('abi', metaData.abi);
+      console.log('sender', metaData.sender);
+      console.log('recipient', metaData.recipient);
+      console.log('token', metaData.token);
+      console.log('amount', metaData.amount.toString());
 
       console.log('Safe Service Url', SAFE_SERVICE_URL);
       console.log('Safe Address', SAFE_ADDRESS);
@@ -132,11 +123,15 @@ const Voting = () => {
       });
       const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
       const safeSigner = new SafeEthersSigner(safe, service, library);
-      const transferContract = new ethers.Contract(token, abi, safeSigner);
+      const transferContract = new ethers.Contract(
+        metaData.token,
+        metaData.abi,
+        safeSigner
+      );
       console.log('transferContract', transferContract);
       const proposedTx = await transferContract
         .connect(safeSigner)
-        .transfer(recipient, amount);
+        .transfer(metaData.recipient, metaData.amount.toString());
       console.log('USER ACTION REQUIRED');
       console.log('Go to the Gnosis Safe Web App to confirm the transaction');
       console.log(await proposedTx.wait());
@@ -187,6 +182,26 @@ const Voting = () => {
               >
                 {proposal.body}
               </Text>
+              {/* proposal execution meta data */}
+              {metaData && (
+                <Text
+                  as={'div'}
+                  borderColor={'gray.300'}
+                  borderWidth={'1px'}
+                  color={textColor}
+                  minHeight={12}
+                  p={4}
+                  rounded={'md'}
+                  textAlign={'left'}
+                >
+                  <div>
+                    {`Let's send 
+                  ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
+                  token to this address: ${metaData.recipient}`}
+                  </div>
+                  <div>{`ERC20 token address: ${metaData.token}`}</div>
+                </Text>
+              )}
 
               {/* cast my vote */}
               <Card title={'Cast your vote'}>

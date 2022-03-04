@@ -28,6 +28,7 @@ import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
 import LinkExternal from './components/LinkExternal';
 import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
+import { BIG_EITEEN } from '@/config/constants/number';
 
 const combineDateAndTime = (date: Date, time: Date) => {
   if (!isValid(date) || !isValid(time)) {
@@ -147,7 +148,7 @@ const CreateProposal = () => {
         sender,
         recipient,
         token,
-        amount: amount.multipliedBy(new BigNumber(10).pow(18)).toString(),
+        amount: amount.multipliedBy(BIG_EITEEN).toString(),
       },
     };
     console.log(payload);
