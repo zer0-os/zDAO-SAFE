@@ -37,7 +37,7 @@ const BodyWrapper = styled.div<{ background: string }>`
 `;
 
 function App() {
-  const color = useColorModeValue('gray.100', '#060514');
+  const color = useColorModeValue('#F7FAFC', '#060514');
   useEagerConnect();
 
   return (

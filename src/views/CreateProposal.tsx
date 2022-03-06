@@ -10,6 +10,7 @@ import {
   Stack,
   Text,
   Textarea,
+  useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
 import TransferAbi from '@/config/abi/transfer.json';
@@ -33,6 +34,8 @@ import {
 } from '@/config/constants/gnosis-safe';
 import { BIG_EITEEN } from '@/config/constants/number';
 import { SupportedChainId } from '@/config/constants/chain';
+import LinkButton from '@/components/Button/LinkButton';
+import PrimaryButton from '@/components/Button/PrimaryButton';
 
 const combineDateAndTime = (date: Date, time: Date) => {
   if (!isValid(date) || !isValid(time)) {
@@ -95,6 +98,7 @@ const CreateProposal = () => {
   const blockNumber = useBlockNumber();
   const { space, spaceLoading } = useExtendedSpace(SPACE_ID);
   const [period, setPeriod] = useState(300);
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   const isValid =
     !!account &&
@@ -190,12 +194,12 @@ const CreateProposal = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Link href={'/'}>
+        <LinkButton href={'/'}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
           </Stack>
-        </Link>
+        </LinkButton>
 
         <Stack
           spacing={12}
@@ -206,7 +210,7 @@ const CreateProposal = () => {
           <VStack spacing={6} flex={1}>
             {/* Proposal title & content */}
             <Input
-              borderColor={'gray.300'}
+              borderColor={borderColor}
               fontSize={'md'}
               name={'title'}
               onChange={handleInputChange}
@@ -219,7 +223,7 @@ const CreateProposal = () => {
               required
             ></Input>
             <Textarea
-              borderColor={'gray.300'}
+              borderColor={borderColor}
               fontSize={'md'}
               name={'body'}
               onChange={handleTextAreaChange}
@@ -234,6 +238,7 @@ const CreateProposal = () => {
             <Card title={'Transfer tokens'}>
               <Stack spacing={2} direction={'column'}>
                 <Select
+                  borderColor={borderColor}
                   onChange={handleSelectToken}
                   onClick={handleSelectToken}
                   placeholder={'[ERC20 Token]'}
@@ -245,7 +250,7 @@ const CreateProposal = () => {
                   ))}
                 </Select>
                 <Input
-                  borderColor={'gray.300'}
+                  borderColor={borderColor}
                   fontSize={'md'}
                   name={'token'}
                   onChange={handleInputChange}
@@ -253,13 +258,13 @@ const CreateProposal = () => {
                   size={'md'}
                   value={token}
                   _hover={{
-                    borderRadius: 'gray.300',
+                    borderRadius: 'gray.900',
                   }}
                   readOnly
                   required
                 ></Input>
                 <Textarea
-                  borderColor={'gray.300'}
+                  borderColor={borderColor}
                   fontSize={'md'}
                   name={'abi'}
                   height={'200px'}
@@ -269,7 +274,7 @@ const CreateProposal = () => {
                   readOnly
                   value={abi}
                   _hover={{
-                    borderRadius: 'gray.300',
+                    borderRadius: 'gray.900',
                   }}
                 ></Textarea>
                 {/* <Input
@@ -287,7 +292,7 @@ const CreateProposal = () => {
                   required
                 ></Input> */}
                 <Input
-                  borderColor={'gray.300'}
+                  borderColor={borderColor}
                   fontSize={'md'}
                   name={'recipient'}
                   onChange={handleInputChange}
@@ -295,7 +300,7 @@ const CreateProposal = () => {
                   size={'md'}
                   value={recipient}
                   _hover={{
-                    borderRadius: 'gray.300',
+                    borderRadius: 'gray.900',
                   }}
                   required
                 ></Input>
@@ -307,7 +312,7 @@ const CreateProposal = () => {
                   alignItems={'center'}
                 >
                   <Input
-                    borderColor={'gray.300'}
+                    borderColor={borderColor}
                     fontSize={'md'}
                     name={'amount'}
                     onChange={handleAmountChange}
@@ -315,7 +320,7 @@ const CreateProposal = () => {
                     size={'md'}
                     value={amount.isNaN() ? '' : amount.toString()}
                     _hover={{
-                      borderRadius: 'gray.300',
+                      borderRadius: 'gray.900',
                     }}
                     required
                   ></Input>
@@ -378,20 +383,13 @@ const CreateProposal = () => {
                 </SimpleGrid>
 
                 {account ? (
-                  <Button
-                    color={'white'}
-                    bg={'blue.400'}
-                    borderWidth={'1px'}
+                  <PrimaryButton
                     disabled={clientLoading || spaceLoading || !isValid}
-                    rounded={'full'}
-                    _hover={{
-                      bg: 'blue.100',
-                    }}
-                    onClick={handleSubmitProposal}
                     leftIcon={clientLoading ? <SpinnerIcon /> : undefined}
+                    onClick={handleSubmitProposal}
                   >
                     Publish
-                  </Button>
+                  </PrimaryButton>
                 ) : (
                   <ConnectWalletButton />
                 )}

@@ -10,6 +10,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { IoMoon, IoSunny } from 'react-icons/io5';
+import LinkButton from '../Button/LinkButton';
 import { DesktopNav } from './DesktopNav';
 
 export const Header = () => {
@@ -39,15 +40,11 @@ export const Header = () => {
             flex={{ base: 1, md: 'auto' }}
             justify={{ base: 'start', md: 'start' }}
           >
-            <Link href={'/'}>
-              <Heading
-                as={'h1'}
-                fontSize={'xl'}
-                display={{ base: 'none', md: 'block' }}
-              >
+            <LinkButton href={'/'}>
+              <Heading as={'h1'} fontSize={'3xl'}>
                 zDAO
               </Heading>
-            </Link>
+            </LinkButton>
           </Flex>
 
           <Stack

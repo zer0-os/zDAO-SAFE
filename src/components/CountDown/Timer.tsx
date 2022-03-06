@@ -1,3 +1,4 @@
+import { Stack } from '@chakra-ui/react';
 import React from 'react';
 import styled from 'styled-components';
 
@@ -18,7 +19,7 @@ interface TimerProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Timer = ({ seconds, minutes, hours, days, ...props }: TimerProps) => {
   return (
-    <StyledWrapper {...props}>
+    <Stack direction={'row'} spacing={2} {...props}>
       {Boolean(days) && (
         <div {...props} className="pr-1">
           {`${days}`.padStart(2, '0')}
@@ -43,7 +44,7 @@ const Timer = ({ seconds, minutes, hours, days, ...props }: TimerProps) => {
           <small>s</small>
         </div>
       }
-    </StyledWrapper>
+    </Stack>
   );
 };
 

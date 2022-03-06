@@ -35,6 +35,9 @@ import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 import useExtendedIpfs from '@/hooks/useExtendedIpfs';
 import { BIG_EITEEN } from '@/config/constants/number';
 import { EventCountDown } from '@/components/CountDown';
+import { getExternalLink } from '@/utils/address';
+import PrimaryButton from '@/components/Button/PrimaryButton';
+import LinkButton from '@/components/Button/LinkButton';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -46,7 +49,7 @@ const getFormatedValue = (value) =>
 const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
 
 const Voting = () => {
-  const { account, library } = useActiveWeb3React();
+  const { account, chainId, library } = useActiveWeb3React();
   const { sendEIP712 } = useClient();
   const textColor = useColorModeValue('gray.700', 'gray.400');
   const { id: proposalId } = useParams();
@@ -93,15 +96,17 @@ const Voting = () => {
           toast({
             title: 'You can cast your vote',
             position: 'top-right',
+            duration: 3000,
             isClosable: true,
           });
           window.location.reload();
         }
       } else {
         toast({
-          title: 'You can not cast your vote',
+          title: 'Please select a choice to cast your vote',
           position: 'top-right',
           status: 'error',
+          duration: 3000,
           isClosable: true,
         });
       }
@@ -119,6 +124,7 @@ const Voting = () => {
         title: 'Proposal voting period has not ended yet',
         position: 'top-right',
         status: 'error',
+        duration: 3000,
         isClosable: true,
       });
       return;
@@ -146,6 +152,7 @@ const Voting = () => {
           title: 'Only Gnosis Safe Owners can execute a proposal',
           position: 'top-right',
           status: 'error',
+          duration: 3000,
           isClosable: true,
         });
         return;
@@ -173,12 +180,12 @@ const Voting = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Link href={'/'}>
+        <LinkButton href={'/'}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
           </Stack>
-        </Link>
+        </LinkButton>
 
         {proposal && sortedVotes && metaData ? (
           <Stack
@@ -189,52 +196,39 @@ const Voting = () => {
           >
             <Stack direction={'column'} spacing={6} flex={1}>
               {/* title, body */}
-              <Text
-                borderColor={'gray.300'}
-                borderWidth={'1px'}
-                color={textColor}
-                minHeight={12}
-                p={4}
-                rounded={'md'}
-                textAlign={'left'}
-              >
+              <Heading color={textColor} textAlign={'left'}>
                 {proposal.title}
-              </Text>
-              <Text
-                borderColor={'gray.300'}
-                borderWidth={'1px'}
-                color={textColor}
-                minHeight={24}
-                p={4}
-                rounded={'md'}
-                textAlign={'left'}
-              >
+              </Heading>
+              <Text color={textColor} textAlign={'left'}>
                 {proposal.body}
               </Text>
               {/* proposal execution meta data */}
-              <Text
-                as={'div'}
-                borderColor={'gray.300'}
-                borderWidth={'1px'}
-                color={textColor}
-                minHeight={12}
-                p={4}
-                rounded={'md'}
-                textAlign={'left'}
-              >
-                {ipfsLoading || !metaData ? (
-                  <Text>Loading Meta Data ...</Text>
-                ) : (
-                  <>
-                    <div>
-                      {`Let's send 
+              <Stack spacing={2}>
+                <Text>
+                  {`Let's send 
                   ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
-                  token to this address: ${metaData.recipient}`}
-                    </div>
-                    <div>{`ERC20 token address: ${metaData.token}`}</div>
-                  </>
-                )}
-              </Text>
+                  token to this address: `}
+                  <LinkButton
+                    href={getExternalLink(
+                      chainId!,
+                      'address',
+                      metaData.recipient
+                    )}
+                    isExternal
+                  >
+                    {metaData.recipient}
+                  </LinkButton>
+                </Text>
+                <Text>
+                  {`ERC20 token address: `}
+                  <LinkButton
+                    href={getExternalLink(chainId!, 'address', metaData.token)}
+                    isExternal
+                  >
+                    {metaData.token}
+                  </LinkButton>
+                </Text>
+              </Stack>
 
               {/* cast my vote */}
               {proposal.state === 'active' && !alreadyVoted && (
@@ -245,40 +239,44 @@ const Voting = () => {
                         key={choice}
                         bg={'transparent'}
                         borderColor={
-                          index === myChoice ? 'gray.600' : 'default'
+                          index === myChoice
+                            ? useColorModeValue('blue.600', 'rgb(145, 85, 230)')
+                            : useColorModeValue('gray.200', 'gray.600')
                         }
                         borderWidth={'1px'}
+                        color={useColorModeValue(
+                          'gray.700',
+                          'rgba(211, 187, 245, 0.8)'
+                        )}
                         rounded={'full'}
                         _focus={{
-                          borderColor: 'gray.600',
+                          borderColor: useColorModeValue(
+                            'blue.600',
+                            'rgb(145, 85, 230)'
+                          ),
                         }}
                         _hover={{
-                          bg: 'gray.100',
+                          borderColor: useColorModeValue(
+                            'blue.500',
+                            'rgb(145, 85, 230)'
+                          ),
                         }}
                         onClick={() => setMyChoice(index)}
                       >
                         {choice}
                       </Button>
                     ))}
-                    <Button
-                      bg={'blue.100'}
-                      borderWidth={'1px'}
+                    <PrimaryButton
                       disabled={
                         proposalLoading ||
                         votesLoading ||
                         proposal.state !== 'active'
                       }
                       rounded={'full'}
-                      _focus={{
-                        borderColor: 'blue.600',
-                      }}
-                      _hover={{
-                        bg: 'blue.100',
-                      }}
                       onClick={handleVote}
                     >
                       Vote
-                    </Button>
+                    </PrimaryButton>
                   </Stack>
                 </Card>
               )}
@@ -370,11 +368,15 @@ const Voting = () => {
                     </Text>
 
                     {/* count down */}
-                    <Text>Remain Date:</Text>
-                    <EventCountDown
-                      nextEventTime={proposal.end}
-                      postCountDownText={'until executing proposal'}
-                    />
+                    {proposal.state === 'active' && (
+                      <>
+                        <Text>Remain Date:</Text>
+                        <EventCountDown
+                          nextEventTime={proposal.end}
+                          postCountDownText={'until executing proposal'}
+                        />
+                      </>
+                    )}
                   </SimpleGrid>
                 </Stack>
               </Card>
@@ -390,7 +392,12 @@ const Voting = () => {
                     return (
                       <>
                         <Text>{choice}</Text>
-                        <Progress min={0} max={100} value={balance}></Progress>
+                        <Progress
+                          borderRadius={'full'}
+                          min={0}
+                          max={100}
+                          value={balance}
+                        ></Progress>
                         <Text>{`${getFormatedValue(
                           results.resultsByVoteBalance[index]
                         )} ${space.symbol}`}</Text>
@@ -401,26 +408,19 @@ const Voting = () => {
                 </Stack>
               </Card>
 
-              <Button
-                bg={'blue.100'}
-                borderWidth={'1px'}
+              <Spacer pt={2} />
+              <PrimaryButton
                 disabled={
                   proposalLoading ||
                   votesLoading ||
                   proposal.state !== 'closed' ||
                   isExecuting
                 }
-                rounded={'full'}
-                _focus={{
-                  borderColor: 'blue.600',
-                }}
-                _hover={{
-                  bg: 'blue.100',
-                }}
                 onClick={handleExecuteProposal}
               >
                 Execute Proposal
-              </Button>
+              </PrimaryButton>
+              <Spacer pt={2} />
             </Stack>
           </Stack>
         ) : (

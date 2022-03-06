@@ -12,7 +12,7 @@ export const theme = extendTheme({
   ...foundations,
   styles,
   fonts: {
-    heading: 'Montserrat',
-    body: 'Montserrat',
+    heading: 'eurostile, Montserrat',
+    body: 'eurostile, Montserrat',
   },
 });

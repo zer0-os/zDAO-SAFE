@@ -13,6 +13,7 @@ import {
 import Card from '@/components/Card';
 import useProposals from '@/hooks/useProposals';
 import { shortenAddress } from '@/utils/address';
+import LinkButton from '@/components/Button/LinkButton';
 
 export interface Proposal {
   id: string;
@@ -51,7 +52,7 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
   const hrs = Math.floor(diff / 3600);
 
   return (
-    <Link
+    <LinkButton
       href={'/voting/' + id}
       style={{ width: '100%', textDecoration: 'none' }}
     >
@@ -79,7 +80,7 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
           </Flex>
         </VStack>
       </Card>
-    </Link>
+    </LinkButton>
   );
 };
 

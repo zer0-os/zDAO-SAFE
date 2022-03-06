@@ -1,3 +1,4 @@
+import { SCAN_EXPLORER_URLS } from '@/config/constants/infura';
 import { getAddress } from '@ethersproject/address';
 
 /**
@@ -26,4 +27,12 @@ export const shortenAddress = (address: string, chars = 4): string => {
     return address;
   }
   return `${parsed.substring(0, chars + 2)}...${parsed.substring(42 - chars)}`;
+};
+
+export const getExternalLink = (
+  chainId: number,
+  type: string,
+  value: string | number
+): string => {
+  return `${SCAN_EXPLORER_URLS[chainId]}${type}/${value}`;
 };

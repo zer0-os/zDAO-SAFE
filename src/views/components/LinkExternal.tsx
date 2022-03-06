@@ -1,6 +1,6 @@
-import { SCAN_EXPLORER_URLS } from '@/config/constants/infura';
+import LinkButton from '@/components/Button/LinkButton';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
-import { shortenAddress } from '@/utils/address';
+import { getExternalLink, shortenAddress } from '@/utils/address';
 import { shortenProposalId } from '@/utils/proposal';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Link, Stack, Text } from '@chakra-ui/react';
@@ -25,7 +25,7 @@ const LinkExternal = ({
     if (!chainId) return '';
 
     if (type === ExternalLinkType.address || type === ExternalLinkType.block) {
-      return `${SCAN_EXPLORER_URLS[chainId]}${type}/${value}`;
+      return getExternalLink(chainId, type, value);
     }
     return '';
   }, [chainId, type, value]);
@@ -40,12 +40,12 @@ const LinkExternal = ({
   }, [type, value]);
 
   return (
-    <Link href={link} isExternal>
+    <LinkButton href={link} isExternal>
       <Stack direction={'row'} spacing={2} alignItems={'center'}>
         <Text>{display}</Text>
         <ExternalLinkIcon mx={'2px'} />
       </Stack>
-    </Link>
+    </LinkButton>
   );
 };
 
