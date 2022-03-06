@@ -98,6 +98,14 @@ const CreateProposal = () => {
   const blockNumber = useBlockNumber();
   const { space, spaceLoading } = useExtendedSpace(SPACE_ID);
 
+  const isValid =
+    !!account &&
+    title.length > 0 &&
+    body.length > 0 &&
+    token.length > 0 &&
+    recipient.length > 0 &&
+    amount.gt(0);
+
   useEffect(() => {
     if (blockNumber)
       setState((prevState) => ({
@@ -311,28 +319,6 @@ const CreateProposal = () => {
                 </SimpleGrid>
               </Stack>
             </Card>
-
-            {/* Choices */}
-            <Card title={'Choices'}>
-              <Stack spacing={2} direction={'column'}>
-                {Choices.map((choice) => (
-                  <Button
-                    key={choice}
-                    bg={'transparent'}
-                    borderWidth={'1px'}
-                    rounded={'full'}
-                    _focus={{
-                      borderColor: 'gray.600',
-                    }}
-                    _hover={{
-                      bg: 'gray.100',
-                    }}
-                  >
-                    {choice}
-                  </Button>
-                ))}
-              </Stack>
-            </Card>
           </VStack>
 
           {/* Action */}
@@ -396,7 +382,7 @@ const CreateProposal = () => {
                     color={'white'}
                     bg={'blue.400'}
                     borderWidth={'1px'}
-                    disabled={clientLoading || spaceLoading}
+                    disabled={clientLoading || spaceLoading || !isValid}
                     rounded={'full'}
                     _hover={{
                       bg: 'blue.100',
