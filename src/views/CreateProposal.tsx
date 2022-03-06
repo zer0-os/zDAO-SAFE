@@ -16,13 +16,12 @@ import TransferAbi from '@/config/abi/transfer.json';
 import { SPACE_ID } from '@/config/constants/snapshot';
 import Card from '@/components/Card';
 import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
-import { DatePicker, TimePicker } from '@/components/DatePicker';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useClient from '@/hooks/useClient';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
 import { useBlockNumber } from '@/states/application/hooks';
 import BigNumber from 'bignumber.js';
-import { format, isValid, parseISO } from 'date-fns';
+import { addSeconds, format, isValid, parseISO } from 'date-fns';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
@@ -48,13 +47,17 @@ const combineDateAndTime = (date: Date, time: Date) => {
 
 const Choices = ['Yes', 'No'];
 
+const Periods = {
+  300: '5 Minutes',
+  900: '15 Minutes',
+  3600: '1 Hour',
+  86400: '1 Day',
+};
+
 interface ProposalFormat {
   title: string;
   body: string;
-  startDate: Date;
-  startTime: Date;
-  endDate: Date;
-  endTime: Date;
+  startDateTime: Date;
   snapshot: number;
   abi: string;
   sender: string;
@@ -67,10 +70,7 @@ const CreateProposal = () => {
   const [state, setState] = useState<ProposalFormat>({
     title: '',
     body: '',
-    startDate: new Date(),
-    startTime: new Date(),
-    endDate: new Date(),
-    endTime: new Date(),
+    startDateTime: new Date(),
     snapshot: 0,
     abi: JSON.stringify(TransferAbi),
     sender: SAFE_ADDRESS,
@@ -81,10 +81,7 @@ const CreateProposal = () => {
   const {
     title,
     body,
-    startDate,
-    startTime,
-    endDate,
-    endTime,
+    startDateTime,
     snapshot,
     abi,
     sender,
@@ -97,6 +94,7 @@ const CreateProposal = () => {
   const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();
   const { space, spaceLoading } = useExtendedSpace(SPACE_ID);
+  const [period, setPeriod] = useState(300);
 
   const isValid =
     !!account &&
@@ -123,6 +121,14 @@ const CreateProposal = () => {
       [key]: value,
     }));
   };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      updateValue('startDateTime', new Date());
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const tokenList = useMemo(() => {
     if (!chainId) return MAINNET_TOKEN_LIST;
@@ -153,10 +159,6 @@ const CreateProposal = () => {
     updateValue(inputName, new BigNumber(value));
   };
 
-  const handleDateChange = (key: string) => (value: Date) => {
-    updateValue(key, value);
-  };
-
   const handleSubmitProposal = async () => {
     const payload = {
       from: account,
@@ -166,8 +168,8 @@ const CreateProposal = () => {
       title,
       body,
       choices: Choices,
-      start: combineDateAndTime(startDate, startTime),
-      end: combineDateAndTime(endDate, endTime),
+      start: Math.floor(startDateTime.getTime() / 1e3),
+      end: Math.floor(addSeconds(startDateTime, period).getTime() / 1e3),
       snapshot: blockNumber,
       plugins: {},
       metadata: {
@@ -198,7 +200,7 @@ const CreateProposal = () => {
         <Stack
           spacing={12}
           flex={2}
-          direction={{ base: 'column', sm: 'row' }}
+          direction={{ base: 'column', md: 'row' }}
           w={'full'}
         >
           <VStack spacing={6} flex={1}>
@@ -234,6 +236,7 @@ const CreateProposal = () => {
                 <Select
                   onChange={handleSelectToken}
                   onClick={handleSelectToken}
+                  placeholder={'[ERC20 Token]'}
                 >
                   {Object.keys(tokenList).map((key) => (
                     <option key={key} value={tokenList[key]}>
@@ -247,7 +250,7 @@ const CreateProposal = () => {
                   name={'token'}
                   onChange={handleInputChange}
                   placeholder={'ERC20 Token Address'}
-                  size={'lg'}
+                  size={'md'}
                   value={token}
                   _hover={{
                     borderRadius: 'gray.300',
@@ -262,6 +265,7 @@ const CreateProposal = () => {
                   height={'200px'}
                   onChange={handleTextAreaChange}
                   placeholder={'Contract ABI'}
+                  size={'md'}
                   readOnly
                   value={abi}
                   _hover={{
@@ -288,7 +292,7 @@ const CreateProposal = () => {
                   name={'recipient'}
                   onChange={handleInputChange}
                   placeholder={'Recipient Address'}
-                  size={'lg'}
+                  size={'md'}
                   value={recipient}
                   _hover={{
                     borderRadius: 'gray.300',
@@ -308,7 +312,7 @@ const CreateProposal = () => {
                     name={'amount'}
                     onChange={handleAmountChange}
                     placeholder={'Trasnfer Token Amount'}
-                    size={'lg'}
+                    size={'md'}
                     value={amount.isNaN() ? '' : amount.toString()}
                     _hover={{
                       borderRadius: 'gray.300',
@@ -324,41 +328,40 @@ const CreateProposal = () => {
           {/* Action */}
           <VStack width={{ base: 'full', sm: '400px' }}>
             <Card title={'Action'}>
-              <Stack spacing={2} direction={'column'}>
-                <Text>Start Date</Text>
-                <DatePicker
-                  name={'startDate'}
-                  onChange={handleDateChange('startDate')}
-                  selected={startDate}
-                  placeholderText="YYYY/MM/DD"
-                />
-                <Text>Start Time</Text>
-                <TimePicker
-                  name={'startTime'}
-                  onChange={handleDateChange('startTime')}
-                  selected={startTime}
-                  placeholderText="00:00"
-                />
-                <Text>End Date</Text>
-                <DatePicker
-                  name={'endDate'}
-                  onChange={handleDateChange('endDate')}
-                  selected={endDate}
-                  placeholderText="YYYY/MM/DD"
-                />
-                <Text>End Time</Text>
-                <TimePicker
-                  name={'endTime'}
-                  onChange={handleDateChange('endTime')}
-                  selected={endTime}
-                  placeholderText="00:00"
-                />
-                {account && (
-                  <SimpleGrid
-                    columns={2}
-                    spacing={4}
-                    templateColumns={{ base: '1fr 2fr' }}
+              <Stack spacing={4} direction={'column'}>
+                <SimpleGrid
+                  columns={2}
+                  templateColumns={{ base: '1fr 2fr' }}
+                  alignItems={'center'}
+                >
+                  <Text>Period</Text>
+                  <Select
+                    onChange={(evt) => setPeriod(Number(evt.target.value))}
                   >
+                    {Object.keys(Periods).map((key) => (
+                      <option key={key} value={key}>
+                        {Periods[key]}
+                      </option>
+                    ))}
+                  </Select>
+                </SimpleGrid>
+
+                <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
+                  <Text>Start DateTime</Text>
+                  <Text>{format(startDateTime, 'yyyy-MM-dd HH:mm:ss')}</Text>
+                </SimpleGrid>
+                <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
+                  <Text>End DateTime</Text>
+                  <Text>
+                    {format(
+                      addSeconds(startDateTime, period),
+                      'yyyy-MM-dd HH:mm:ss'
+                    )}
+                  </Text>
+                </SimpleGrid>
+
+                {account && (
+                  <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
                     <Text>Creator</Text>
                     <LinkExternal
                       type={ExternalLinkType.address}
@@ -366,17 +369,14 @@ const CreateProposal = () => {
                     />
                   </SimpleGrid>
                 )}
-                <SimpleGrid
-                  columns={2}
-                  spacing={4}
-                  templateColumns={{ base: '1fr 2fr' }}
-                >
+                <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
                   <Text>Snapshot</Text>
                   <LinkExternal
                     type={ExternalLinkType.block}
                     value={snapshot}
                   />
                 </SimpleGrid>
+
                 {account ? (
                   <Button
                     color={'white'}
