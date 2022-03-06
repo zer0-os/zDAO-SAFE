@@ -5,6 +5,7 @@ import {
   Heading,
   Input,
   Link,
+  Select,
   SimpleGrid,
   Stack,
   Text,
@@ -20,15 +21,19 @@ import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useClient from '@/hooks/useClient';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
 import { useBlockNumber } from '@/states/application/hooks';
-import { shortenAddress } from '@/utils/address';
 import BigNumber from 'bignumber.js';
 import { format, isValid, parseISO } from 'date-fns';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
-import LinkExternal from './components/LinkExternal';
-import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
+import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
+import {
+  MAINNET_TOKEN_LIST,
+  TESTNET_TOKEN_LIST,
+  SAFE_ADDRESS,
+} from '@/config/constants/gnosis-safe';
 import { BIG_EITEEN } from '@/config/constants/number';
+import { SupportedChainId } from '@/config/constants/chain';
 
 const combineDateAndTime = (date: Date, time: Date) => {
   if (!isValid(date) || !isValid(time)) {
@@ -87,7 +92,7 @@ const CreateProposal = () => {
     token,
     amount,
   } = state;
-  const { account } = useActiveWeb3React();
+  const { account, chainId } = useActiveWeb3React();
   const navigate = useNavigate();
   const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();
@@ -109,6 +114,20 @@ const CreateProposal = () => {
       ...prevState,
       [key]: value,
     }));
+  };
+
+  const tokenList = useMemo(() => {
+    if (!chainId) return MAINNET_TOKEN_LIST;
+
+    if (chainId === SupportedChainId.ETHEREUM) {
+      return MAINNET_TOKEN_LIST;
+    }
+
+    return TESTNET_TOKEN_LIST;
+  }, [chainId]);
+
+  const handleSelectToken = (evt) => {
+    updateValue('token', evt.target.value);
   };
 
   const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
@@ -204,6 +223,16 @@ const CreateProposal = () => {
 
             <Card title={'Transfer tokens'}>
               <Stack spacing={2} direction={'column'}>
+                <Select
+                  onChange={handleSelectToken}
+                  onClick={handleSelectToken}
+                >
+                  {Object.keys(tokenList).map((key) => (
+                    <option key={key} value={tokenList[key]}>
+                      {key}
+                    </option>
+                  ))}
+                </Select>
                 <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}
@@ -215,6 +244,7 @@ const CreateProposal = () => {
                   _hover={{
                     borderRadius: 'gray.300',
                   }}
+                  readOnly
                   required
                 ></Input>
                 <Textarea
@@ -271,7 +301,7 @@ const CreateProposal = () => {
                     onChange={handleAmountChange}
                     placeholder={'Trasnfer Token Amount'}
                     size={'lg'}
-                    value={amount.toString()}
+                    value={amount.isNaN() ? '' : amount.toString()}
                     _hover={{
                       borderRadius: 'gray.300',
                     }}
@@ -345,8 +375,8 @@ const CreateProposal = () => {
                   >
                     <Text>Creator</Text>
                     <LinkExternal
-                      type={'account'}
-                      value={shortenAddress(account)}
+                      type={ExternalLinkType.address}
+                      value={account}
                     />
                   </SimpleGrid>
                 )}
@@ -356,7 +386,10 @@ const CreateProposal = () => {
                   templateColumns={{ base: '1fr 2fr' }}
                 >
                   <Text>Snapshot</Text>
-                  <LinkExternal type={'block'} value={snapshot} />
+                  <LinkExternal
+                    type={ExternalLinkType.block}
+                    value={snapshot}
+                  />
                 </SimpleGrid>
                 {account ? (
                   <Button

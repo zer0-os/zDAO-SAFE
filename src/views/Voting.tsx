@@ -8,8 +8,6 @@ import useExtendedProposal from '@/hooks/useExtendedProposal';
 import useExtendedResults from '@/hooks/useExtendedResults';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
 import useExtendedVotes from '@/hooks/useExtendedVotes';
-import { shortenAddress } from '@/utils/address';
-import { shortenProposalId } from '@/utils/proposal';
 import {
   Badge,
   Button,
@@ -33,9 +31,10 @@ import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
-import LinkExternal from './components/LinkExternal';
+import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 import useExtendedIpfs from '@/hooks/useExtendedIpfs';
 import { BIG_EITEEN } from '@/config/constants/number';
+import { EventCountDown } from '@/components/CountDown';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -63,6 +62,14 @@ const Voting = () => {
   const [myChoice, setMyChoice] = useState(-1);
   const [isExecuting, setIsExecuting] = useState(false);
   const toast = useToast();
+
+  const alreadyVoted = useMemo(() => {
+    if (!votesEx) return false;
+    if (votesEx.find((vote) => vote.voter === account) !== undefined) {
+      return true;
+    }
+    return false;
+  }, [votesEx]);
 
   const sortedVotes = useMemo(() => {
     if (!votesEx) {
@@ -105,7 +112,18 @@ const Voting = () => {
 
   const handleExecuteProposal = async () => {
     console.log('handleExecuteProposal');
-    if (!library || ipfsLoading || !metaData) return;
+    if (!account || !library || ipfsLoading || !metaData) return;
+
+    if (proposal.state !== 'closed') {
+      toast({
+        title: 'Proposal voting period has not ended yet',
+        position: 'top-right',
+        status: 'error',
+        isClosable: true,
+      });
+      return;
+    }
+
     setIsExecuting(true);
     try {
       console.log('abi', metaData.abi);
@@ -122,6 +140,17 @@ const Voting = () => {
         signer: library?.getSigner(),
       });
       const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
+      const owners = await safe.getOwners();
+      if (!owners.find((owner) => owner === account)) {
+        toast({
+          title: 'Only Gnosis Safe Owners can execute a proposal',
+          position: 'top-right',
+          status: 'error',
+          isClosable: true,
+        });
+        return;
+      }
+
       const safeSigner = new SafeEthersSigner(safe, service, library);
       const transferContract = new ethers.Contract(
         metaData.token,
@@ -151,7 +180,7 @@ const Voting = () => {
           </Stack>
         </Link>
 
-        {proposal && sortedVotes ? (
+        {proposal && sortedVotes && metaData ? (
           <Stack
             spacing={12}
             flex={2}
@@ -208,47 +237,51 @@ const Voting = () => {
               </Text>
 
               {/* cast my vote */}
-              <Card title={'Cast your vote'}>
-                <Stack spacing={2} direction={'column'}>
-                  {proposal.choices.map((choice, index) => (
+              {proposal.state === 'active' && !alreadyVoted && (
+                <Card title={'Cast your vote'}>
+                  <Stack spacing={2} direction={'column'}>
+                    {proposal.choices.map((choice, index) => (
+                      <Button
+                        key={choice}
+                        bg={'transparent'}
+                        borderColor={
+                          index === myChoice ? 'gray.600' : 'default'
+                        }
+                        borderWidth={'1px'}
+                        rounded={'full'}
+                        _focus={{
+                          borderColor: 'gray.600',
+                        }}
+                        _hover={{
+                          bg: 'gray.100',
+                        }}
+                        onClick={() => setMyChoice(index)}
+                      >
+                        {choice}
+                      </Button>
+                    ))}
                     <Button
-                      key={choice}
-                      bg={'transparent'}
-                      borderColor={index === myChoice ? 'gray.600' : 'default'}
+                      bg={'blue.100'}
                       borderWidth={'1px'}
+                      disabled={
+                        proposalLoading ||
+                        votesLoading ||
+                        proposal.state !== 'active'
+                      }
                       rounded={'full'}
                       _focus={{
-                        borderColor: 'gray.600',
+                        borderColor: 'blue.600',
                       }}
                       _hover={{
-                        bg: 'gray.100',
+                        bg: 'blue.100',
                       }}
-                      onClick={() => setMyChoice(index)}
+                      onClick={handleVote}
                     >
-                      {choice}
+                      Vote
                     </Button>
-                  ))}
-                  <Button
-                    bg={'blue.100'}
-                    borderWidth={'1px'}
-                    disabled={
-                      proposalLoading ||
-                      votesLoading ||
-                      proposal.state !== 'active'
-                    }
-                    rounded={'full'}
-                    _focus={{
-                      borderColor: 'blue.600',
-                    }}
-                    _hover={{
-                      bg: 'blue.100',
-                    }}
-                    onClick={handleVote}
-                  >
-                    Vote
-                  </Button>
-                </Stack>
-              </Card>
+                  </Stack>
+                </Card>
+              )}
 
               {/* all the votes */}
               <Card title={`Votes(${votes.length})`}>
@@ -257,8 +290,8 @@ const Voting = () => {
                     sortedVotes.map((vote, index) => (
                       <SimpleGrid columns={3} key={`i-${index}`} spacing={10}>
                         <LinkExternal
-                          type={'vote'}
-                          value={shortenAddress(vote.voter)}
+                          type={ExternalLinkType.address}
+                          value={vote.voter}
                         />
                         <Text textAlign={'center'}>
                           {proposal.choices[vote.choice - 1]}
@@ -284,8 +317,8 @@ const Voting = () => {
                     {/* identifier */}
                     <Text>Identifier</Text>
                     <LinkExternal
-                      type={'proposal'}
-                      value={shortenProposalId(proposal.id)}
+                      type={ExternalLinkType.proposal}
+                      value={proposal.id}
                     />
 
                     {/* creator */}
@@ -293,15 +326,18 @@ const Voting = () => {
                       <>
                         <Text>Creator</Text>
                         <LinkExternal
-                          type={'account'}
-                          value={shortenAddress(proposal.author)}
+                          type={ExternalLinkType.address}
+                          value={proposal.author}
                         />
                       </>
                     )}
 
                     {/* snapshot */}
                     <Text>Snapshot</Text>
-                    <LinkExternal type={'snapshot'} value={proposal.snapshot} />
+                    <LinkExternal
+                      type={ExternalLinkType.block}
+                      value={proposal.snapshot}
+                    />
 
                     {/* status */}
                     <Badge
@@ -332,6 +368,13 @@ const Voting = () => {
                         'yyyy-MM-dd HH:mm'
                       )}
                     </Text>
+
+                    {/* count down */}
+                    <Text>Remain Date:</Text>
+                    <EventCountDown
+                      nextEventTime={proposal.end}
+                      postCountDownText={'until executing proposal'}
+                    />
                   </SimpleGrid>
                 </Stack>
               </Card>
