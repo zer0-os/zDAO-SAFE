@@ -4,15 +4,20 @@ import {
   Badge,
   Container,
   Heading,
-  Link,
   Stack,
   Text,
   VStack,
   Flex,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import Card from '@/components/Card';
 import useProposals from '@/hooks/useProposals';
 import { shortenAddress } from '@/utils/address';
+import LinkButton from '@/components/Button/LinkButton';
+
+const shorten = (str: string, limit: number) => {
+  return str.length > limit ? `${str.slice(0, limit).trim()}...` : str;
+};
 
 export interface Proposal {
   id: string;
@@ -44,6 +49,8 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
     end,
   } = proposal;
   const { account } = useActiveWeb3React();
+  const textColor = useColorModeValue('gray.700', 'gray.400');
+
   const currentTime = new Date().getTime() / 1000;
   let diff = Math.abs(end - currentTime);
   const days = Math.floor(diff / 86400);
@@ -51,27 +58,33 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
   const hrs = Math.floor(diff / 3600);
 
   return (
-    <Link
+    <LinkButton
       href={'/voting/' + id}
       style={{ width: '100%', textDecoration: 'none' }}
     >
-      <Card title={title}>
+      <Card title={title} _hover={{ borderColor: textColor }}>
         <VStack spacing={2}>
           <Flex width={'100%'} basis={1} justify="space-between">
             <Flex>
-              <Text color="gray.500">{name} by </Text>
-              <Text color="white" marginLeft={1}>
+              <Text color={textColor}>{name} by </Text>
+              <Text color={textColor} marginLeft={1}>
                 {author === account ? 'You' : shortenAddress(author)}
               </Text>
             </Flex>
             {state === 'active' ? (
-              <Badge colorScheme={'green'}>{state}</Badge>
+              <Badge borderRadius={'full'} colorScheme={'green'} px={3} py={1}>
+                {state}
+              </Badge>
             ) : (
-              <Badge>{state}</Badge>
+              <Badge borderRadius={'full'} px={3} py={1}>
+                {state}
+              </Badge>
             )}
           </Flex>
-          <Text width={'100%'}>{body}</Text>
-          <Flex width="100%">
+          <Text color={textColor} width={'100%'}>
+            {shorten(body, 120)}
+          </Text>
+          <Flex width="100%" color={textColor}>
             <Text>{end > currentTime ? 'Ends in' : 'Ended'}</Text>
             {days > 0 ? <Text marginLeft={1}>{days} days</Text> : null}
             {hrs > 0 ? <Text marginLeft={1}>{hrs} hours</Text> : null}
@@ -79,7 +92,7 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
           </Flex>
         </VStack>
       </Card>
-    </Link>
+    </LinkButton>
   );
 };
 

@@ -8,14 +8,11 @@ import useExtendedProposal from '@/hooks/useExtendedProposal';
 import useExtendedResults from '@/hooks/useExtendedResults';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
 import useExtendedVotes from '@/hooks/useExtendedVotes';
-import { shortenAddress } from '@/utils/address';
-import { shortenProposalId } from '@/utils/proposal';
 import {
   Badge,
   Button,
   Container,
   Heading,
-  Link,
   Progress,
   SimpleGrid,
   Spacer,
@@ -33,9 +30,13 @@ import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
-import LinkExternal from './components/LinkExternal';
+import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 import useExtendedIpfs from '@/hooks/useExtendedIpfs';
 import { BIG_EITEEN } from '@/config/constants/number';
+import { EventCountDown } from '@/components/CountDown';
+import { getExternalLink } from '@/utils/address';
+import PrimaryButton from '@/components/Button/PrimaryButton';
+import LinkButton from '@/components/Button/LinkButton';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -47,7 +48,7 @@ const getFormatedValue = (value) =>
 const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
 
 const Voting = () => {
-  const { account, library } = useActiveWeb3React();
+  const { account, chainId, library } = useActiveWeb3React();
   const { sendEIP712 } = useClient();
   const textColor = useColorModeValue('gray.700', 'gray.400');
   const { id: proposalId } = useParams();
@@ -63,6 +64,14 @@ const Voting = () => {
   const [myChoice, setMyChoice] = useState(-1);
   const [isExecuting, setIsExecuting] = useState(false);
   const toast = useToast();
+
+  const alreadyVoted = useMemo(() => {
+    if (!votesEx) return false;
+    if (votesEx.find((vote) => vote.voter === account) !== undefined) {
+      return true;
+    }
+    return false;
+  }, [votesEx]);
 
   const sortedVotes = useMemo(() => {
     if (!votesEx) {
@@ -86,15 +95,17 @@ const Voting = () => {
           toast({
             title: 'You can cast your vote',
             position: 'top-right',
+            duration: 3000,
             isClosable: true,
           });
           window.location.reload();
         }
       } else {
         toast({
-          title: 'You can not cast your vote',
+          title: 'Please select a choice to cast your vote',
           position: 'top-right',
           status: 'error',
+          duration: 3000,
           isClosable: true,
         });
       }
@@ -105,7 +116,19 @@ const Voting = () => {
 
   const handleExecuteProposal = async () => {
     console.log('handleExecuteProposal');
-    if (!library || ipfsLoading || !metaData) return;
+    if (!account || !library || ipfsLoading || !metaData) return;
+
+    if (proposal.state !== 'closed') {
+      toast({
+        title: 'Proposal voting period has not ended yet',
+        position: 'top-right',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
     setIsExecuting(true);
     try {
       console.log('abi', metaData.abi);
@@ -122,6 +145,18 @@ const Voting = () => {
         signer: library?.getSigner(),
       });
       const safe = await Safe.create({ ethAdapter, safeAddress: SAFE_ADDRESS });
+      const owners = await safe.getOwners();
+      if (!owners.find((owner) => owner === account)) {
+        toast({
+          title: 'Only Gnosis Safe Owners can execute a proposal',
+          position: 'top-right',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+
       const safeSigner = new SafeEthersSigner(safe, service, library);
       const transferContract = new ethers.Contract(
         metaData.token,
@@ -144,14 +179,14 @@ const Voting = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <Link href={'/'}>
+        <LinkButton href={'/'}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
           </Stack>
-        </Link>
+        </LinkButton>
 
-        {proposal && sortedVotes ? (
+        {proposal && sortedVotes && metaData ? (
           <Stack
             spacing={12}
             flex={2}
@@ -160,95 +195,100 @@ const Voting = () => {
           >
             <Stack direction={'column'} spacing={6} flex={1}>
               {/* title, body */}
-              <Text
-                borderColor={'gray.300'}
-                borderWidth={'1px'}
-                color={textColor}
-                minHeight={12}
-                p={4}
-                rounded={'md'}
-                textAlign={'left'}
-              >
-                {proposal.title}
-              </Text>
-              <Text
-                borderColor={'gray.300'}
-                borderWidth={'1px'}
-                color={textColor}
-                minHeight={24}
-                p={4}
-                rounded={'md'}
-                textAlign={'left'}
-              >
+              <Heading textAlign={'left'}>{proposal.title}</Heading>
+              <Text color={textColor} textAlign={'left'}>
                 {proposal.body}
               </Text>
               {/* proposal execution meta data */}
-              <Text
-                as={'div'}
-                borderColor={'gray.300'}
-                borderWidth={'1px'}
-                color={textColor}
-                minHeight={12}
-                p={4}
-                rounded={'md'}
-                textAlign={'left'}
-              >
-                {ipfsLoading || !metaData ? (
-                  <Text>Loading Meta Data ...</Text>
-                ) : (
-                  <>
-                    <div>
-                      {`Let's send 
+              {metaData.amount.isNaN() ||
+              !metaData.token ||
+              !metaData.recipient ? (
+                <></>
+              ) : (
+                <Stack spacing={2}>
+                  <Text color={textColor}>
+                    {`Let's send 
                   ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
-                  token to this address: ${metaData.recipient}`}
-                    </div>
-                    <div>{`ERC20 token address: ${metaData.token}`}</div>
-                  </>
-                )}
-              </Text>
+                  token to this address: `}
+                    <LinkButton
+                      href={getExternalLink(
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        chainId!,
+                        'address',
+                        metaData.recipient
+                      )}
+                      isExternal
+                    >
+                      {metaData.recipient}
+                    </LinkButton>
+                  </Text>
+                  <Text color={textColor}>
+                    {`ERC20 token address: `}
+                    <LinkButton
+                      href={getExternalLink(
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        chainId!,
+                        'address',
+                        metaData.token
+                      )}
+                      isExternal
+                    >
+                      {metaData.token}
+                    </LinkButton>
+                  </Text>
+                </Stack>
+              )}
 
               {/* cast my vote */}
-              <Card title={'Cast your vote'}>
-                <Stack spacing={2} direction={'column'}>
-                  {proposal.choices.map((choice, index) => (
-                    <Button
-                      key={choice}
-                      bg={'transparent'}
-                      borderColor={index === myChoice ? 'gray.600' : 'default'}
-                      borderWidth={'1px'}
+              {proposal.state === 'active' && !alreadyVoted && (
+                <Card title={'Cast your vote'}>
+                  <Stack spacing={2} direction={'column'}>
+                    {proposal.choices.map((choice, index) => (
+                      <Button
+                        key={choice}
+                        bg={'transparent'}
+                        borderColor={
+                          index === myChoice
+                            ? useColorModeValue('blue.600', 'rgb(145, 85, 230)')
+                            : useColorModeValue('gray.200', 'gray.600')
+                        }
+                        borderWidth={'1px'}
+                        color={useColorModeValue(
+                          'gray.700',
+                          'rgba(211, 187, 245, 0.8)'
+                        )}
+                        rounded={'full'}
+                        _focus={{
+                          borderColor: useColorModeValue(
+                            'blue.600',
+                            'rgb(145, 85, 230)'
+                          ),
+                        }}
+                        _hover={{
+                          borderColor: useColorModeValue(
+                            'blue.500',
+                            'rgb(145, 85, 230)'
+                          ),
+                        }}
+                        onClick={() => setMyChoice(index)}
+                      >
+                        {choice}
+                      </Button>
+                    ))}
+                    <PrimaryButton
+                      disabled={
+                        proposalLoading ||
+                        votesLoading ||
+                        proposal.state !== 'active'
+                      }
                       rounded={'full'}
-                      _focus={{
-                        borderColor: 'gray.600',
-                      }}
-                      _hover={{
-                        bg: 'gray.100',
-                      }}
-                      onClick={() => setMyChoice(index)}
+                      onClick={handleVote}
                     >
-                      {choice}
-                    </Button>
-                  ))}
-                  <Button
-                    bg={'blue.100'}
-                    borderWidth={'1px'}
-                    disabled={
-                      proposalLoading ||
-                      votesLoading ||
-                      proposal.state !== 'active'
-                    }
-                    rounded={'full'}
-                    _focus={{
-                      borderColor: 'blue.600',
-                    }}
-                    _hover={{
-                      bg: 'blue.100',
-                    }}
-                    onClick={handleVote}
-                  >
-                    Vote
-                  </Button>
-                </Stack>
-              </Card>
+                      Vote
+                    </PrimaryButton>
+                  </Stack>
+                </Card>
+              )}
 
               {/* all the votes */}
               <Card title={`Votes(${votes.length})`}>
@@ -257,8 +297,8 @@ const Voting = () => {
                     sortedVotes.map((vote, index) => (
                       <SimpleGrid columns={3} key={`i-${index}`} spacing={10}>
                         <LinkExternal
-                          type={'vote'}
-                          value={shortenAddress(vote.voter)}
+                          type={ExternalLinkType.address}
+                          value={vote.voter}
                         />
                         <Text textAlign={'center'}>
                           {proposal.choices[vote.choice - 1]}
@@ -284,8 +324,8 @@ const Voting = () => {
                     {/* identifier */}
                     <Text>Identifier</Text>
                     <LinkExternal
-                      type={'proposal'}
-                      value={shortenProposalId(proposal.id)}
+                      type={ExternalLinkType.proposal}
+                      value={proposal.id}
                     />
 
                     {/* creator */}
@@ -293,15 +333,18 @@ const Voting = () => {
                       <>
                         <Text>Creator</Text>
                         <LinkExternal
-                          type={'account'}
-                          value={shortenAddress(proposal.author)}
+                          type={ExternalLinkType.address}
+                          value={proposal.author}
                         />
                       </>
                     )}
 
                     {/* snapshot */}
                     <Text>Snapshot</Text>
-                    <LinkExternal type={'snapshot'} value={proposal.snapshot} />
+                    <LinkExternal
+                      type={ExternalLinkType.block}
+                      value={proposal.snapshot}
+                    />
 
                     {/* status */}
                     <Badge
@@ -332,6 +375,17 @@ const Voting = () => {
                         'yyyy-MM-dd HH:mm'
                       )}
                     </Text>
+
+                    {/* count down */}
+                    {proposal.state === 'active' && (
+                      <>
+                        <Text>Remain Date:</Text>
+                        <EventCountDown
+                          nextEventTime={proposal.end}
+                          postCountDownText={'until executing proposal'}
+                        />
+                      </>
+                    )}
                   </SimpleGrid>
                 </Stack>
               </Card>
@@ -347,7 +401,12 @@ const Voting = () => {
                     return (
                       <>
                         <Text>{choice}</Text>
-                        <Progress min={0} max={100} value={balance}></Progress>
+                        <Progress
+                          borderRadius={'full'}
+                          min={0}
+                          max={100}
+                          value={balance}
+                        ></Progress>
                         <Text>{`${getFormatedValue(
                           results.resultsByVoteBalance[index]
                         )} ${space.symbol}`}</Text>
@@ -358,26 +417,19 @@ const Voting = () => {
                 </Stack>
               </Card>
 
-              <Button
-                bg={'blue.100'}
-                borderWidth={'1px'}
+              <Spacer pt={2} />
+              <PrimaryButton
                 disabled={
                   proposalLoading ||
                   votesLoading ||
                   proposal.state !== 'closed' ||
                   isExecuting
                 }
-                rounded={'full'}
-                _focus={{
-                  borderColor: 'blue.600',
-                }}
-                _hover={{
-                  bg: 'blue.100',
-                }}
                 onClick={handleExecuteProposal}
               >
                 Execute Proposal
-              </Button>
+              </PrimaryButton>
+              <Spacer pt={2} />
             </Stack>
           </Stack>
         ) : (

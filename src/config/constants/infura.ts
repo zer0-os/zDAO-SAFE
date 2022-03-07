@@ -12,3 +12,9 @@ export const INFURA_NETWORK_URLS: { [key in SupportedChainId]: string } = {
   [SupportedChainId.ROPSTEN]: `https://ropsten.infura.io/v3/${INFURA_KEY}`,
   [SupportedChainId.RINKEBY]: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
 };
+
+export const SCAN_EXPLORER_URLS: { [key in SupportedChainId]: string } = {
+  [SupportedChainId.ETHEREUM]: 'https://etherscan.io/',
+  [SupportedChainId.ROPSTEN]: 'https://ropsten.etherscan.io/',
+  [SupportedChainId.RINKEBY]: 'https://rinkeby.etherscan.io/',
+};

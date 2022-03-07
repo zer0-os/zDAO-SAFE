@@ -6,7 +6,6 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Button,
   Text,
   Stack,
   useDisclosure,
@@ -18,6 +17,7 @@ import useAuth from '@/hooks/useAuth';
 import { UnsupportedChainIdError } from '@web3-react/core';
 import { useEffect } from 'react';
 import styled from 'styled-components';
+import PrimaryButton from './PrimaryButton';
 
 const IconWrapper = styled.div<{ size?: number | null }>`
   align-items: center;
@@ -43,9 +43,10 @@ const ConnectWalletButton = () => {
   return (
     <>
       {error && error instanceof UnsupportedChainIdError && 'Unsupported Chain'}
-      <Button cursor={'pointer'} size={'sm'} onClick={onOpen} ml={'30px'}>
+      <PrimaryButton ml={3} size={'sm'} onClick={onOpen}>
         Connect Wallet
-      </Button>
+      </PrimaryButton>
+
       <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
         <ModalOverlay />
         <ModalContent>
@@ -85,9 +86,9 @@ const ConnectWalletButton = () => {
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
+            <PrimaryButton mr={3} onClick={onClose}>
               Close
-            </Button>
+            </PrimaryButton>
           </ModalFooter>
         </ModalContent>
       </Modal>

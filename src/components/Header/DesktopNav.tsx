@@ -2,18 +2,19 @@ import { ChevronDownIcon } from '@chakra-ui/icons';
 import {
   BoxProps,
   Button,
-  Link,
   Menu,
   MenuButton,
   MenuItem,
   MenuList,
   Text,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useAuth from '@/hooks/useAuth';
 import { shortenAddress } from '@/utils/address';
 import { IoExitOutline } from 'react-icons/io5';
+import LinkButton from '../Button/LinkButton';
 
 export const DesktopNav = (props: BoxProps) => {
   const { account } = useActiveWeb3React();
@@ -21,21 +22,21 @@ export const DesktopNav = (props: BoxProps) => {
 
   return (
     <>
-      <Link href={'/create'} style={{ textDecoration: 'none' }}>
-        <Text
-          bg={'blue.400'}
-          color={'white'}
-          fontWeight={'bold'}
-          px={5}
-          py={1}
-          rounded={'full'}
-          _hover={{
-            bg: 'blue.100',
-          }}
-        >
-          Create
-        </Text>
-      </Link>
+      <LinkButton
+        borderWidth={'1px'}
+        borderColor={'transparent'}
+        href={'/create'}
+        px={4}
+        py={1}
+        _hover={{
+          borderColor: useColorModeValue('blue.600', 'rgb(145, 85, 230)'),
+          borderWidth: '1px',
+          borderRadius: 'md',
+        }}
+      >
+        Create
+      </LinkButton>
+
       {!account ? (
         <ConnectWalletButton />
       ) : (
