@@ -3,7 +3,7 @@ import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import { getExternalLink, shortenAddress } from '@/utils/address';
 import { shortenProposalId } from '@/utils/proposal';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
-import { Link, Stack, Text } from '@chakra-ui/react';
+import { Stack, Text } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
 export enum ExternalLinkType {

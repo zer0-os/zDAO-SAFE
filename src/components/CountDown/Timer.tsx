@@ -1,14 +1,5 @@
 import { Stack } from '@chakra-ui/react';
 import React from 'react';
-import styled from 'styled-components';
-
-const StyledWrapper = styled.div`
-  display: flex;
-  flex-direction: row;
-  div:last-of-type {
-    margin-right: 0;
-  }
-`;
 
 interface TimerProps extends React.HTMLAttributes<HTMLDivElement> {
   seconds?: number;

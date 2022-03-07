@@ -6,13 +6,11 @@ import {
   ModalCloseButton,
   ModalBody,
   ModalFooter,
-  Button,
   Text,
   Stack,
   useDisclosure,
   useBreakpointValue,
   Flex,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { SUPPORTED_WALLETS, WalletInfo } from '@/config/constants/wallet';
 import useAuth from '@/hooks/useAuth';

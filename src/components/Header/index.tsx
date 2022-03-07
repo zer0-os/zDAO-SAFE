@@ -4,7 +4,6 @@ import {
   Flex,
   Heading,
   IconButton,
-  Link,
   Stack,
   useColorMode,
   useColorModeValue,

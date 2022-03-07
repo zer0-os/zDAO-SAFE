@@ -212,6 +212,7 @@ const Voting = () => {
                   token to this address: `}
                     <LinkButton
                       href={getExternalLink(
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         chainId!,
                         'address',
                         metaData.recipient
@@ -225,6 +226,7 @@ const Voting = () => {
                     {`ERC20 token address: `}
                     <LinkButton
                       href={getExternalLink(
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                         chainId!,
                         'address',
                         metaData.token
