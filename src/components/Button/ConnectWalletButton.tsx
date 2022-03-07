@@ -12,6 +12,7 @@ import {
   useDisclosure,
   useBreakpointValue,
   Flex,
+  useColorModeValue,
 } from '@chakra-ui/react';
 import { SUPPORTED_WALLETS, WalletInfo } from '@/config/constants/wallet';
 import useAuth from '@/hooks/useAuth';
@@ -87,9 +88,9 @@ const ConnectWalletButton = () => {
             </Flex>
           </ModalBody>
           <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
+            <PrimaryButton mr={3} onClick={onClose}>
               Close
-            </Button>
+            </PrimaryButton>
           </ModalFooter>
         </ModalContent>
       </Modal>

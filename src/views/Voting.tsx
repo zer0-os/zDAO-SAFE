@@ -13,7 +13,6 @@ import {
   Button,
   Container,
   Heading,
-  Link,
   Progress,
   SimpleGrid,
   Spacer,
@@ -196,15 +195,13 @@ const Voting = () => {
           >
             <Stack direction={'column'} spacing={6} flex={1}>
               {/* title, body */}
-              <Heading color={textColor} textAlign={'left'}>
-                {proposal.title}
-              </Heading>
+              <Heading textAlign={'left'}>{proposal.title}</Heading>
               <Text color={textColor} textAlign={'left'}>
                 {proposal.body}
               </Text>
               {/* proposal execution meta data */}
               <Stack spacing={2}>
-                <Text>
+                <Text color={textColor}>
                   {`Let's send 
                   ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
                   token to this address: `}
@@ -219,7 +216,7 @@ const Voting = () => {
                     {metaData.recipient}
                   </LinkButton>
                 </Text>
-                <Text>
+                <Text color={textColor}>
                   {`ERC20 token address: `}
                   <LinkButton
                     href={getExternalLink(chainId!, 'address', metaData.token)}
