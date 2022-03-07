@@ -1,10 +1,8 @@
 import { SpinnerIcon } from '@chakra-ui/icons';
 import {
-  Button,
   Container,
   Heading,
   Input,
-  Link,
   Select,
   SimpleGrid,
   Stack,
@@ -22,7 +20,7 @@ import useClient from '@/hooks/useClient';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
 import { useBlockNumber } from '@/states/application/hooks';
 import BigNumber from 'bignumber.js';
-import { addSeconds, format, isValid, parseISO } from 'date-fns';
+import { addSeconds, format } from 'date-fns';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
@@ -36,17 +34,6 @@ import { BIG_EITEEN } from '@/config/constants/number';
 import { SupportedChainId } from '@/config/constants/chain';
 import LinkButton from '@/components/Button/LinkButton';
 import PrimaryButton from '@/components/Button/PrimaryButton';
-
-const combineDateAndTime = (date: Date, time: Date) => {
-  if (!isValid(date) || !isValid(time)) {
-    return null;
-  }
-
-  const dateStr = format(date, 'yyyy-MM-dd');
-  const timeStr = format(time, 'HH:mm:ss');
-
-  return Math.floor(parseISO(`${dateStr}T${timeStr}`).getTime() / 1e3);
-};
 
 const Choices = ['Yes', 'No'];
 

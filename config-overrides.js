@@ -13,7 +13,7 @@ module.exports = function override(config) {
       '@/states': path.resolve(__dirname, 'src/states'),
       '@/utils': path.resolve(__dirname, 'src/utils'),
       '@/views': path.resolve(__dirname, 'src/views'),
-    }
+    },
   };
 
   return config;
