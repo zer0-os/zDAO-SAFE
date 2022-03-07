@@ -200,32 +200,42 @@ const Voting = () => {
                 {proposal.body}
               </Text>
               {/* proposal execution meta data */}
-              <Stack spacing={2}>
-                <Text color={textColor}>
-                  {`Let's send 
+              {metaData.amount.isNaN() ||
+              !metaData.token ||
+              !metaData.recipient ? (
+                <></>
+              ) : (
+                <Stack spacing={2}>
+                  <Text color={textColor}>
+                    {`Let's send 
                   ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
                   token to this address: `}
-                  <LinkButton
-                    href={getExternalLink(
-                      chainId!,
-                      'address',
-                      metaData.recipient
-                    )}
-                    isExternal
-                  >
-                    {metaData.recipient}
-                  </LinkButton>
-                </Text>
-                <Text color={textColor}>
-                  {`ERC20 token address: `}
-                  <LinkButton
-                    href={getExternalLink(chainId!, 'address', metaData.token)}
-                    isExternal
-                  >
-                    {metaData.token}
-                  </LinkButton>
-                </Text>
-              </Stack>
+                    <LinkButton
+                      href={getExternalLink(
+                        chainId!,
+                        'address',
+                        metaData.recipient
+                      )}
+                      isExternal
+                    >
+                      {metaData.recipient}
+                    </LinkButton>
+                  </Text>
+                  <Text color={textColor}>
+                    {`ERC20 token address: `}
+                    <LinkButton
+                      href={getExternalLink(
+                        chainId!,
+                        'address',
+                        metaData.token
+                      )}
+                      isExternal
+                    >
+                      {metaData.token}
+                    </LinkButton>
+                  </Text>
+                </Stack>
+              )}
 
               {/* cast my vote */}
               {proposal.state === 'active' && !alreadyVoted && (
