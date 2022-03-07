@@ -1,7 +1,7 @@
-import { Box, Heading, useColorModeValue } from '@chakra-ui/react';
+import { Box, BoxProps, Heading, useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends BoxProps {
   title: string;
   children: React.ReactNode;
 }

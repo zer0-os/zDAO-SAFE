@@ -62,7 +62,7 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
       href={'/voting/' + id}
       style={{ width: '100%', textDecoration: 'none' }}
     >
-      <Card title={title}>
+      <Card title={title} _hover={{ borderColor: textColor }}>
         <VStack spacing={2}>
           <Flex width={'100%'} basis={1} justify="space-between">
             <Flex>
