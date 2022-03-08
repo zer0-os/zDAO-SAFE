@@ -1,15 +1,25 @@
+import { BIG_EITEEN } from '@/config/constants/number';
+import {
+  ConnectWalletButton,
+  LinkButton,
+  PrimaryButton,
+} from '@/components/Button';
 import Card from '@/components/Card';
+import { EventCountDown } from '@/components/CountDown';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useClient from '@/hooks/useClient';
+import useExtendedIpfs from '@/hooks/useExtendedIpfs';
 import useExtendedProposal from '@/hooks/useExtendedProposal';
 import useExtendedResults from '@/hooks/useExtendedResults';
 import useExtendedSpace from '@/hooks/useExtendedSpace';
 import useExtendedVotes from '@/hooks/useExtendedVotes';
+import { getExternalLink } from '@/utils/address';
 import {
   Badge,
+  Box,
   Button,
   Container,
   Heading,
@@ -31,12 +41,7 @@ import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
-import useExtendedIpfs from '@/hooks/useExtendedIpfs';
-import { BIG_EITEEN } from '@/config/constants/number';
-import { EventCountDown } from '@/components/CountDown';
-import { getExternalLink } from '@/utils/address';
-import PrimaryButton from '@/components/Button/PrimaryButton';
-import LinkButton from '@/components/Button/LinkButton';
+import ReactMarkdown from '@/components/ReactMarkDown';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -51,6 +56,17 @@ const Voting = () => {
   const { account, chainId, library } = useActiveWeb3React();
   const { sendEIP712 } = useClient();
   const textColor = useColorModeValue('gray.700', 'gray.400');
+  const voteHoverBorderColor = useColorModeValue(
+    'blue.600',
+    'rgb(145, 85, 230)'
+  );
+  const voteBorderColor = useColorModeValue('gray.200', 'gray.600');
+  const voteSelectedBorderColor = useColorModeValue(
+    'blue.600',
+    'rgb(145, 85, 230)'
+  );
+  const voteSelectedTextColor = useColorModeValue('black', 'white');
+
   const { id: proposalId } = useParams();
   const { space } = useExtendedSpace(SPACE_ID);
   const { proposal, proposalLoading } = useExtendedProposal(proposalId);
@@ -63,6 +79,7 @@ const Voting = () => {
   const { metaData, ipfsLoading } = useExtendedIpfs(proposal?.ipfs);
   const [myChoice, setMyChoice] = useState(-1);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const toast = useToast();
 
   const alreadyVoted = useMemo(() => {
@@ -77,8 +94,8 @@ const Voting = () => {
     if (!votesEx) {
       return undefined;
     }
-    return votesEx.slice(0, MAX_VISIBLE_COUNT);
-  }, [votesEx]);
+    return showAll ? votesEx : votesEx.slice(0, MAX_VISIBLE_COUNT);
+  }, [votesEx, showAll]);
 
   const handleVote = async () => {
     try {
@@ -91,7 +108,7 @@ const Voting = () => {
           metadata: {},
         });
         console.log('voting result', result);
-        if (result.id) {
+        if (result && result.id) {
           toast({
             title: 'You can cast your vote',
             position: 'top-right',
@@ -116,11 +133,21 @@ const Voting = () => {
 
   const handleExecuteProposal = async () => {
     console.log('handleExecuteProposal');
-    if (!account || !library || ipfsLoading || !metaData) return;
+    if (!account || !library || ipfsLoading) return;
 
     if (proposal.state !== 'closed') {
       toast({
         title: 'Proposal voting period has not ended yet',
+        position: 'top-right',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+    if (!metaData) {
+      toast({
+        title: 'Token transfer information not found',
         position: 'top-right',
         status: 'error',
         duration: 3000,
@@ -176,6 +203,10 @@ const Voting = () => {
     }
   };
 
+  const handleShowAll = () => {
+    setShowAll(true);
+  };
+
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
@@ -186,7 +217,7 @@ const Voting = () => {
           </Stack>
         </LinkButton>
 
-        {proposal && sortedVotes && metaData ? (
+        {proposal && sortedVotes && !ipfsLoading ? (
           <Stack
             spacing={12}
             flex={2}
@@ -196,11 +227,12 @@ const Voting = () => {
             <Stack direction={'column'} spacing={6} flex={1}>
               {/* title, body */}
               <Heading textAlign={'left'}>{proposal.title}</Heading>
-              <Text color={textColor} textAlign={'left'}>
-                {proposal.body}
-              </Text>
+              <Box style={{ overflow: 'hidden' }}>
+                <ReactMarkdown>{proposal.body}</ReactMarkdown>
+              </Box>
               {/* proposal execution meta data */}
-              {metaData.amount.isNaN() ||
+              {!metaData ||
+              metaData.amount.isNaN() ||
               !metaData.token ||
               !metaData.recipient ? (
                 <></>
@@ -243,49 +275,50 @@ const Voting = () => {
               {proposal.state === 'active' && !alreadyVoted && (
                 <Card title={'Cast your vote'}>
                   <Stack spacing={2} direction={'column'}>
-                    {proposal.choices.map((choice, index) => (
-                      <Button
-                        key={choice}
-                        bg={'transparent'}
-                        borderColor={
-                          index === myChoice
-                            ? useColorModeValue('blue.600', 'rgb(145, 85, 230)')
-                            : useColorModeValue('gray.200', 'gray.600')
-                        }
-                        borderWidth={'1px'}
-                        color={useColorModeValue(
-                          'gray.700',
-                          'rgba(211, 187, 245, 0.8)'
-                        )}
-                        rounded={'full'}
-                        _focus={{
-                          borderColor: useColorModeValue(
-                            'blue.600',
-                            'rgb(145, 85, 230)'
-                          ),
-                        }}
-                        _hover={{
-                          borderColor: useColorModeValue(
-                            'blue.500',
-                            'rgb(145, 85, 230)'
-                          ),
-                        }}
-                        onClick={() => setMyChoice(index)}
-                      >
-                        {choice}
-                      </Button>
-                    ))}
-                    <PrimaryButton
-                      disabled={
-                        proposalLoading ||
-                        votesLoading ||
-                        proposal.state !== 'active'
-                      }
-                      rounded={'full'}
-                      onClick={handleVote}
-                    >
-                      Vote
-                    </PrimaryButton>
+                    {account ? (
+                      <>
+                        {proposal.choices.map((choice, index) => (
+                          <Button
+                            key={index}
+                            bg={'transparent'}
+                            borderColor={
+                              index === myChoice
+                                ? voteSelectedBorderColor
+                                : voteBorderColor
+                            }
+                            borderWidth={'1px'}
+                            color={
+                              index === myChoice
+                                ? voteSelectedTextColor
+                                : textColor
+                            }
+                            rounded={'full'}
+                            _focus={{
+                              borderColor: voteHoverBorderColor,
+                            }}
+                            _hover={{
+                              borderColor: voteHoverBorderColor,
+                            }}
+                            onClick={() => setMyChoice(index)}
+                          >
+                            {choice}
+                          </Button>
+                        ))}
+                        <PrimaryButton
+                          disabled={
+                            proposalLoading ||
+                            votesLoading ||
+                            proposal.state !== 'active'
+                          }
+                          rounded={'full'}
+                          onClick={handleVote}
+                        >
+                          Vote
+                        </PrimaryButton>
+                      </>
+                    ) : (
+                      <ConnectWalletButton />
+                    )}
                   </Stack>
                 </Card>
               )}
@@ -308,6 +341,15 @@ const Voting = () => {
                         )} ${space.symbol}`}</Text>
                       </SimpleGrid>
                     ))}
+                  {!showAll && MAX_VISIBLE_COUNT < votesEx.length && (
+                    <LinkButton
+                      textAlign={'center'}
+                      width={'full'}
+                      onClick={handleShowAll}
+                    >
+                      Show All
+                    </LinkButton>
+                  )}
                 </Stack>
               </Card>
             </Stack>
@@ -399,7 +441,7 @@ const Voting = () => {
                       results.sumOfResultsBalance
                     );
                     return (
-                      <>
+                      <div key={index}>
                         <Text>{choice}</Text>
                         <Progress
                           borderRadius={'full'}
@@ -411,13 +453,12 @@ const Voting = () => {
                           results.resultsByVoteBalance[index]
                         )} ${space.symbol}`}</Text>
                         <Spacer />
-                      </>
+                      </div>
                     );
                   })}
                 </Stack>
               </Card>
-
-              <Spacer pt={2} />
+              <Box pt={1} />
               <PrimaryButton
                 disabled={
                   proposalLoading ||
