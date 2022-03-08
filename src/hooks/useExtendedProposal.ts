@@ -1,9 +1,11 @@
 import { getProposal } from '@/helpers/snapshot';
+import { useRefresh } from '@/hooks/useRefresh';
 import { useEffect, useState } from 'react';
 
 const useExtendedProposal = (proposalId: string | undefined) => {
   const [loading, setLoading] = useState(false);
   const [proposal, setProposal] = useState<any>(undefined);
+  const { slowRefresh } = useRefresh();
 
   useEffect(() => {
     const loadProposal = async (id_in: string) => {
@@ -20,9 +22,10 @@ const useExtendedProposal = (proposalId: string | undefined) => {
     };
 
     if (proposalId) {
+      console.log('slowRefresh, loadProposal');
       loadProposal(proposalId);
     }
-  }, [proposalId]);
+  }, [proposalId, slowRefresh]);
 
   return {
     proposalLoading: loading,

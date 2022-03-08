@@ -6,6 +6,7 @@ import {
 } from '@/components/Button';
 import Card from '@/components/Card';
 import { EventCountDown } from '@/components/CountDown';
+import ReactMarkdown from '@/components/ReactMarkDown';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
@@ -41,7 +42,6 @@ import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
-import ReactMarkdown from '@/components/ReactMarkDown';
 
 const MAX_VISIBLE_COUNT = 10;
 

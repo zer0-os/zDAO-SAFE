@@ -8,6 +8,7 @@ module.exports = function override(config) {
       '@/assets': path.resolve(__dirname, 'src/assets'),
       '@/components': path.resolve(__dirname, 'src/components'),
       '@/config': path.resolve(__dirname, 'src/config'),
+      '@/contexts': path.resolve(__dirname, 'src/contexts'),
       '@/helpers': path.resolve(__dirname, 'src/helpers'),
       '@/hooks': path.resolve(__dirname, 'src/hooks'),
       '@/states': path.resolve(__dirname, 'src/states'),
