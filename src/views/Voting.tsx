@@ -1,4 +1,4 @@
-import { BIG_EITEEN } from '@/config/constants/number';
+import { BIG_EITEEN, DECIMALS } from '@/config/constants/number';
 import {
   ConnectWalletButton,
   LinkButton,
@@ -6,6 +6,7 @@ import {
 } from '@/components/Button';
 import Card from '@/components/Card';
 import { EventCountDown } from '@/components/CountDown';
+import ReactMarkdown from '@/components/ReactMarkDown';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
@@ -41,7 +42,6 @@ import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
-import ReactMarkdown from '@/components/ReactMarkDown';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -185,15 +185,25 @@ const Voting = () => {
       }
 
       const safeSigner = new SafeEthersSigner(safe, service, library);
-      const transferContract = new ethers.Contract(
-        metaData.token,
-        metaData.abi,
-        safeSigner
-      );
-      console.log('transferContract', transferContract);
-      const proposedTx = await transferContract
-        .connect(safeSigner)
-        .transfer(metaData.recipient, metaData.amount.toString());
+      let proposedTx;
+      if (metaData.token.length > 0) {
+        // ERC20 tokens
+        const transferContract = new ethers.Contract(
+          metaData.token,
+          metaData.abi,
+          safeSigner
+        );
+        console.log('transferContract', transferContract);
+        proposedTx = await transferContract
+          .connect(safeSigner)
+          .transfer(metaData.recipient, metaData.amount.toString());
+      } else {
+        proposedTx = await safeSigner.sendTransaction({
+          to: metaData.recipient,
+          value: metaData.amount.toString(),
+        });
+      }
+
       console.log('USER ACTION REQUIRED');
       console.log('Go to the Gnosis Safe Web App to confirm the transaction');
       console.log(await proposedTx.wait());
@@ -231,16 +241,13 @@ const Voting = () => {
                 <ReactMarkdown>{proposal.body}</ReactMarkdown>
               </Box>
               {/* proposal execution meta data */}
-              {!metaData ||
-              metaData.amount.isNaN() ||
-              !metaData.token ||
-              !metaData.recipient ? (
+              {!metaData || metaData.amount.isNaN() || !metaData.recipient ? (
                 <></>
               ) : (
                 <Stack spacing={2}>
                   <Text color={textColor}>
                     {`Let's send 
-                  ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(2)} 
+                  ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(DECIMALS)} 
                   token to this address: `}
                     <LinkButton
                       href={getExternalLink(
@@ -256,17 +263,21 @@ const Voting = () => {
                   </Text>
                   <Text color={textColor}>
                     {`ERC20 token address: `}
-                    <LinkButton
-                      href={getExternalLink(
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        chainId!,
-                        'address',
-                        metaData.token
-                      )}
-                      isExternal
-                    >
-                      {metaData.token}
-                    </LinkButton>
+                    {metaData.token.length > 0 ? (
+                      <LinkButton
+                        href={getExternalLink(
+                          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                          chainId!,
+                          'address',
+                          metaData.token
+                        )}
+                        isExternal
+                      >
+                        {metaData.token}
+                      </LinkButton>
+                    ) : (
+                      'ETH'
+                    )}
                   </Text>
                 </Stack>
               )}

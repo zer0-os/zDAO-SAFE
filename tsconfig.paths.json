@@ -5,6 +5,7 @@
       "@/assets/*": ["assets/*"],
       "@/components/*": ["components/*"],
       "@/config/*": ["config/*"],
+      "@/contexts/*": ["contexts/*"],
       "@/helpers/*": ["helpers/*"],
       "@/hooks/*": ["hooks/*"],
       "@/states/*": ["states/*"],

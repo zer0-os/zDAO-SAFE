@@ -1,11 +1,12 @@
 import TransferAbi from '@/config/abi/transfer.json';
 import { SPACE_ID } from '@/config/constants/snapshot';
+import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
+import { DECIMALS, extendToDecimals } from '@/config/constants/number';
 import {
   MAINNET_TOKEN_LIST,
   TESTNET_TOKEN_LIST,
-  SAFE_ADDRESS,
-} from '@/config/constants/gnosis-safe';
-import { BIG_EITEEN } from '@/config/constants/number';
+  getToken,
+} from '@/config/constants/tokens';
 import { SupportedChainId } from '@/config/constants/chain';
 import { LinkButton, PrimaryButton } from '@/components/Button';
 import Card from '@/components/Card';
@@ -53,7 +54,7 @@ interface ProposalFormat {
   sender: string;
   recipient: string;
   token: string;
-  amount: BigNumber;
+  amount: string | number;
 }
 
 const CreateProposal = () => {
@@ -66,7 +67,7 @@ const CreateProposal = () => {
     sender: SAFE_ADDRESS,
     recipient: '',
     token: '',
-    amount: new BigNumber(0),
+    amount: 0,
   });
   const {
     title,
@@ -91,9 +92,9 @@ const CreateProposal = () => {
     !!account &&
     title.length > 0 &&
     body.length > 0 &&
-    token.length > 0 &&
+    // token.length > 0 &&
     recipient.length > 0 &&
-    amount.gt(0);
+    Number(amount) > 0;
 
   useEffect(() => {
     if (blockNumber)
@@ -151,10 +152,17 @@ const CreateProposal = () => {
 
   const handleAmountChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
-    updateValue(inputName, new BigNumber(value));
+    if (evt.currentTarget.validity.valid) {
+      updateValue(inputName, value.replace(/,/g, '.'));
+    }
   };
 
   const handleSubmitProposal = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tokenType = getToken(chainId!, token);
+    if (!tokenType) {
+      return;
+    }
     const payload = {
       from: account,
       space: SPACE_ID,
@@ -172,7 +180,9 @@ const CreateProposal = () => {
         sender,
         recipient,
         token,
-        amount: amount.multipliedBy(BIG_EITEEN).toString(),
+        amount: new BigNumber(amount)
+          .multipliedBy(extendToDecimals(tokenType?.decimals))
+          .toString(),
       },
     };
     console.log(payload);
@@ -226,7 +236,7 @@ const CreateProposal = () => {
               }}
             ></Textarea> */}
 
-            <ReactMdEditor onChange={handleBodyChange} />
+            <ReactMdEditor body={body} onChange={handleBodyChange} />
 
             <Card title={'Transfer tokens'}>
               <Stack spacing={2} direction={'column'}>
@@ -234,10 +244,10 @@ const CreateProposal = () => {
                   borderColor={borderColor}
                   onChange={handleSelectToken}
                   onClick={handleSelectToken}
-                  placeholder={'[ERC20 Token]'}
+                  defaultValue={token}
                 >
                   {Object.keys(tokenList).map((key) => (
-                    <option key={key} value={tokenList[key]}>
+                    <option key={key} value={tokenList[key].address}>
                       {key}
                     </option>
                   ))}
@@ -308,10 +318,13 @@ const CreateProposal = () => {
                     borderColor={borderColor}
                     fontSize={'md'}
                     name={'amount'}
-                    onChange={handleAmountChange}
+                    inputMode={'decimal'}
+                    min={0}
+                    pattern={`^[0-9]*[.,]?[0-9]{0,${DECIMALS}}$`}
                     placeholder={'Trasnfer Token Amount'}
                     size={'md'}
-                    value={amount.isNaN() ? '' : amount.toString()}
+                    value={amount}
+                    onChange={handleAmountChange}
                     _hover={{
                       borderRadius: 'gray.900',
                     }}
