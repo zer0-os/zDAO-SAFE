@@ -6,6 +6,7 @@ import {
 } from '@/config/constants/queries';
 import Client from '@snapshot-labs/snapshot.js';
 import { apolloQuery } from './apollo';
+import { SPACE_ID } from '@/config/constants/snapshot';
 
 export const getSpaces = async (spaceIds: string[]) => {
   try {
@@ -28,7 +29,7 @@ export const getSpaces = async (spaceIds: string[]) => {
 };
 
 export const getProposals = async () => {
-  const spaceId = process.env.REACT_APP_SPACE_ID;
+  const spaceId = SPACE_ID;
   try {
     console.time('getProposal');
     const response = await apolloQuery(

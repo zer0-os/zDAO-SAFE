@@ -250,7 +250,7 @@ const CreateProposal = () => {
                   readOnly
                   required
                 ></Input>
-                <Textarea
+                {/* <Textarea
                   borderColor={borderColor}
                   fontSize={'md'}
                   name={'abi'}
@@ -263,7 +263,7 @@ const CreateProposal = () => {
                   _hover={{
                     borderRadius: 'gray.900',
                   }}
-                ></Textarea>
+                ></Textarea> */}
                 {/* <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}

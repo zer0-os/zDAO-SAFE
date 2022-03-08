@@ -22,20 +22,24 @@ const useExtendedIpfs = (ipfs: string | undefined) => {
       setLoading(true);
       try {
         const ipfsData = await Client.utils.ipfsGet(IPFS_GATEWAY, ipfs);
-        const metadata = JSON.parse(ipfsData.data.message.metadata);
-        const abi = metadata.abi;
-        const sender = metadata.sender;
-        const recipient = metadata.recipient;
-        const token = metadata.token;
-        const amount = metadata.amount;
+        if (ipfsData.data && ipfsData.data.message) {
+          const metadata = JSON.parse(ipfsData.data.message.metadata);
+          const abi = metadata.abi;
+          const sender = metadata.sender;
+          const recipient = metadata.recipient;
+          const token = metadata.token;
+          const amount = metadata.amount;
 
-        setMetaData({
-          abi,
-          sender,
-          recipient,
-          token,
-          amount: new BigNumber(amount),
-        });
+          setMetaData({
+            abi,
+            sender,
+            recipient,
+            token,
+            amount: new BigNumber(amount),
+          });
+        } else {
+          setMetaData(undefined);
+        }
       } catch (e) {
         console.error(e);
       } finally {

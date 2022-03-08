@@ -43,7 +43,7 @@ const ConnectWalletButton = () => {
   return (
     <>
       {error && error instanceof UnsupportedChainIdError && 'Unsupported Chain'}
-      <PrimaryButton ml={3} size={'sm'} onClick={onOpen}>
+      <PrimaryButton size={'sm'} onClick={onOpen}>
         Connect Wallet
       </PrimaryButton>
 
