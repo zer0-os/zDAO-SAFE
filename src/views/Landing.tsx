@@ -81,9 +81,9 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
               </Badge>
             )}
           </Flex>
-          <Text color={textColor} width={'100%'}>
+          {/* <Text color={textColor} width={'100%'}>
             {shorten(body, 120)}
-          </Text>
+          </Text> */}
           <Flex width="100%" color={textColor}>
             <Text>{end > currentTime ? 'Ends in' : 'Ended'}</Text>
             {days > 0 ? <Text marginLeft={1}>{days} days</Text> : null}
