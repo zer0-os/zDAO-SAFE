@@ -133,11 +133,21 @@ const Voting = () => {
 
   const handleExecuteProposal = async () => {
     console.log('handleExecuteProposal');
-    if (!account || !library || ipfsLoading || !metaData) return;
+    if (!account || !library || ipfsLoading) return;
 
     if (proposal.state !== 'closed') {
       toast({
         title: 'Proposal voting period has not ended yet',
+        position: 'top-right',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+    if (!metaData) {
+      toast({
+        title: 'Token transfer information not found',
         position: 'top-right',
         status: 'error',
         duration: 3000,
