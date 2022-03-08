@@ -41,6 +41,7 @@ import { useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { useParams } from 'react-router-dom';
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
+import ReactMarkdown from '@/components/ReactMarkDown';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -211,9 +212,9 @@ const Voting = () => {
             <Stack direction={'column'} spacing={6} flex={1}>
               {/* title, body */}
               <Heading textAlign={'left'}>{proposal.title}</Heading>
-              <Text color={textColor} textAlign={'left'}>
-                {proposal.body}
-              </Text>
+              <Box style={{ overflow: 'hidden' }}>
+                <ReactMarkdown>{proposal.body}</ReactMarkdown>
+              </Box>
               {/* proposal execution meta data */}
               {!metaData ||
               metaData.amount.isNaN() ||
