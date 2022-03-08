@@ -1,11 +1,12 @@
 import TransferAbi from '@/config/abi/transfer.json';
 import { SPACE_ID } from '@/config/constants/snapshot';
+import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
+import { DECIMALS, extendToDecimals } from '@/config/constants/number';
 import {
   MAINNET_TOKEN_LIST,
   TESTNET_TOKEN_LIST,
-  SAFE_ADDRESS,
-} from '@/config/constants/gnosis-safe';
-import { BIG_EITEEN, DECIMALS } from '@/config/constants/number';
+  getToken,
+} from '@/config/constants/tokens';
 import { SupportedChainId } from '@/config/constants/chain';
 import { LinkButton, PrimaryButton } from '@/components/Button';
 import Card from '@/components/Card';
@@ -157,6 +158,11 @@ const CreateProposal = () => {
   };
 
   const handleSubmitProposal = async () => {
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const tokenType = getToken(chainId!, token);
+    if (!tokenType) {
+      return;
+    }
     const payload = {
       from: account,
       space: SPACE_ID,
@@ -174,7 +180,9 @@ const CreateProposal = () => {
         sender,
         recipient,
         token,
-        amount: new BigNumber(amount).multipliedBy(BIG_EITEEN).toString(),
+        amount: new BigNumber(amount)
+          .multipliedBy(extendToDecimals(tokenType?.decimals))
+          .toString(),
       },
     };
     console.log(payload);
@@ -239,7 +247,7 @@ const CreateProposal = () => {
                   defaultValue={token}
                 >
                   {Object.keys(tokenList).map((key) => (
-                    <option key={key} value={tokenList[key]}>
+                    <option key={key} value={tokenList[key].address}>
                       {key}
                     </option>
                   ))}
