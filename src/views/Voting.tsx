@@ -79,6 +79,7 @@ const Voting = () => {
   const { metaData, ipfsLoading } = useExtendedIpfs(proposal?.ipfs);
   const [myChoice, setMyChoice] = useState(-1);
   const [isExecuting, setIsExecuting] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const toast = useToast();
 
   const alreadyVoted = useMemo(() => {
@@ -93,8 +94,8 @@ const Voting = () => {
     if (!votesEx) {
       return undefined;
     }
-    return votesEx.slice(0, MAX_VISIBLE_COUNT);
-  }, [votesEx]);
+    return showAll ? votesEx : votesEx.slice(0, MAX_VISIBLE_COUNT);
+  }, [votesEx, showAll]);
 
   const handleVote = async () => {
     try {
@@ -190,6 +191,10 @@ const Voting = () => {
     } finally {
       setIsExecuting(false);
     }
+  };
+
+  const handleShowAll = () => {
+    setShowAll(true);
   };
 
   return (
@@ -326,6 +331,15 @@ const Voting = () => {
                         )} ${space.symbol}`}</Text>
                       </SimpleGrid>
                     ))}
+                  {!showAll && MAX_VISIBLE_COUNT < votesEx.length && (
+                    <LinkButton
+                      textAlign={'center'}
+                      width={'full'}
+                      onClick={handleShowAll}
+                    >
+                      Show All
+                    </LinkButton>
+                  )}
                 </Stack>
               </Card>
             </Stack>
