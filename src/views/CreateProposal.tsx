@@ -1,3 +1,19 @@
+import TransferAbi from '@/config/abi/transfer.json';
+import { SPACE_ID } from '@/config/constants/snapshot';
+import {
+  MAINNET_TOKEN_LIST,
+  TESTNET_TOKEN_LIST,
+  SAFE_ADDRESS,
+} from '@/config/constants/gnosis-safe';
+import { BIG_EITEEN } from '@/config/constants/number';
+import { SupportedChainId } from '@/config/constants/chain';
+import { LinkButton, PrimaryButton } from '@/components/Button';
+import Card from '@/components/Card';
+import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
+import useActiveWeb3React from '@/hooks/useActiveWeb3React';
+import useClient from '@/hooks/useClient';
+import useExtendedSpace from '@/hooks/useExtendedSpace';
+import { useBlockNumber } from '@/states/application/hooks';
 import { SpinnerIcon } from '@chakra-ui/icons';
 import {
   Container,
@@ -7,33 +23,17 @@ import {
   SimpleGrid,
   Stack,
   Text,
-  Textarea,
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
-import TransferAbi from '@/config/abi/transfer.json';
-import { SPACE_ID } from '@/config/constants/snapshot';
-import Card from '@/components/Card';
-import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
-import useActiveWeb3React from '@/hooks/useActiveWeb3React';
-import useClient from '@/hooks/useClient';
-import useExtendedSpace from '@/hooks/useExtendedSpace';
-import { useBlockNumber } from '@/states/application/hooks';
 import BigNumber from 'bignumber.js';
 import { addSeconds, format } from 'date-fns';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack } from 'react-icons/io5';
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
-import {
-  MAINNET_TOKEN_LIST,
-  TESTNET_TOKEN_LIST,
-  SAFE_ADDRESS,
-} from '@/config/constants/gnosis-safe';
-import { BIG_EITEEN } from '@/config/constants/number';
-import { SupportedChainId } from '@/config/constants/chain';
-import LinkButton from '@/components/Button/LinkButton';
-import PrimaryButton from '@/components/Button/PrimaryButton';
+import ReactMdEditor from '@/components/ReactMdEditor';
 
 const Choices = ['Yes', 'No'];
 
@@ -131,6 +131,10 @@ const CreateProposal = () => {
     return TESTNET_TOKEN_LIST;
   }, [chainId]);
 
+  const handleBodyChange = (text: string) => {
+    updateValue('body', text);
+  };
+
   const handleSelectToken = (evt) => {
     updateValue('token', evt.target.value);
   };
@@ -140,10 +144,10 @@ const CreateProposal = () => {
     updateValue(inputName, value);
   };
 
-  const handleTextAreaChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
-    const { name: inputName, value } = evt.currentTarget;
-    updateValue(inputName, value);
-  };
+  // const handleTextAreaChange = (evt: ChangeEvent<HTMLTextAreaElement>) => {
+  //   const { name: inputName, value } = evt.currentTarget;
+  //   updateValue(inputName, value);
+  // };
 
   const handleAmountChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
@@ -209,7 +213,7 @@ const CreateProposal = () => {
               }}
               required
             ></Input>
-            <Textarea
+            {/* <Textarea
               borderColor={borderColor}
               fontSize={'md'}
               name={'body'}
@@ -220,7 +224,9 @@ const CreateProposal = () => {
               _hover={{
                 borderRadius: 'gray.300',
               }}
-            ></Textarea>
+            ></Textarea> */}
+
+            <ReactMdEditor onChange={handleBodyChange} />
 
             <Card title={'Transfer tokens'}>
               <Stack spacing={2} direction={'column'}>
