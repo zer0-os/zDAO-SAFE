@@ -441,7 +441,7 @@ const Voting = () => {
                       results.sumOfResultsBalance
                     );
                     return (
-                      <>
+                      <div key={index}>
                         <Text>{choice}</Text>
                         <Progress
                           borderRadius={'full'}
@@ -453,7 +453,7 @@ const Voting = () => {
                           results.resultsByVoteBalance[index]
                         )} ${space.symbol}`}</Text>
                         <Spacer />
-                      </>
+                      </div>
                     );
                   })}
                 </Stack>
