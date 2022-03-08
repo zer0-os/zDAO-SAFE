@@ -6,6 +6,7 @@ import 'react-mde/lib/styles/css/react-mde-all.css';
 import styled from 'styled-components';
 
 interface ReactMdeProps extends Omit<BoxProps, 'onChange'> {
+  body: string;
   onChange: (text: string) => void;
 }
 
@@ -57,19 +58,15 @@ const converter = new Showdown.Converter({
   tasklists: true,
 });
 
-const ReactMdEditor = ({ onChange, ...props }: ReactMdeProps) => {
+const ReactMdEditor = ({ body, onChange, ...props }: ReactMdeProps) => {
   const [selectedTab, setSelectedTab] = useState<'write' | 'preview'>('write');
   const { colorMode } = useColorMode();
-  const [body, setBody] = useState<string>('');
 
   return (
     <Wrapper {...props} theme={colorMode}>
       <ReactMde
         value={body}
-        onChange={(text: string) => {
-          setBody(text);
-          onChange(body);
-        }}
+        onChange={onChange}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) =>

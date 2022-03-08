@@ -6,6 +6,7 @@ export const SAFE_SERVICE_URL =
   'https://safe-transaction.rinkeby.gnosis.io';
 
 export const TESTNET_TOKEN_LIST = {
+  ETH: '',
   zDAOTesting: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
 };
 
