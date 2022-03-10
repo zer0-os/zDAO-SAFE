@@ -185,7 +185,7 @@ const CreateProposal = () => {
           .toString(),
       },
     };
-    console.log(payload);
+    // console.log(payload);
     const resp = await sendEIP712(space, 'proposal', payload);
     if (resp && resp.id) {
       navigate(`/voting/${resp.id}`);

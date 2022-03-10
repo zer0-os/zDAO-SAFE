@@ -1,4 +1,7 @@
-import { BIG_EITEEN, DECIMALS } from '@/config/constants/number';
+import {
+  getFormatedValue,
+  getFullDisplayBalance,
+} from '@/config/constants/number';
 import {
   ConnectWalletButton,
   LinkButton,
@@ -45,11 +48,13 @@ import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 
 const MAX_VISIBLE_COUNT = 10;
 
-const getFormatedValue = (value) =>
-  parseFloat(value).toLocaleString(undefined, {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 3,
-  });
+// const getFormatedValue = (value) =>
+//   parseFloat(value).toLocaleString(undefined, {
+//     minimumFractionDigits: 0,
+//     maximumFractionDigits: 3,
+//     minimumSignificantDigits: 1,
+//     maximumSignificantDigits: 4,
+//   });
 const getPercentage = (n, max) => (max ? (100 / max) * n : 0);
 
 const Voting = () => {
@@ -107,7 +112,7 @@ const Voting = () => {
           choice: myChoice + 1,
           metadata: {},
         });
-        console.log('voting result', result);
+        // console.log('voting result', result);
         if (result && result.id) {
           toast({
             title: 'You can cast your vote',
@@ -132,7 +137,6 @@ const Voting = () => {
   };
 
   const handleExecuteProposal = async () => {
-    console.log('handleExecuteProposal');
     if (!account || !library || ipfsLoading) return;
 
     if (proposal.state !== 'closed') {
@@ -158,14 +162,14 @@ const Voting = () => {
 
     setIsExecuting(true);
     try {
-      console.log('abi', metaData.abi);
-      console.log('sender', metaData.sender);
-      console.log('recipient', metaData.recipient);
-      console.log('token', metaData.token);
-      console.log('amount', metaData.amount.toString());
+      // console.log('abi', metaData.abi);
+      // console.log('sender', metaData.sender);
+      // console.log('recipient', metaData.recipient);
+      // console.log('token', metaData.token);
+      // console.log('amount', metaData.amount.toString());
 
-      console.log('Safe Service Url', SAFE_SERVICE_URL);
-      console.log('Safe Address', SAFE_ADDRESS);
+      // console.log('Safe Service Url', SAFE_SERVICE_URL);
+      // console.log('Safe Address', SAFE_ADDRESS);
       const service = new SafeService(SAFE_SERVICE_URL);
       const ethAdapter = new EthersAdapter({
         ethers,
@@ -193,7 +197,6 @@ const Voting = () => {
           metaData.abi,
           safeSigner
         );
-        console.log('transferContract', transferContract);
         proposedTx = await transferContract
           .connect(safeSigner)
           .transfer(metaData.recipient, metaData.amount.toString());
@@ -204,8 +207,8 @@ const Voting = () => {
         });
       }
 
-      console.log('USER ACTION REQUIRED');
-      console.log('Go to the Gnosis Safe Web App to confirm the transaction');
+      // console.log('USER ACTION REQUIRED');
+      // console.log('Go to the Gnosis Safe Web App to confirm the transaction');
       console.log(await proposedTx.wait());
       console.log('Transaction has been executed');
     } finally {
@@ -247,7 +250,7 @@ const Voting = () => {
                 <Stack spacing={2}>
                   <Text color={textColor}>
                     {`Let's send 
-                  ${metaData.amount.dividedBy(BIG_EITEEN).toFixed(DECIMALS)} 
+                  ${getFullDisplayBalance(metaData.amount, 18)} 
                   token to this address: `}
                     <LinkButton
                       href={getExternalLink(

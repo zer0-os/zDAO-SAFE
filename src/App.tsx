@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useEagerConnect from './hooks/useEagerConnect';
 
+const GnosisSafe = lazy(() => import('@/views/GnosisSafe'));
 const Landing = lazy(() => import('@/views/Landing'));
 const Voting = lazy(() => import('@/views/Voting'));
 const CreateProposal = lazy(() => import('@/views/CreateProposal'));
@@ -48,6 +49,7 @@ function App() {
           <SuspenseWithChunkError fallback={<Loader />}>
             <Routes>
               <Route path="/" element={<Landing />}></Route>
+              <Route path="/gnosis-safe" element={<GnosisSafe />}></Route>
               <Route path="/create" element={<CreateProposal />}></Route>
               <Route path="/voting/:id" element={<Voting />}></Route>
               <Route path="*" element={<Navigate to="/" />} />

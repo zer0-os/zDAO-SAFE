@@ -98,7 +98,6 @@ export const getProposalVotes = async (
 };
 
 export const getResults = async (space, proposal, votes) => {
-  console.log('[score] getResults');
   const voters = votes.map((vote) => vote.voter);
   const strategies = proposal.strategies ?? space.strategies;
   /* Get scores */
