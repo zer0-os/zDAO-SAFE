@@ -1,3 +1,4 @@
+import { SNAPSHOT_HUB } from '@/config/constants/snapshot';
 import {
   ApolloClient,
   createHttpLink,
@@ -5,12 +6,11 @@ import {
 } from '@apollo/client/core';
 import gql from 'graphql-tag';
 import cloneDeep from 'lodash/cloneDeep';
-import { hubUrl } from './client';
 
 // HTTP connection to the API
 const httpLink = createHttpLink({
   // You should use an absolute URL here
-  uri: `${hubUrl}/graphql`,
+  uri: `${SNAPSHOT_HUB}/graphql`,
 });
 
 // Create the apollo client

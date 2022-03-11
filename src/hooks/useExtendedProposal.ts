@@ -22,7 +22,6 @@ const useExtendedProposal = (proposalId: string | undefined) => {
     };
 
     if (proposalId) {
-      console.log('slowRefresh, loadProposal');
       loadProposal(proposalId);
     }
   }, [proposalId, slowRefresh]);
