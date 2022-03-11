@@ -13,6 +13,7 @@ import {
   Flex,
   useColorModeValue,
 } from '@chakra-ui/react';
+import { useParams } from 'react-router-dom';
 
 export interface Proposal {
   id: string;
@@ -92,7 +93,9 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
 };
 
 const ListProposal = () => {
-  const { loading, proposals } = useProposals();
+  const { space: spaceId } = useParams();
+  const { loading, proposals } = useProposals(spaceId);
+
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>

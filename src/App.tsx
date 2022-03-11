@@ -50,7 +50,7 @@ function App() {
           <SuspenseWithChunkError fallback={<Loader />}>
             <Routes>
               <Route path="/" element={<Home />}></Route>
-              <Route path="/proposal" element={<ListProposal />}></Route>
+              <Route path="/:space" element={<ListProposal />}></Route>
               <Route path="/gnosis-safe" element={<GnosisSafe />}></Route>
               <Route path="/create" element={<CreateProposal />}></Route>
               <Route path="/voting/:id" element={<Voting />}></Route>
