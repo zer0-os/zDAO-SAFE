@@ -27,7 +27,7 @@ export const getSpaces = async (spaceIds: string[]) => {
   }
 };
 
-export const getProposals = async (spaceId: string) => {
+export const getProposals = async (spaceId: string, skip = 0) => {
   try {
     console.time('getProposal');
     const response = await apolloQuery(
@@ -35,6 +35,7 @@ export const getProposals = async (spaceId: string) => {
         query: PROPOSALS_QUERY,
         variables: {
           spaceId,
+          skip,
         },
       },
       'proposals'

@@ -14,6 +14,7 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 import { useParams } from 'react-router-dom';
+import { PrimaryButton } from '@/components/Button';
 
 export interface Proposal {
   id: string;
@@ -94,7 +95,8 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
 
 const ListProposal = () => {
   const { space: spaceId } = useParams();
-  const { loading, proposals } = useProposals(spaceId);
+  const { loading, loadingMore, fullyLoaded, proposals, loadMoreProposals } =
+    useProposals(spaceId);
 
   return (
     <Container as={Stack} maxW={'7xl'}>
@@ -116,6 +118,14 @@ const ListProposal = () => {
             {proposals.map((proposal: Proposal) => (
               <ProposalCard key={proposal.id} proposal={proposal} />
             ))}
+            <PrimaryButton
+              isLoading={loadingMore}
+              loadingText="Loading More ..."
+              disabled={fullyLoaded}
+              onClick={loadMoreProposals}
+            >
+              Load More
+            </PrimaryButton>
           </VStack>
         )}
       </VStack>
