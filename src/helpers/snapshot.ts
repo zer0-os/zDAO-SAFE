@@ -4,7 +4,6 @@ import {
   SPACES_QUERY,
   VOTES_QUERY,
 } from '@/config/constants/queries';
-import { SPACE_ID } from '@/config/constants/snapshot';
 import Client from '@snapshot-labs/snapshot.js';
 import { apolloQuery } from './apollo';
 
