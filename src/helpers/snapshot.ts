@@ -1,12 +1,11 @@
-import { PROPOSALS_QUERY } from './../config/constants/queries';
 import {
   PROPOSAL_QUERY,
+  PROPOSALS_QUERY,
   SPACES_QUERY,
   VOTES_QUERY,
 } from '@/config/constants/queries';
 import Client from '@snapshot-labs/snapshot.js';
 import { apolloQuery } from './apollo';
-import { SPACE_ID } from '@/config/constants/snapshot';
 
 export const getSpaces = async (spaceIds: string[]) => {
   try {
@@ -28,8 +27,7 @@ export const getSpaces = async (spaceIds: string[]) => {
   }
 };
 
-export const getProposals = async (skip = 0) => {
-  const spaceId = SPACE_ID;
+export const getProposals = async (spaceId: string, skip = 0) => {
   try {
     console.time('getProposal');
     const response = await apolloQuery(
@@ -99,7 +97,6 @@ export const getProposalVotes = async (
 };
 
 export const getResults = async (space, proposal, votes) => {
-  console.log('[score] getResults');
   const voters = votes.map((vote) => vote.voter);
   const strategies = proposal.strategies ?? space.strategies;
   /* Get scores */

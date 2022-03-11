@@ -1,5 +1,8 @@
-/* eslint-disable react/prop-types */
+import Card from '@/components/Card';
+import LinkButton from '@/components/Button/LinkButton';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
+import useProposals from '@/hooks/useProposals';
+import { shortenAddress } from '@/utils/address';
 import {
   Badge,
   Container,
@@ -10,15 +13,8 @@ import {
   Flex,
   useColorModeValue,
 } from '@chakra-ui/react';
-import Card from '@/components/Card';
-import useProposals from '@/hooks/useProposals';
-import { shortenAddress } from '@/utils/address';
-import LinkButton from '@/components/Button/LinkButton';
+import { useParams } from 'react-router-dom';
 import { PrimaryButton } from '@/components/Button';
-
-const shorten = (str: string, limit: number) => {
-  return str.length > limit ? `${str.slice(0, limit).trim()}...` : str;
-};
 
 export interface Proposal {
   id: string;
@@ -43,7 +39,7 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
   const {
     id,
     title,
-    body,
+    // body,
     space: { name },
     author,
     state,
@@ -97,9 +93,11 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
   );
 };
 
-const Landing = () => {
+const ListProposal = () => {
+  const { space: spaceId } = useParams();
   const { loading, loadingMore, fullyLoaded, proposals, loadMoreProposals } =
-    useProposals();
+    useProposals(spaceId);
+
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
@@ -135,4 +133,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default ListProposal;

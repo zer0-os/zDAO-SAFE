@@ -28,22 +28,22 @@ const useClient = () => {
       }
 
       if (type === 'proposal') {
-        console.log('proposal', {
-          from: payload.from,
-          space: space.id,
-          timestamp: payload.timestamp,
-          type: payload.type,
-          name: payload.title,
-          body: payload.body,
-          choices: payload.choices,
-          start: payload.start,
-          end: payload.end,
-          snapshot: payload.snapshot,
-          network: space.network,
-          strategies: JSON.stringify(space.strategies),
-          plugins: JSON.stringify(payload.plugins),
-          metadata: JSON.stringify(payload.metadata),
-        });
+        // console.log('proposal', {
+        //   from: payload.from,
+        //   space: space.id,
+        //   timestamp: payload.timestamp,
+        //   type: payload.type,
+        //   name: payload.title,
+        //   body: payload.body,
+        //   choices: payload.choices,
+        //   start: payload.start,
+        //   end: payload.end,
+        //   snapshot: payload.snapshot,
+        //   network: space.network,
+        //   strategies: JSON.stringify(space.strategies),
+        //   plugins: JSON.stringify(payload.plugins),
+        //   metadata: JSON.stringify(payload.metadata),
+        // });
         return await clientEIP712.proposal(library, account, {
           from: payload.from,
           space: space.id,
@@ -61,13 +61,13 @@ const useClient = () => {
           metadata: JSON.stringify(payload.metadata),
         });
       } else if (type === 'vote') {
-        console.log('vote', {
-          space: space.id,
-          proposal: payload.proposal.id,
-          type: payload.proposal.type,
-          choice: payload.choice,
-          metadata: JSON.stringify(payload.metadata),
-        });
+        // console.log('vote', {
+        //   space: space.id,
+        //   proposal: payload.proposal.id,
+        //   type: payload.proposal.type,
+        //   choice: payload.choice,
+        //   metadata: JSON.stringify(payload.metadata),
+        // });
         return await clientEIP712.vote(library, account, {
           space: space.id,
           proposal: payload.proposal.id,

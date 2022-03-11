@@ -10,7 +10,8 @@
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "strict": false,
+    "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "module": "esnext",
@@ -20,6 +21,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "noImplicitAny": false,
+    "downlevelIteration": true
   },
   "include": [
     "**/*.ts", "**/*.tsx", "src"
