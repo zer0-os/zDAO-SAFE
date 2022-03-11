@@ -17,7 +17,7 @@ import {
 } from '@chakra-ui/react';
 import Client from '@snapshot-labs/snapshot.js';
 import { formatBytes32String } from 'ethers/lib/utils';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const LIST_COUNT = 20;
 
