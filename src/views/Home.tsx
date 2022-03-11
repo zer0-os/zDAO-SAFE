@@ -84,13 +84,17 @@ const Home = () => {
     setOrderedSpaces(spaces?.slice(0, LIST_COUNT) ?? []);
   }, [spaces]);
 
-  const loadMore = useCallback(() => {
-    setOrderedSpaces((prev) => [
-      ...prev,
-      ...spaces.slice(prev.length, prev.length + LIST_COUNT),
-    ]);
-    setIsFectching(false);
-  }, [spaces]);
+  const loadMore = () => {
+    if (orderedSpaces.length < spaces.length) {
+      setOrderedSpaces((prev) => [
+        ...prev,
+        ...spaces.slice(prev.length, prev.length + LIST_COUNT),
+      ]);
+      setIsFectching(false);
+      return true;
+    }
+    return false;
+  };
   const { isFetching, setIsFectching } = useInfiniteScroll(loadMore);
 
   return (
@@ -109,7 +113,7 @@ const Home = () => {
                 <Space key={space.id} id={space.id} space={space} />
               ))}
           </SimpleGrid>
-          {isFetching && (
+          {isFetching && orderedSpaces.length < spaces.length && (
             <Heading as={'h1'} fontSize={'xl'} fontFamily={'body'}>
               Loading more ...
             </Heading>
