@@ -27,13 +27,13 @@ export default function useProposals(spaceId: string | undefined) {
   }, [spaceId]);
 
   const loadMoreProposals = async () => {
-    if (fullyLoaded) {
+    if (fullyLoaded || !spaceId) {
       return;
     }
 
     setLoadingMore(true);
     try {
-      const response = await getProposals(proposals.length || 0);
+      const response = await getProposals(spaceId, proposals.length || 0);
       if (response.length === 0) {
         setFullyLoaded(true);
       }
