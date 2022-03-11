@@ -28,8 +28,7 @@ export const getSpaces = async (spaceIds: string[]) => {
   }
 };
 
-export const getProposals = async () => {
-  const spaceId = SPACE_ID;
+export const getProposals = async (spaceId: string) => {
   try {
     console.time('getProposal');
     const response = await apolloQuery(
