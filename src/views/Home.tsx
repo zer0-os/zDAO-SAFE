@@ -5,6 +5,7 @@ import useExtendedExplore from '@/hooks/useExtendedExplore';
 import useInfiniteScroll from '@/hooks/useInfiniteScroll';
 import { shorten } from '@/utils/strings';
 import {
+  Box,
   Container,
   Heading,
   Image,
@@ -20,16 +21,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 const LIST_COUNT = 20;
 
-const Space = ({ id, space }: { id: string; space: any }) => {
-  const imageRef = useRef<HTMLImageElement>(null);
-  const textColor = useColorModeValue('gray.700', 'gray.400');
-  const [loaded, setLoaded] = useState(false);
+const getUrl = (url: string) => {
+  const rurl = Client.utils.getUrl(url);
+  if (!rurl) return '';
+  return `https://worker.snapshot.org/mirror?img=${encodeURIComponent(url)}`;
+};
 
-  useEffect(() => {
-    if (!loaded && imageRef.current?.complete) {
-      setLoaded(true);
-    }
-  }, []);
+const Space = ({ id, space }: { id: string; space: any }) => {
+  const textColor = useColorModeValue('gray.700', 'gray.400');
+  const imageRef = useRef<HTMLImageElement>(null);
+  const [loaded, setLoaded] = useState(true);
 
   return (
     <LinkButton
@@ -38,26 +39,32 @@ const Space = ({ id, space }: { id: string; space: any }) => {
     >
       <Card height={'100%'} _hover={{ borderColor: textColor }}>
         <Stack direction={'column'} alignItems={'center'} spacing={2} p={4}>
-          {loaded ? (
-            <Image
-              alt={'space.name'}
-              loading={'lazy'}
-              ref={imageRef}
-              rounded={'full'}
-              src={Client.utils.getUrl(space.avatar)}
-              width={'82px'}
-              height={'82px'}
-              onLoad={() => setLoaded(true)}
-            />
-          ) : (
-            <Blockie
-              alt={'space.name'}
-              seed={formatBytes32String(id.slice(0, 10))}
-              rounded={'full'}
-              width={'82px'}
-              height={'82px'}
-            />
-          )}
+          <Box position={'relative'} width={'82px'} height={'82px'}>
+            {loaded ? (
+              <Image
+                ref={imageRef}
+                alt={space.name}
+                loading={'lazy'}
+                rounded={'full'}
+                src={getUrl(space.avatarUri)}
+                position={'absolute'}
+                width={'full'}
+                height={'full'}
+                onLoad={() => setLoaded(true)}
+                onError={() => setLoaded(false)}
+              />
+            ) : (
+              <Blockie
+                alt={space.name}
+                seed={formatBytes32String(id.slice(0, 10))}
+                rounded={'full'}
+                width={'full'}
+                height={'full'}
+                position={'absolute'}
+              />
+            )}
+          </Box>
+
           <Heading as={'h4'} textAlign={'center'} fontSize={'md'}>
             {shorten(space.name, 16)}
           </Heading>
