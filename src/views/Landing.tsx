@@ -14,6 +14,7 @@ import Card from '@/components/Card';
 import useProposals from '@/hooks/useProposals';
 import { shortenAddress } from '@/utils/address';
 import LinkButton from '@/components/Button/LinkButton';
+import { PrimaryButton } from '@/components/Button';
 
 const shorten = (str: string, limit: number) => {
   return str.length > limit ? `${str.slice(0, limit).trim()}...` : str;
@@ -97,7 +98,8 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
 };
 
 const Landing = () => {
-  const { loading, proposals } = useProposals();
+  const { loading, loadingMore, fullyLoaded, proposals, loadMoreProposals } =
+    useProposals();
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
@@ -118,6 +120,14 @@ const Landing = () => {
             {proposals.map((proposal: Proposal) => (
               <ProposalCard key={proposal.id} proposal={proposal} />
             ))}
+            <PrimaryButton
+              isLoading={loadingMore}
+              loadingText="Loading More ..."
+              disabled={fullyLoaded}
+              onClick={loadMoreProposals}
+            >
+              Load More
+            </PrimaryButton>
           </VStack>
         )}
       </VStack>

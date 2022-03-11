@@ -28,7 +28,7 @@ export const getSpaces = async (spaceIds: string[]) => {
   }
 };
 
-export const getProposals = async () => {
+export const getProposals = async (skip = 0) => {
   const spaceId = SPACE_ID;
   try {
     console.time('getProposal');
@@ -37,6 +37,7 @@ export const getProposals = async () => {
         query: PROPOSALS_QUERY,
         variables: {
           spaceId,
+          skip,
         },
       },
       'proposals'

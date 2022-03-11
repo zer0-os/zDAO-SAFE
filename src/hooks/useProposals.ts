@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 
 export default function useProposals() {
   const [loading, setLoading] = useState(false);
+  const [fullyLoaded, setFullyLoaded] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [proposals, setProposals] = useState<any>([]);
 
   useEffect(() => {
@@ -22,8 +24,31 @@ export default function useProposals() {
     loadProposals();
   }, []);
 
+  const loadMoreProposals = async () => {
+    if (fullyLoaded) {
+      return;
+    }
+
+    setLoadingMore(true);
+    try {
+      const response = await getProposals(proposals.length || 0);
+      if (response.length === 0) {
+        setFullyLoaded(true);
+      }
+      setProposals([...proposals, ...response]);
+    } catch (e) {
+      console.error(e);
+      return e;
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   return {
     loading,
+    loadingMore,
+    loadMoreProposals,
     proposals,
+    fullyLoaded,
   };
 }
