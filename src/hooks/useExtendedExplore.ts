@@ -4,6 +4,7 @@ import { useChainId } from '@/states/application/hooks';
 import Client from '@snapshot-labs/snapshot.js';
 import { useEffect, useState } from 'react';
 import orderBy from 'lodash/orderBy';
+import { SupportedChainId } from '@/config/constants/chain';
 
 const useExtendedExplore = () => {
   const [loading, setLoading] = useState(false);
@@ -44,7 +45,13 @@ const useExtendedExplore = () => {
               score,
             };
           })
-          .filter((space) => !space.private && verified[space.id] !== -1)
+          .filter(
+            (space) =>
+              ((chainId === SupportedChainId.ETHEREUM.toString() &&
+                !space.private) ||
+                chainId !== SupportedChainId.ETHEREUM.toString()) &&
+              verified[space.id] !== -1
+          )
           .filter((space) => space.network === chainId);
 
         const list = orderBy(filters, ['followers', 'score'], ['desc', 'desc']);
