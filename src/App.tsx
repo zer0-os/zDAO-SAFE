@@ -9,9 +9,10 @@ import styled from 'styled-components';
 import useEagerConnect from './hooks/useEagerConnect';
 
 const GnosisSafe = lazy(() => import('@/views/GnosisSafe'));
-const Landing = lazy(() => import('@/views/Landing'));
-const Voting = lazy(() => import('@/views/Voting'));
+const Home = lazy(() => import('@/views/Home'));
+const ListProposal = lazy(() => import('@/views/ListProposal'));
 const CreateProposal = lazy(() => import('@/views/CreateProposal'));
+const Voting = lazy(() => import('@/views/Voting'));
 
 // This config is required for number formatting
 BigNumber.config({
@@ -48,7 +49,8 @@ function App() {
         <BrowserRouter>
           <SuspenseWithChunkError fallback={<Loader />}>
             <Routes>
-              <Route path="/" element={<Landing />}></Route>
+              <Route path="/" element={<Home />}></Route>
+              <Route path="/proposal" element={<ListProposal />}></Route>
               <Route path="/gnosis-safe" element={<GnosisSafe />}></Route>
               <Route path="/create" element={<CreateProposal />}></Route>
               <Route path="/voting/:id" element={<Voting />}></Route>

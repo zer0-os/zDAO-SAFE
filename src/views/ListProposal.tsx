@@ -14,10 +14,6 @@ import {
   useColorModeValue,
 } from '@chakra-ui/react';
 
-// const shorten = (str: string, limit: number) => {
-//   return str.length > limit ? `${str.slice(0, limit).trim()}...` : str;
-// };
-
 export interface Proposal {
   id: string;
   title: string;
@@ -95,7 +91,7 @@ const ProposalCard = ({ proposal }: ProposalCardProps) => {
   );
 };
 
-const Landing = () => {
+const ListProposal = () => {
   const { loading, proposals } = useProposals();
   return (
     <Container as={Stack} maxW={'7xl'}>
@@ -124,4 +120,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default ListProposal;

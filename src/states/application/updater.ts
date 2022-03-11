@@ -3,7 +3,7 @@ import useDebounce from '@/hooks/useDebounce';
 import useIsWindowVisible from '@/hooks/useIsWindowVisible';
 import { useCallback, useEffect, useState } from 'react';
 import { useAppDispatch } from '../';
-import { updateBlockNumber } from '.';
+import { updateBlockNumber, updateChainId } from '.';
 
 const Updater = (): null => {
   const { library, chainId } = useActiveWeb3React();
@@ -79,6 +79,12 @@ const Updater = (): null => {
     debouncedState.blockNumber,
     debouncedState.chainId,
   ]);
+
+  useEffect(() => {
+    if (chainId) {
+      dispatch(updateChainId(chainId));
+    }
+  }, [chainId]);
 
   return null;
 };

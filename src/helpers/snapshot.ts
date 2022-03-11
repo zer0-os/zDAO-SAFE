@@ -1,12 +1,12 @@
-import { PROPOSALS_QUERY } from './../config/constants/queries';
 import {
   PROPOSAL_QUERY,
+  PROPOSALS_QUERY,
   SPACES_QUERY,
   VOTES_QUERY,
 } from '@/config/constants/queries';
+import { SPACE_ID } from '@/config/constants/snapshot';
 import Client from '@snapshot-labs/snapshot.js';
 import { apolloQuery } from './apollo';
-import { SPACE_ID } from '@/config/constants/snapshot';
 
 export const getSpaces = async (spaceIds: string[]) => {
   try {

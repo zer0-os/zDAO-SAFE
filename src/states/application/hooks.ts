@@ -9,3 +9,7 @@ export function useBlockNumber(): number | undefined {
     (state: AppState) => state.application.blockNumber[chainId ?? -1]
   );
 }
+
+export function useChainId(): number {
+  return useSelector((state: AppState) => state.application.chainId);
+}
