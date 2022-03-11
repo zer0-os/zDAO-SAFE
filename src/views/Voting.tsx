@@ -93,7 +93,7 @@ const Voting = () => {
       return true;
     }
     return false;
-  }, [votesEx]);
+  }, [votesEx, account]);
 
   const sortedVotes = useMemo(() => {
     if (!votesEx) {
@@ -106,7 +106,17 @@ const Voting = () => {
     try {
       const response = await getPower(SPACE_ID, account, proposal);
       const vp = response.totalScore;
-      if (vp > 0 && myChoice >= 0) {
+      if (vp < 1) {
+        toast({
+          title: 'Only token holders can cast a vote',
+          position: 'top-right',
+          status: 'error',
+          duration: 3000,
+          isClosable: true,
+        });
+        return;
+      }
+      if (myChoice >= 0) {
         const result = await sendEIP712(space, 'vote', {
           proposal,
           choice: myChoice + 1,
