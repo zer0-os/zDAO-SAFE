@@ -85,7 +85,7 @@ const CreateProposal = () => {
   const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();
   const { space, spaceLoading } = useExtendedSpace(SPACE_ID);
-  const [period, setPeriod] = useState(300);
+  const [period, setPeriod] = useState(86400);
   const borderColor = useColorModeValue('gray.200', 'gray.600');
 
   const isValid =
@@ -348,6 +348,7 @@ const CreateProposal = () => {
                   <Text>Period</Text>
                   <Select
                     onChange={(evt) => setPeriod(Number(evt.target.value))}
+                    value={period.toString()}
                   >
                     {Object.keys(Periods).map((key) => (
                       <option key={key} value={key}>
