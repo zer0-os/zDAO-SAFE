@@ -1,19 +1,20 @@
 import React from 'react';
-import { ThemeProvider } from 'styled-components';
 
-import Home from './pages/Home';
-import GlobalStyles from './styles/GlobalStyles';
-import defaultTheme from './styles/theme/defaultTheme';
-
-const App = () => {
+function App() {
   return (
-    <>
-      <ThemeProvider theme={defaultTheme}>
-        <Home />
-        <GlobalStyles />
-      </ThemeProvider>
-    </>
+    <div className="App">
+      <header className="App-header">
+        <a
+          className="App-link"
+          href="https://reactjs.org"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          React
+        </a>
+      </header>
+    </div>
   );
-};
+}
 
 export default App;

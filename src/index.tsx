@@ -2,11 +2,16 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import App from './App';
+import Providers from './Providers';
 import reportWebVitals from './reportWebVitals';
+import ApplicationUpdater from './states/application/updater';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Providers>
+      <ApplicationUpdater />
+      <App />
+    </Providers>
   </React.StrictMode>,
   document.getElementById('root'),
 );
