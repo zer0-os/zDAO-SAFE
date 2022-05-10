@@ -27,6 +27,7 @@ const useAuth = () => {
 
         setError(undefined);
         window.localStorage.setItem(connectorLocalStorageKey, connectorID);
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
         activate(connector, async (error: Error) => {
           console.log('activate error', error);
           setError(error);

@@ -1,6 +1,6 @@
+import { Image, ImageProps } from '@chakra-ui/react';
 import makeBlockie from 'ethereum-blockies-base64';
 import React, { useEffect, useState } from 'react';
-import { Image, ImageProps } from 'react-bootstrap';
 
 const address = '0x000000000000000000000000000000000000dead';
 

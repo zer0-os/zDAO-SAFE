@@ -1,45 +1,85 @@
+import {
+  Box,
+  Container,
+  Heading,
+  SimpleGrid,
+  Stack,
+  Text,
+  useColorModeValue,
+  VStack,
+} from '@chakra-ui/react';
 import { zDAO } from '@zero-tech/zdao-sdk';
 import { formatBytes32String } from 'ethers/lib/utils';
-import React from 'react';
-import { Button, Card, Container } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import Blockie from '../components/Blockie';
+import Card from '../components/Card';
+import { Loader } from '../components/Loader';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { shortenAddress } from '../utils/address';
 
 const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
+  const textColor = useColorModeValue('gray.700', 'gray.400');
+
   return (
-    <Button variant="link">
-      <Card className="h-100 p-4">
-        <div className="d-flex flex-column justify-content-center align-items-center">
-          <Blockie
-            alt={zDAO.title}
-            seed={formatBytes32String(zDAO.title)}
-            width="80px"
-            height="80px"
-            rounded
-          />
-          <h3>{zDAO.title}</h3>
-          <h5>{shortenAddress(zDAO.createdBy)}</h5>
-        </div>
+    <Link
+      to={`/${zDAO.title}`}
+      style={{ width: '100%', textDecoration: 'none' }}
+    >
+      <Card height="100%" _hover={{ borderColor: textColor }}>
+        <Stack direction="column" alignItems="center" spacing={2} p={4}>
+          <Box position="relative" width="82px" height="82px">
+            <Blockie
+              alt={zDAO.title}
+              seed={formatBytes32String(zDAO.title)}
+              rounded="full"
+              width="full"
+              height="full"
+              position="absolute"
+            />
+          </Box>
+
+          <Heading as="h4" textAlign="center" fontSize="md">
+            {zDAO.title}
+          </Heading>
+          <Text textAlign="center">{shortenAddress(zDAO.createdBy)}</Text>
+        </Stack>
       </Card>
-    </Button>
+    </Link>
   );
 };
 
 const Home = () => {
-  const { zDAOs } = useSdkContext();
+  const { instance } = useSdkContext();
+  const [loading, setLoading] = useState(true);
+  const [zDAOs, setZDAOs] = useState<zDAO[] | undefined>();
+
+  useEffect(() => {
+    const fetch = async () => {
+      if (!instance) return;
+      const list = await instance.listZDAOs();
+      setZDAOs(list);
+      setLoading(false);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetch();
+  }, [instance]);
 
   return (
-    <Container>
-      <div className="row w-100">
-        {zDAOs &&
-          zDAOs.map((dao) => (
-            <div className="col-4" key={dao.id}>
-              <ZDAOBlock zDAO={dao} />
-            </div>
-          ))}
-      </div>
+    <Container as={Stack} maxW="7xl">
+      {loading ? (
+        <Stack justifyContent="start">
+          <Loader />
+        </Stack>
+      ) : (
+        <VStack spacing={{ base: 6, sm: 12 }} alignItems="center">
+          <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
+            {zDAOs && zDAOs.map((dao) => <ZDAOBlock key={dao.id} zDAO={dao} />)}
+          </SimpleGrid>
+        </VStack>
+      )}
     </Container>
   );
 };

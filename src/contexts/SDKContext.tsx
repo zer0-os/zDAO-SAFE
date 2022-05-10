@@ -16,7 +16,6 @@ interface SDKContextValue {
   isInitialized: boolean;
   instance?: SDKInstance;
   zDAOs: zDAO[];
-  fetchZDAOs: () => Promise<void>;
 }
 
 const SDKContext = React.createContext<undefined | SDKContextValue>(undefined);
@@ -33,16 +32,11 @@ const SDKProvider = ({ children }: SDKContextProps) => {
 
   const { account } = useActiveWeb3React();
 
-  const fetchZDAOs = useCallback(async () => {
-    if (instance) {
-      setZDAOs(await instance.listZDAOs());
-    }
-  }, [instance]);
-
   const dispatch = useAppDispatch();
 
   const createInstance = useCallback(async () => {
-    if (initialized) return;
+    console.log('creating instance');
+    console.time('createInstance');
 
     setInitialized(false);
     const config = developmentConfiguration({
@@ -67,8 +61,6 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       },
     });
 
-    console.log('config', config);
-
     const sdk = await createSDKInstance(config);
 
     const zNAsList = await sdk.listZNAs();
@@ -85,9 +77,9 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     setInitialized(true);
 
     dispatch(setApplicationStatus({ appStatus: ApplicationStatus.LIVE }));
-  }, [dispatch, initialized, account]);
 
-  console.log('listed', initialized, zNAs, zDAOs);
+    console.timeEnd('createInstance');
+  }, [dispatch, account]);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -96,7 +88,11 @@ const SDKProvider = ({ children }: SDKContextProps) => {
 
   return (
     <SDKContext.Provider
-      value={{ isInitialized: initialized, instance, zDAOs, fetchZDAOs }}
+      value={{
+        isInitialized: initialized,
+        instance,
+        zDAOs,
+      }}
     >
       {children}
     </SDKContext.Provider>

@@ -25,7 +25,7 @@ const StyledSVG = styled.svg<{ size: string; stroke?: string }>`
  */
 export default function Loader({
   size = '24px',
-  stroke = 'rgba(0,0,0,0.5)',
+  stroke = 'var(--chakra-colors-whiteAlpha-700)',
   ...rest
 }: {
   size?: string;

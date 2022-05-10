@@ -1,3 +1,4 @@
+import { Box } from '@chakra-ui/react';
 import React from 'react';
 
 import Loader from './Loader';
@@ -8,17 +9,17 @@ import Loader from './Loader';
  */
 export default function FullScreenLoader({
   size = '32px',
-  stroke = 'rgba(0,0,0,0.5)',
+  stroke = 'var(--chakra-colors-whiteAlpha-700)',
   ...rest
 }: {
   size?: string;
   stroke?: string;
 }) {
   return (
-    <div className="position-relative vw-100 vh-100">
-      <div className="position-absolute top-50 start-50 translate-middle">
+    <Box position="relative" width="full" height="100vh">
+      <Box position="absolute" top="50%" left="50%" translateX="50%">
         <Loader size={size} stroke={stroke} {...rest} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 }
