@@ -1,11 +1,11 @@
 import { AbstractConnector } from '@web3-react/abstract-connector';
 
-import MetaMask from '@/assets/icons/metamask.svg';
-
+import MetaMask from '../../assets/icons/metamask.svg';
 import { injected } from './connectors';
 // import TrustWallet from '@/assets/icons/trustwallet.svg';
 // import WalletConnect from '@/assets/icons/walletconnect.svg';
 
+// eslint-disable-next-line no-shadow
 export enum ConnectorNames {
   Injected = 'injected',
   // WalletConnect = 'walletconnect',

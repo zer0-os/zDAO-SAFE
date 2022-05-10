@@ -2,20 +2,20 @@ import { SupportedChainId } from '@zero-tech/zdao-sdk';
 
 export const env = {
   ethereum: {
-    zDAOChef: process.env.REACT_GOERLI_ZDAOCHEF_ADDRESS!,
-    rpc: process.env.REACT_GOERLI_RPC_URL!,
-    network: SupportedChainId.GOERLI!,
-    blockNumber: Number(process.env.REACT_GOERLI_BLOCK_NUMBER!),
+    zDAOChef: process.env.REACT_APP_GOERLI_ZDAOCHEF_ADDRESS!,
+    rpc: process.env.REACT_APP_GOERLI_RPC_URL!,
+    network: SupportedChainId.GOERLI,
+    blockNumber: Number(process.env.REACT_APP_GOERLI_BLOCK_NUMBER!),
   },
   polygon: {
-    zDAOChef: process.env.REACT_MUMBAI_ZDAOCHEF_ADDRESS!,
-    rpc: process.env.REACT_MUMBAI_RPC_URL!,
-    network: SupportedChainId.MUMBAI!,
-    blockNumber: Number(process.env.REACT_MUMBAI_BLOCK_NUMBER!),
+    zDAOChef: process.env.REACT_APP_MUMBAI_ZDAOCHEF_ADDRESS!,
+    rpc: process.env.REACT_APP_MUMBAI_RPC_URL!,
+    network: SupportedChainId.MUMBAI,
+    blockNumber: Number(process.env.REACT_APP_MUMBAI_BLOCK_NUMBER!),
   },
   fleek: {
-    apiKey: process.env.REACT_FLEEK_API_KEY!,
-    apiSecret: process.env.REACT_FLEEK_API_SECRET!,
+    apiKey: process.env.REACT_APP_FLEEK_API_KEY!,
+    apiSecret: process.env.REACT_APP_FLEEK_API_SECRET!,
   },
 };
 

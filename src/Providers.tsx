@@ -10,11 +10,11 @@ import { getLibrary } from './utils/web3React';
 const Providers = ({ children }: { children: React.ReactNode }) => {
   return (
     <Web3ReactProvider getLibrary={getLibrary}>
-      <RefreshContextProvider>
-        <SDKProvider>
-          <Provider store={store}>{children}</Provider>
-        </SDKProvider>
-      </RefreshContextProvider>
+      <Provider store={store}>
+        <RefreshContextProvider>
+          <SDKProvider>{children}</SDKProvider>
+        </RefreshContextProvider>
+      </Provider>
     </Web3ReactProvider>
   );
 };

@@ -9,6 +9,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 
 import { env, proofFrom } from '../config/env';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
+import { useAppDispatch } from '../states';
+import { ApplicationStatus, setApplicationStatus } from '../states/application';
 
 interface SDKContextValue {
   isInitialized: boolean;
@@ -24,12 +26,12 @@ interface SDKContextProps {
 }
 
 const SDKProvider = ({ children }: SDKContextProps) => {
-  const [initialize, setInitialize] = useState<boolean>(false);
+  const [initialized, setInitialized] = useState<boolean>(false);
   const [instance, setInstance] = useState<SDKInstance | undefined>(undefined);
   const [zNAs, setZNAs] = useState<zNA[]>([]);
   const [zDAOs, setZDAOs] = useState<zDAO[]>([]);
 
-  const { library, account } = useActiveWeb3React();
+  const { account } = useActiveWeb3React();
 
   const fetchZDAOs = useCallback(async () => {
     if (instance) {
@@ -37,8 +39,12 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     }
   }, [instance]);
 
+  const dispatch = useAppDispatch();
+
   const createInstance = useCallback(async () => {
-    setInitialize(false);
+    if (initialized) return;
+
+    setInitialized(false);
     const config = developmentConfiguration({
       ethereum: {
         zDAOChef: env.ethereum.zDAOChef,
@@ -61,26 +67,36 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       },
     });
 
+    console.log('config', config);
+
     const sdk = await createSDKInstance(config);
 
     const zNAsList = await sdk.listZNAs();
     setZNAs(zNAsList);
 
+    console.log('zNAs', zNAsList);
+
     const zDAOsList = await sdk.listZDAOs();
     setZDAOs(zDAOsList);
 
+    console.log('zDAOs', zDAOsList);
+
     setInstance(sdk);
-    setInitialize(true);
-  }, [account]);
+    setInitialized(true);
+
+    dispatch(setApplicationStatus({ appStatus: ApplicationStatus.LIVE }));
+  }, [dispatch, initialized, account]);
+
+  console.log('listed', initialized, zNAs, zDAOs);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    // createInstance();
+    createInstance();
   }, [createInstance]);
 
   return (
     <SDKContext.Provider
-      value={{ isInitialized: initialize, instance, zDAOs, fetchZDAOs }}
+      value={{ isInitialized: initialized, instance, zDAOs, fetchZDAOs }}
     >
       {children}
     </SDKContext.Provider>

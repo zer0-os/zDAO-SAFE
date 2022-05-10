@@ -69,7 +69,9 @@
       "error"
     ],
     "simple-import-sort/exports": "error",
-    "simple-import-sort/imports": "error"
+    "simple-import-sort/imports": "error",
+    "import/no-extraneous-dependencies": "off",
+    "no-shadow": "off"
   },
   "settings": {
     "import/resolver": {
