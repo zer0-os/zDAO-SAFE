@@ -13,7 +13,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import { Proposal, SupportedChainId, Vote } from '@zero-tech/zdao-sdk';
+import { Choice, Proposal, SupportedChainId, Vote } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { format } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -25,6 +25,9 @@ import {
   LinkButton,
   PrimaryButton,
 } from '../components/Button';
+import LinkExternal, {
+  ExternalLinkType,
+} from '../components/Button/LinkExternal';
 import Card from '../components/Card';
 import { EventCountDown } from '../components/CountDown';
 import { Loader } from '../components/Loader';
@@ -33,10 +36,10 @@ import {
   getFormatedValue,
   getFullDisplayBalance,
 } from '../config/constants/number';
+import { ProposalStateText } from '../config/constants/text';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { getExternalLink } from '../utils/address';
-import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -57,6 +60,7 @@ const Voting = () => {
   const { zNA, proposalId } = useParams();
 
   const textColor = useColorModeValue('gray.700', 'gray.400');
+  const borderColor = useColorModeValue('gray.200', 'gray.600');
   const voteHoverBorderColor = useColorModeValue(
     'blue.600',
     'rgb(145, 85, 230)',
@@ -69,7 +73,7 @@ const Voting = () => {
   const voteSelectedTextColor = useColorModeValue('black', 'white');
 
   const [myChoice, setMyChoice] = useState(-1);
-  const [isExecuting, setIsExecuting] = useState(false);
+  const [isProcessingTx, setProcessingTx] = useState(false);
   const [showAll, setShowAll] = useState(false);
   const toast = useToast();
 
@@ -79,6 +83,16 @@ const Voting = () => {
   const [proposal, setProposal] = useState<Proposal | undefined>();
   const [votesLoading, setVotesLoading] = useState(true);
   const [votes, setVotes] = useState<Vote[] | undefined>();
+  const [collectHashesLoading, setCollectHashesLoading] = useState<boolean>(
+    true,
+  );
+  const [collectedHashes, setCollectedHashes] = useState<
+    | {
+        hash: string;
+        isCheckPointed: boolean;
+      }[]
+    | undefined
+  >();
 
   useEffect(() => {
     const fetch = async () => {
@@ -96,17 +110,32 @@ const Voting = () => {
 
   useEffect(() => {
     const fetch = async () => {
-      if (!proposal) return;
+      if (!zDAO || !proposal) return;
 
       const items = await proposal.listVotes();
       console.log('votes', items);
       setVotes(items);
       setVotesLoading(false);
+
+      const hashes = await proposal.collectTxHash();
+      console.log('collected hashes', hashes);
+
+      const promises: Promise<boolean>[] = hashes.map((hash) =>
+        zDAO.isCheckPointed(hash),
+      );
+      const checked = await Promise.all(promises);
+      setCollectedHashes(
+        hashes.map((hash, index) => ({
+          hash,
+          isCheckPointed: checked[index],
+        })),
+      );
+      setCollectHashesLoading(false);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     fetch();
-  }, [proposal]);
+  }, [proposal, zDAO]);
 
   const alreadyVoted = useMemo(() => {
     if (!votes) return false;
@@ -122,14 +151,32 @@ const Voting = () => {
     return showAll ? votes : votes.slice(0, MAX_VISIBLE_COUNT);
   }, [votes, showAll]);
 
-  const canExecute = proposal?.canExecute();
+  const handleVote = async () => {
+    if (!zDAO || !library || !proposal) return;
+    setProcessingTx(true);
+    await proposal.vote(library.getSigner(), (myChoice + 1) as Choice); // proposal.choices[myChoice]); // todo
+    setProcessingTx(false);
+  };
 
-  const handleVote = () => {
-    console.log('vote');
+  const handleCollectProposal = async () => {
+    if (!zDAO || !library || !proposal) return;
+    setProcessingTx(true);
+    await proposal.collect(library.getSigner());
+    setProcessingTx(false);
+  };
+
+  const handleReceiveCollectProposal = async (txhash: string) => {
+    if (!zDAO || !library) return;
+    setProcessingTx(true);
+    await zDAO.syncState(library.getSigner(), txhash);
+    setProcessingTx(false);
   };
 
   const handleExecuteProposal = async () => {
-    console.log('execute proposal');
+    if (!zDAO || !library || !proposal) return;
+    setProcessingTx(true);
+    await proposal.execute(library.getSigner());
+    setProcessingTx(false);
   };
 
   const handleShowAll = () => {
@@ -166,11 +213,11 @@ const Voting = () => {
                 <Stack spacing={2}>
                   <Text color={textColor}>
                     {`Let's send
-                  ${getFullDisplayBalance(
-                    new BigNumber(proposal.metadata.amount),
-                    proposal.metadata.decimals,
-                  )}
-                  token to this address: `}
+                      ${getFullDisplayBalance(
+                        new BigNumber(proposal.metadata.amount),
+                        proposal.metadata.decimals,
+                      )}
+                      token to this address: `}
                     <LinkButton
                       href={getExternalLink(
                         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -204,7 +251,7 @@ const Voting = () => {
                 </Stack>
               )}
 
-              {proposal.state === 'active' && (
+              {proposal.state === 'active' && !alreadyVoted && (
                 <Card title="Cast your vote">
                   <Stack spacing={2} direction="column">
                     {account ? (
@@ -236,11 +283,27 @@ const Voting = () => {
                             {choice}
                           </Button>
                         ))}
+
+                        {chainId && chainId !== SupportedChainId.MUMBAI && (
+                          <Button
+                            borderWidth="1px"
+                            borderRadius="md"
+                            px={4}
+                            py={2}
+                            _hover={{
+                              borderColor,
+                            }}
+                          >
+                            <Heading size="sm">Switch to Mumbai</Heading>
+                          </Button>
+                        )}
+
                         <PrimaryButton
                           disabled={
                             proposalLoading ||
                             votesLoading ||
-                            proposal.state !== 'active'
+                            proposal.state !== 'active' ||
+                            chainId !== SupportedChainId.MUMBAI
                           }
                           rounded="full"
                           onClick={handleVote}
@@ -300,7 +363,7 @@ const Voting = () => {
                     templateColumns={{ base: '1fr 2fr' }}
                   >
                     <Text>Identifier</Text>
-                    {proposal.id}
+                    <Text>{proposal.id}</Text>
 
                     {account && (
                       <>
@@ -312,6 +375,17 @@ const Voting = () => {
                         />
                       </>
                     )}
+
+                    <Text>Majority</Text>
+                    <Text>
+                      {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
+                    </Text>
+
+                    <Text>Quorum Participants</Text>
+                    <Text>{zDAO?.quorumParticipants}</Text>
+
+                    <Text>Quorum Votes</Text>
+                    <Text>{zDAO?.quorumVotes}</Text>
 
                     <Text>Snapshot</Text>
                     <LinkExternal
@@ -329,7 +403,7 @@ const Voting = () => {
                     >
                       {proposal.state}
                     </Badge>
-                    <Spacer />
+                    <Text>{ProposalStateText(proposal.state)}</Text>
 
                     <Text>Start Date</Text>
                     <Text>
@@ -382,21 +456,137 @@ const Voting = () => {
                       <Spacer />
                     </div>
                   ))}
+
+                  <SimpleGrid
+                    columns={2}
+                    spacing={4}
+                    templateColumns={{ base: '1fr 2fr' }}
+                  >
+                    <Text>Total Votes</Text>
+                    <Text>
+                      {proposal.scores
+                        ? new BigNumber(proposal.scores[0])
+                            .plus(new BigNumber(proposal.scores[1]))
+                            .toString()
+                        : ''}
+                    </Text>
+                    <Text>Total Voters</Text>
+                    <Text>{proposal.voters}</Text>
+                  </SimpleGrid>
                 </Stack>
               </Card>
               <Box pt={1} />
-              <PrimaryButton
-                disabled={
-                  proposalLoading ||
-                  votesLoading ||
-                  proposal.state !== 'collected' ||
-                  isExecuting ||
-                  !canExecute
-                }
-                onClick={handleExecuteProposal}
-              >
-                Execute Proposal
-              </PrimaryButton>
+
+              {
+                // eslint-disable-next-line no-nested-ternary
+                proposal.state === 'queueing' ? (
+                  <>
+                    {chainId && chainId !== SupportedChainId.MUMBAI && (
+                      <Button
+                        borderWidth="1px"
+                        borderRadius="md"
+                        px={4}
+                        py={2}
+                        _hover={{
+                          borderColor,
+                        }}
+                      >
+                        <Heading size="sm">Switch to Mumbai</Heading>
+                      </Button>
+                    )}
+                    <PrimaryButton
+                      disabled={
+                        isProcessingTx || chainId !== SupportedChainId.GOERLI
+                      }
+                      onClick={handleCollectProposal}
+                    >
+                      Collect Proposal
+                    </PrimaryButton>
+                  </>
+                ) : proposal.state === 'collecting' ? (
+                  <>
+                    {chainId && chainId !== SupportedChainId.GOERLI && (
+                      <Button
+                        borderWidth="1px"
+                        borderRadius="md"
+                        px={4}
+                        py={2}
+                        _hover={{
+                          borderColor,
+                        }}
+                      >
+                        <Heading size="sm">Switch to Goerli</Heading>
+                      </Button>
+                    )}
+
+                    {collectHashesLoading ? (
+                      <Stack direction="row" spacing={4}>
+                        <Loader />
+                        <Text>Looking for transaction hashes collected</Text>
+                      </Stack>
+                    ) : (
+                      collectedHashes && (
+                        <SimpleGrid
+                          columns={2}
+                          spacing={4}
+                          templateColumns={{ base: '1fr 2fr' }}
+                          alignItems="center"
+                        >
+                          {collectedHashes.map((collected) => (
+                            <>
+                              <LinkExternal
+                                chainId={SupportedChainId.MUMBAI}
+                                type={ExternalLinkType.tx}
+                                value={collected.hash}
+                              />
+                              <PrimaryButton
+                                disabled={
+                                  isProcessingTx ||
+                                  !collected.isCheckPointed ||
+                                  chainId !== SupportedChainId.GOERLI
+                                }
+                                onClick={() =>
+                                  // eslint-disable-next-line prettier/prettier
+                                  handleReceiveCollectProposal(collected.hash)}
+                              >
+                                {!collected.isCheckPointed
+                                  ? 'Checkpointing'
+                                  : 'Receive result'}
+                              </PrimaryButton>
+                            </>
+                          ))}
+                        </SimpleGrid>
+                      )
+                    )}
+                  </>
+                ) : (
+                  proposal.state === 'succeeded' && (
+                    <>
+                      {chainId && chainId !== SupportedChainId.GOERLI && (
+                        <Button
+                          borderWidth="1px"
+                          borderRadius="md"
+                          px={4}
+                          py={2}
+                          _hover={{
+                            borderColor,
+                          }}
+                        >
+                          <Heading size="sm">Switch to Goerli</Heading>
+                        </Button>
+                      )}
+                      <PrimaryButton
+                        disabled={
+                          isProcessingTx || chainId !== SupportedChainId.GOERLI
+                        }
+                        onClick={handleExecuteProposal}
+                      >
+                        Execute Proposal
+                      </PrimaryButton>
+                    </>
+                  )
+                )
+              }
               <Spacer pt={2} />
             </Stack>
           </Stack>

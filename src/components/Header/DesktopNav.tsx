@@ -7,50 +7,38 @@ import {
   MenuItem,
   MenuList,
   Text,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import React from 'react';
 import { IoExitOutline } from 'react-icons/io5';
 
+import { ChainText } from '../../config/constants/text';
 import useActiveWeb3React from '../../hooks/useActiveWeb3React';
 import useAuth from '../../hooks/useAuth';
 import { shortenAddress } from '../../utils/address';
-import { ConnectWalletButton, LinkButton } from '../Button';
+import { ConnectWalletButton } from '../Button';
 
 const DesktopNav = (props: BoxProps) => {
-  const { account } = useActiveWeb3React();
+  const { account, chainId } = useActiveWeb3React();
   const { logout } = useAuth();
 
   return (
     <>
-      <LinkButton
-        borderWidth="1px"
-        borderColor="transparent"
-        href="/create"
-        px={4}
-        py={1}
-        _hover={{
-          borderColor: useColorModeValue('blue.600', 'rgb(145, 85, 230)'),
-          borderWidth: '1px',
-          borderRadius: 'md',
-        }}
-      >
-        Create
-      </LinkButton>
-
       {!account ? (
         <ConnectWalletButton />
       ) : (
-        <Menu {...props}>
-          <MenuButton as={Button} rightIcon={<ChevronDownIcon />} size="sm">
-            <Text>{shortenAddress(account)}</Text>
-          </MenuButton>
-          <MenuList>
-            <MenuItem icon={<IoExitOutline />} onClick={logout}>
-              Disconnect
-            </MenuItem>
-          </MenuList>
-        </Menu>
+        <>
+          <Text>{chainId && ChainText(chainId)}</Text>
+          <Menu {...props}>
+            <MenuButton as={Button} rightIcon={<ChevronDownIcon />} size="sm">
+              <Text>{shortenAddress(account)}</Text>
+            </MenuButton>
+            <MenuList>
+              <MenuItem icon={<IoExitOutline />} onClick={logout}>
+                Disconnect
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </>
       )}
     </>
   );

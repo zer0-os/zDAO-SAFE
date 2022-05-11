@@ -39,8 +39,8 @@ const AStyle = styled.a`
   word-break: break-all;
 `;
 
-const Title = ({...props}) => {
-  return <Heading as="h4" fontSize={'2xl'} scale="lg" my="16px" {...props} />;
+const Title = ({ ...props }) => {
+  return <Heading as="h4" fontSize="2xl" scale="lg" my="16px" {...props} />;
 };
 
 const markdownComponents: Partial<Components> = {
@@ -50,18 +50,21 @@ const markdownComponents: Partial<Components> = {
   h4: Title,
   h5: Title,
   h6: Title,
+  // eslint-disable-next-line react/display-name
   p: (props) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     return <Text as="p" my="16px" {...props} />;
   },
-  table: ({ ...props }) => {
+  // eslint-disable-next-line react/display-name
+  table: ({ children, ...props }) => {
     return (
       <TableBox>
-        <Table>{props.children}</Table>
+        <Table>{children}</Table>
       </TableBox>
     );
   },
+  // eslint-disable-next-line react/display-name
   ol: (props) => {
     return (
       <ThemedComponent
@@ -71,6 +74,7 @@ const markdownComponents: Partial<Components> = {
       />
     );
   },
+  // eslint-disable-next-line react/display-name
   ul: (props) => {
     return (
       <ThemedComponent
@@ -80,9 +84,11 @@ const markdownComponents: Partial<Components> = {
       />
     );
   },
+  // eslint-disable-next-line react/display-name
   a: (props) => {
     return <AStyle {...props} />;
   },
+  // eslint-disable-next-line react/display-name
   pre: (props) => {
     return <Pre {...props} />;
   },

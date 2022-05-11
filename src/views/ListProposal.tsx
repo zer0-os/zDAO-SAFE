@@ -30,11 +30,13 @@ const ProposalCard = ({
   const { account } = useActiveWeb3React();
   const textColor = useColorModeValue('gray.700', 'gray.400');
 
-  // const currentTime = new Date().getTime() / 1000;
-  // let diff = Math.abs(proposal.end - currentTime);
-  // const days = Math.floor(diff / 86400);
-  // diff = diff % 86400;
-  // const hrs = Math.floor(diff / 3600);
+  const currentTime = new Date().getTime();
+  let diff = proposal.end
+    ? Math.abs(proposal.end.getTime() - currentTime) / 1000
+    : undefined;
+  const days = diff ? Math.floor(diff / 86400) : undefined;
+  diff = diff ? diff % 86400 : undefined;
+  const hrs = diff ? Math.floor(diff / 3600) : undefined;
 
   return (
     <Link
@@ -66,10 +68,22 @@ const ProposalCard = ({
             {shorten(body, 120)}
           </Text> */}
           <Flex width="100%" color={textColor}>
-            {/* <Text>{end > currentTime ? 'Ends in' : 'Ended'}</Text>
-            {days > 0 ? <Text marginLeft={1}>{days} days</Text> : null}
-            {hrs > 0 ? <Text marginLeft={1}>{hrs} hours</Text> : null}
-            {end < currentTime ? <Text marginLeft={1}>ago</Text> : null} */}
+            {proposal.start && proposal.end ? (
+              <>
+                <Text>
+                  {proposal.end.getTime() > currentTime ? 'Ends in' : 'Ended'}
+                </Text>
+                {days && days > 0 && (
+                  <Text marginLeft={1}>{`${days} days`}</Text>
+                )}
+                {hrs && hrs > 0 && <Text marginLeft={1}>{`${hrs} hours`}</Text>}
+                {proposal.end.getTime() < currentTime && (
+                  <Text marginLeft={1}>ago</Text>
+                )}
+              </>
+            ) : (
+              <Text>pending</Text>
+            )}
           </Flex>
         </VStack>
       </Card>
@@ -101,7 +115,7 @@ const ListProposal = () => {
 
         setProposals({
           loading: false,
-          list,
+          list: list.reverse(),
         });
       } catch (error) {
         console.error(error);
@@ -128,19 +142,35 @@ const ListProposal = () => {
           </Stack>
         ) : (
           <>
-            <Link to={`/${zNA}/gnosis-safe`}>
-              <Button
-                borderWidth="1px"
-                borderRadius="md"
-                px={4}
-                py={2}
-                _hover={{
-                  borderColor,
-                }}
-              >
-                <Heading size="sm">Gnosis Safe</Heading>
-              </Button>
-            </Link>
+            <Stack direction="row" spacing={2}>
+              <Link to={`/${zNA}/gnosis-safe`}>
+                <Button
+                  borderWidth="1px"
+                  borderRadius="md"
+                  px={4}
+                  py={2}
+                  _hover={{
+                    borderColor,
+                  }}
+                >
+                  <Heading size="sm">Gnosis Safe</Heading>
+                </Button>
+              </Link>
+
+              <Link to={`/${zNA}/create-proposal`}>
+                <Button
+                  borderWidth="1px"
+                  borderRadius="md"
+                  px={4}
+                  py={2}
+                  _hover={{
+                    borderColor,
+                  }}
+                >
+                  <Heading size="sm">Create Proposal</Heading>
+                </Button>
+              </Link>
+            </Stack>
 
             {proposals.list.map((proposal) => (
               <ProposalCard key={proposal.id} zNA={zNA} proposal={proposal} />

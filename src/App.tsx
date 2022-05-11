@@ -14,6 +14,7 @@ const Home = lazy(() => import('./views/Home'));
 const GnosisSafe = lazy(() => import('./views/GnosisSafe'));
 const ListProposal = lazy(() => import('./views/ListProposal'));
 const Voting = lazy(() => import('./views/Voting'));
+const CreateProposal = lazy(() => import('./views/CreateProposal'));
 
 // This config is required for number formatting
 BigNumber.config({
@@ -59,13 +60,13 @@ function App() {
           <SuspenseWithChunkError fallback={<FullScreenLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/:zNA/gnosis-safe" element={<GnosisSafe />} />
               <Route path="/:zNA" element={<ListProposal />} />
               <Route path="/:zNA/:proposalId" element={<Voting />} />
-              {/*  
-              <Route path="/create" element={<CreateProposal />} />
-              
-              <Route path="*" element={<Navigate to="/" />} /> */}
+              <Route path="/:zNA/gnosis-safe" element={<GnosisSafe />} />
+              <Route
+                path="/:zNA/create-proposal"
+                element={<CreateProposal />}
+              />
             </Routes>
           </SuspenseWithChunkError>
         </BrowserRouter>

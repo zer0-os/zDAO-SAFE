@@ -2,11 +2,16 @@ import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Stack, Text } from '@chakra-ui/react';
 import React, { useMemo } from 'react';
 
-import LinkButton from '../../components/Button/LinkButton';
-import { getExternalLink, shortenAddress } from '../../utils/address';
+import {
+  getExternalLink,
+  shortenAddress,
+  shortenTx,
+} from '../../utils/address';
+import LinkButton from './LinkButton';
 
 export enum ExternalLinkType {
   address = 'address',
+  tx = 'tx',
   block = 'block',
   proposal = 'proposal',
 }
@@ -21,7 +26,11 @@ const LinkExternal = ({
   value: string | number;
 }) => {
   const link = useMemo(() => {
-    if (type === ExternalLinkType.address || type === ExternalLinkType.block) {
+    if (
+      type === ExternalLinkType.address ||
+      type === ExternalLinkType.tx ||
+      type === ExternalLinkType.block
+    ) {
       return getExternalLink(chainId, type, value);
     }
     return '';
@@ -30,6 +39,9 @@ const LinkExternal = ({
   const display = useMemo(() => {
     if (type === ExternalLinkType.address) {
       return shortenAddress(value as string);
+    }
+    if (type === ExternalLinkType.tx) {
+      return shortenTx(value as string);
     }
     if (type === ExternalLinkType.proposal) {
       return value as string;

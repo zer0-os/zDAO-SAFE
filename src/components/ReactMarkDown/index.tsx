@@ -4,13 +4,15 @@ import gfm from 'remark-gfm';
 
 import markdownComponents from './styles';
 
-const ReactMarkdown = ({...props}) => {
+const ReactMarkdown = ({ ...props }) => {
   return (
     <ReactMarkdownLib
       remarkPlugins={[gfm]}
       components={markdownComponents}
       {...props}
-    />
+    >
+      {' '}
+    </ReactMarkdownLib>
   );
 };
 

@@ -3996,7 +3996,7 @@
 
 "@zero-tech/zdao-sdk@github:zer0-os/zdao-sdk#feat/polygon-sdk":
   version "0.0.6"
-  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/7ba61dea4c6b814b9a932bfecbb53f554a110bee"
+  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/9b5735c77b6f0ee4547f5a50e569f18fbc04faa8"
   dependencies:
     "@fleekhq/fleek-storage-js" "1.0.21"
     "@gnosis.pm/safe-core-sdk" "2.0.0"
@@ -4425,9 +4425,9 @@ available-typed-arrays@^1.0.5:
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
 aws-sdk@^2.814.0, aws-sdk@^2.989.0:
-  version "2.1131.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1131.0.tgz#0d235c6335587532d280a0d3a5971d48766d2e2a"
-  integrity sha512-Ic3f2fSgVhYDQ0OBGxE6ODtSwaKyxBPGrI2RGrYt2Oj0Z8f227P7dB90o9X7y2MtnuJ4WoAzkf3Vc1c1UnnZlA==
+  version "2.1132.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1132.0.tgz#0cb615e97db5a5133914ba0f2bdc8ea10eef4069"
+  integrity sha512-NPDesfTrNx8UMQ5VuosQNlFFFhswJ8cGVcVltZBXKVl1kW0BCp52XQBySSruIznaRX7vG6Ir2+nox0NdL05qBQ==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"

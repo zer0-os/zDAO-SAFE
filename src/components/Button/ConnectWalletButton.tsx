@@ -39,11 +39,13 @@ const ConnectWalletButton = () => {
     if (error instanceof UnsupportedChainIdError) {
       onClose();
     }
-  }, [error]);
+  }, [error, onClose]);
 
   return (
     <>
-      {error && error instanceof UnsupportedChainIdError && 'Unsupported Chain'}
+      {error && error instanceof UnsupportedChainIdError && (
+        <Text paddingRight={3}>Unsupported Chain</Text>
+      )}
       <PrimaryButton size="sm" onClick={onOpen}>
         Connect Wallet
       </PrimaryButton>

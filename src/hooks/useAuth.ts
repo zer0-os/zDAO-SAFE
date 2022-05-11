@@ -1,4 +1,4 @@
-import { /* UnsupportedChainIdError, */ useWeb3React } from '@web3-react/core';
+import { useWeb3React } from '@web3-react/core';
 import { useCallback, useState } from 'react';
 
 // import {
@@ -19,6 +19,10 @@ const useAuth = () => {
   const { chainId, activate, deactivate } = useWeb3React();
   const [error, setError] = useState<Error | undefined>(undefined);
 
+  const logout = useCallback(() => {
+    deactivate();
+  }, [deactivate, chainId]);
+
   const login = useCallback(
     (connectorID: ConnectorNames) => {
       const connector = CONNECTORS_BY_NAMES[connectorID];
@@ -33,36 +37,14 @@ const useAuth = () => {
           setError(error);
           window.localStorage.removeItem(connectorLocalStorageKey);
 
-          // if (error instanceof UnsupportedChainIdError) {
-          //   // Chain Id was not supported
-          // } else {
-          //   window.localStorage.removeItem(connectorLocalStorageKey);
-          //   if (error instanceof NoEthereumProviderError) {
-          //     // No provider was found
-          //   } else if (
-          //     error instanceof UserRejectedRequestErrorInjected ||
-          //     error instanceof UserRejectedRequestErrorWalletConnect
-          //   ) {
-          //     if (connector instanceof WalletConnectConnector) {
-          //       const walletConnector = connector as WalletConnectConnector;
-          //       walletConnector.walletConnectProvider = null;
-          //     }
-          //     // Authorization Error
-          //   } else {
-          //     // Unknown Error
-          //   }
-          // }
+          logout();
         });
       } else {
         // Unable to find connector
       }
     },
-    [activate],
+    [activate, logout],
   );
-
-  const logout = useCallback(() => {
-    deactivate();
-  }, [deactivate, chainId]);
 
   return { login, logout, error };
 };

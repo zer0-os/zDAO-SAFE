@@ -70,11 +70,9 @@ const ReactMdEditor = ({ body, onChange, ...props }: ReactMdeProps) => {
         onChange={onChange}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
-        generateMarkdownPreview={(markdown:any) =>
-          {
-            return Promise.resolve(converter.makeHtml(markdown));
-          }
-        }
+        generateMarkdownPreview={(markdown: unknown) => {
+          return Promise.resolve(converter.makeHtml(markdown));
+        }}
         childProps={{
           writeButton: {
             tabIndex: -1,
