@@ -38,7 +38,8 @@ const typography = {
   fonts: {
     heading: 'Work Sans, system-ui, sans-serif',
     body: 'Inter, system-ui, sans-serif',
-    mono: 'SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace',
+    mono:
+      'SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace',
   },
   fontSizes: {
     xs: '0.75rem',

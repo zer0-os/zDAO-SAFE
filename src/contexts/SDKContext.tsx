@@ -84,7 +84,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     createInstance();
-  }, [createInstance]);
+  }, []);
 
   return (
     <SDKContext.Provider

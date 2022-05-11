@@ -10,10 +10,9 @@ import {
   Stack,
   Text,
   useColorModeValue,
-  useToast,
   VStack,
 } from '@chakra-ui/react';
-import { Choice, Proposal, SupportedChainId, Vote } from '@zero-tech/zdao-sdk';
+import { Proposal, SupportedChainId, Vote } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { format } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -40,6 +39,7 @@ import { ProposalStateText } from '../config/constants/text';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { getExternalLink } from '../utils/address';
+import { setupNetwork } from '../utils/wallet';
 
 const MAX_VISIBLE_COUNT = 10;
 
@@ -75,7 +75,6 @@ const Voting = () => {
   const [myChoice, setMyChoice] = useState(-1);
   const [isProcessingTx, setProcessingTx] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const toast = useToast();
 
   const zDAO = useCurrentZDAO(zNA);
 
@@ -154,7 +153,7 @@ const Voting = () => {
   const handleVote = async () => {
     if (!zDAO || !library || !proposal) return;
     setProcessingTx(true);
-    await proposal.vote(library.getSigner(), (myChoice + 1) as Choice); // proposal.choices[myChoice]); // todo
+    await proposal.vote(library.getSigner(), proposal.choices[myChoice]);
     setProcessingTx(false);
   };
 
@@ -293,6 +292,9 @@ const Voting = () => {
                             _hover={{
                               borderColor,
                             }}
+                            onClick={() =>
+                              // eslint-disable-next-line prettier/prettier
+                              setupNetwork(SupportedChainId.MUMBAI)}
                           >
                             <Heading size="sm">Switch to Mumbai</Heading>
                           </Button>
@@ -490,6 +492,7 @@ const Voting = () => {
                         _hover={{
                           borderColor,
                         }}
+                        onClick={() => setupNetwork(SupportedChainId.MUMBAI)}
                       >
                         <Heading size="sm">Switch to Mumbai</Heading>
                       </Button>
@@ -514,6 +517,7 @@ const Voting = () => {
                         _hover={{
                           borderColor,
                         }}
+                        onClick={() => setupNetwork(SupportedChainId.GOERLI)}
                       >
                         <Heading size="sm">Switch to Goerli</Heading>
                       </Button>
@@ -571,6 +575,7 @@ const Voting = () => {
                           _hover={{
                             borderColor,
                           }}
+                          onClick={() => setupNetwork(SupportedChainId.GOERLI)}
                         >
                           <Heading size="sm">Switch to Goerli</Heading>
                         </Button>

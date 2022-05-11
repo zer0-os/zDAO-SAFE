@@ -5,3 +5,10 @@ declare module '*.svg' {
   const content: any;
   export default content;
 }
+
+interface WindowChain {
+  ethereum?: {
+    isMetaMask?: true;
+    request?: (...args: unknown[]) => void;
+  };
+}

@@ -8,6 +8,7 @@ import { Header } from './components/Header';
 import { FullScreenLoader } from './components/Loader';
 import SuspenseWithChunkError from './components/SuspenseWithChunkError';
 import useEagerConnect from './hooks/useEagerConnect';
+import { ApplicationStatus } from './states/application';
 import { useApplicationStatus } from './states/application/hooks';
 
 const Home = lazy(() => import('./views/Home'));
@@ -48,9 +49,9 @@ function App() {
   const applicationStatus = useApplicationStatus();
   console.log('applicationStatus', applicationStatus);
 
-  // if (applicationStatus === ApplicationStatus.INITIAL) {
-  //   return <FullScreenLoader />;
-  // }
+  if (applicationStatus === ApplicationStatus.INITIAL) {
+    return <FullScreenLoader />;
+  }
 
   return (
     <AppWrapper>

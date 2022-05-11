@@ -10,12 +10,13 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { addSeconds, format } from 'date-fns';
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -27,11 +28,12 @@ import LinkExternal, {
 import Card from '../components/Card';
 import ReactMdEditor from '../components/ReactMdEditor';
 import TransferAbi from '../config/abi/transfer.json';
-import { DECIMALS } from '../config/constants/number';
-import { TESTNET_TOKEN_LIST } from '../config/constants/tokens';
+import { DECIMALS, extendToDecimals } from '../config/constants/number';
+import { getToken, TESTNET_TOKEN_LIST } from '../config/constants/tokens';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { useBlockNumber } from '../states/application/hooks';
+import { setupNetwork } from '../utils/wallet';
 
 const Periods = {
   300: '5 Minutes',
@@ -59,6 +61,7 @@ interface ProposalFormat {
 const CreateProposal = () => {
   const { zNA } = useParams();
   const zDAO = useCurrentZDAO(zNA);
+  const toast = useToast();
 
   const [state, setState] = useState<ProposalFormat>({
     title: '',
@@ -90,7 +93,7 @@ const CreateProposal = () => {
     token,
     amount,
   } = state;
-  const { account, chainId } = useActiveWeb3React();
+  const { account, chainId, library } = useActiveWeb3React();
   const navigate = useNavigate();
   const blockNumber = useBlockNumber();
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -161,40 +164,62 @@ const CreateProposal = () => {
     }
   };
 
-  const handleSubmitProposal = async () => {
-    // // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    // const tokenType = getToken(chainId!, token);
-    // if (!tokenType) {
-    //   return;
-    // }
-    // const payload = {
-    //   from: account,
-    //   space: SPACE_ID,
-    //   timestamp: Math.floor((new Date().getTime() / 1e3).toFixed()),
-    //   type: 'single-choice',
-    //   title,
-    //   body,
-    //   choices: Choices,
-    //   start: Math.floor(startDateTime.getTime() / 1e3),
-    //   end: Math.floor(addSeconds(startDateTime, period).getTime() / 1e3),
-    //   snapshot: blockNumber,
-    //   plugins: {},
-    //   metadata: {
-    //     abi,
-    //     sender,
-    //     recipient,
-    //     token,
-    //     amount: new BigNumber(amount)
-    //       .multipliedBy(extendToDecimals(tokenType?.decimals))
-    //       .toString(),
-    //   },
-    // };
-    // // console.log(payload);
-    // const resp = await sendEIP712(space, 'proposal', payload);
-    // if (resp && resp.id) {
-    //   navigate(`/voting/${resp.id}`);
-    // }
-  };
+  const handleSubmitProposal = useCallback(async () => {
+    if (!chainId) return;
+    const tokenType = getToken(chainId, token);
+    if (!tokenType) {
+      return;
+    }
+    if (!zDAO || !library || !account) return;
+
+    try {
+      const signer = library.getSigner(account).connectUnchecked();
+      const proposal = await zDAO.createProposal(signer, {
+        title,
+        body,
+        duration: period,
+        transfer: {
+          abi,
+          sender,
+          recipient,
+          token,
+          decimals: tokenType.decimals,
+          symbol: tokenType.symbol,
+          amount: new BigNumber(amount)
+            .multipliedBy(extendToDecimals(tokenType.decimals))
+            .toString(),
+        },
+      });
+
+      navigate(`/${zNA}/${proposal.id}`);
+    } catch (error) {
+      if (toast) {
+        toast({
+          title: 'Proposal created',
+          description: "We've created your proposal.",
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+    }
+  }, [
+    zNA,
+    zDAO,
+    account,
+    library,
+    chainId,
+    toast,
+    navigate,
+    title,
+    body,
+    period,
+    abi,
+    sender,
+    recipient,
+    token,
+    amount,
+  ]);
 
   return (
     <Container as={Stack} maxW="7xl">
@@ -215,6 +240,7 @@ const CreateProposal = () => {
             _hover={{
               borderColor,
             }}
+            onClick={() => setupNetwork(SupportedChainId.GOERLI)}
           >
             <Heading size="sm">Switch to Goerli</Heading>
           </Button>
@@ -441,13 +467,29 @@ const CreateProposal = () => {
                 </SimpleGrid>
 
                 {account ? (
-                  <PrimaryButton
-                    disabled={!isValid}
-                    leftIcon={<SpinnerIcon />}
-                    onClick={handleSubmitProposal}
-                  >
-                    Publish
-                  </PrimaryButton>
+                  <>
+                    {chainId && chainId !== SupportedChainId.GOERLI && (
+                      <Button
+                        borderWidth="1px"
+                        borderRadius="md"
+                        px={4}
+                        py={2}
+                        _hover={{
+                          borderColor,
+                        }}
+                        onClick={() => setupNetwork(SupportedChainId.GOERLI)}
+                      >
+                        <Heading size="sm">Switch to Goerli</Heading>
+                      </Button>
+                    )}
+                    <PrimaryButton
+                      disabled={!isValid}
+                      leftIcon={<SpinnerIcon />}
+                      onClick={handleSubmitProposal}
+                    >
+                      Publish
+                    </PrimaryButton>
+                  </>
                 ) : (
                   <ConnectWalletButton />
                 )}

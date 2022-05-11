@@ -2,16 +2,19 @@ import { SupportedChainId } from '@zero-tech/zdao-sdk';
 
 export interface TokenType {
   address: string;
+  symbol: string;
   decimals: number;
 }
 
 export const TESTNET_TOKEN_LIST: { [token: string]: TokenType } = {
   ETH: {
     address: '',
+    symbol: 'ETH',
     decimals: 18,
   },
   zDAOTesting: {
     address: '0xD53C3bddf27b32ad204e859EB677f709c80E6840',
+    symbol: 'zDAOVT',
     decimals: 18,
   },
 };
