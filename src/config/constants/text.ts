@@ -1,4 +1,8 @@
-import { ProposalState, SupportedChainId } from '@zero-tech/zdao-sdk';
+import {
+  ProposalState,
+  SupportedChainId,
+  VoteChoice,
+} from '@zero-tech/zdao-sdk';
 
 export const ChainText = (chainId: SupportedChainId): string => {
   if (chainId === SupportedChainId.GOERLI) return 'Goerli';
@@ -29,4 +33,9 @@ export const ProposalStateText = (state: ProposalState): string => {
     return 'Proposal was failed';
   }
   return 'Successfully executed';
+};
+
+export const VoteChoiceText = {
+  [VoteChoice.YES]: 'Yes',
+  [VoteChoice.NO]: 'No',
 };

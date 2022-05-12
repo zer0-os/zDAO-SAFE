@@ -1,4 +1,3 @@
-import { SpinnerIcon } from '@chakra-ui/icons';
 import {
   Button,
   Checkbox,
@@ -97,6 +96,7 @@ const CreateProposal = () => {
   const navigate = useNavigate();
   const blockNumber = useBlockNumber();
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const [executing, setExecuting] = useState<boolean>(false);
 
   const isValid =
     !!account &&
@@ -105,7 +105,8 @@ const CreateProposal = () => {
     body.length > 0 &&
     // token.length > 0 &&
     recipient.length > 0 &&
-    Number(amount) > 0;
+    Number(amount) > 0 &&
+    !executing;
 
   useEffect(() => {
     if (blockNumber)
@@ -172,15 +173,15 @@ const CreateProposal = () => {
     }
     if (!zDAO || !library || !account) return;
 
+    setExecuting(true);
     try {
-      const signer = library.getSigner(account).connectUnchecked();
-      const proposal = await zDAO.createProposal(signer, {
+      console.log('proposal params', {
         title,
         body,
         duration: period,
         transfer: {
           abi,
-          sender,
+          sender: zDAO.gnosisSafe,
           recipient,
           token,
           decimals: tokenType.decimals,
@@ -191,8 +192,25 @@ const CreateProposal = () => {
         },
       });
 
-      navigate(`/${zNA}/${proposal.id}`);
-    } catch (error) {
+      const signer = library.getSigner(account).connectUnchecked();
+      const proposal = await zDAO.createProposal(signer, {
+        title,
+        body,
+        duration: period,
+        transfer: {
+          abi,
+          sender: zDAO.gnosisSafe,
+          recipient,
+          token,
+          decimals: tokenType.decimals,
+          symbol: tokenType.symbol,
+          amount: new BigNumber(amount)
+            .multipliedBy(extendToDecimals(tokenType.decimals))
+            .toString(),
+        },
+      });
+      console.log('Proposal created', proposal);
+
       if (toast) {
         toast({
           title: 'Proposal created',
@@ -202,7 +220,21 @@ const CreateProposal = () => {
           isClosable: true,
         });
       }
+
+      navigate(`/${zNA}/${proposal.id}`);
+    } catch (error) {
+      console.error('Proposal creation error', error);
+      if (toast) {
+        toast({
+          title: 'Error',
+          description: 'Failed to create a proposal',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
     }
+    setExecuting(false);
   }, [
     zNA,
     zDAO,
@@ -215,7 +247,6 @@ const CreateProposal = () => {
     body,
     period,
     abi,
-    sender,
     recipient,
     token,
     amount,
@@ -230,22 +261,7 @@ const CreateProposal = () => {
             <Heading size="sm">Back</Heading>
           </Stack>
         </Link>
-
-        {chainId && chainId !== SupportedChainId.GOERLI && (
-          <Button
-            borderWidth="1px"
-            borderRadius="md"
-            px={4}
-            py={2}
-            _hover={{
-              borderColor,
-            }}
-            onClick={() => setupNetwork(SupportedChainId.GOERLI)}
-          >
-            <Heading size="sm">Switch to Goerli</Heading>
-          </Button>
-        )}
-
+        
         <Stack
           spacing={12}
           flex={2}
@@ -484,7 +500,6 @@ const CreateProposal = () => {
                     )}
                     <PrimaryButton
                       disabled={!isValid}
-                      leftIcon={<SpinnerIcon />}
                       onClick={handleSubmitProposal}
                     >
                       Publish

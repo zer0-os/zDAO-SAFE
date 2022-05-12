@@ -1,21 +1,24 @@
+import { RepeatIcon } from '@chakra-ui/icons';
 import {
   Badge,
   Box,
   Button,
   Container,
   Heading,
+  IconButton,
   Progress,
   SimpleGrid,
   Spacer,
   Stack,
   Text,
   useColorModeValue,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
 import { Proposal, SupportedChainId, Vote } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { format } from 'date-fns';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useParams } from 'react-router-dom';
 
@@ -35,7 +38,7 @@ import {
   getFormatedValue,
   getFullDisplayBalance,
 } from '../config/constants/number';
-import { ProposalStateText } from '../config/constants/text';
+import { ProposalStateText, VoteChoiceText } from '../config/constants/text';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { getExternalLink } from '../utils/address';
@@ -58,6 +61,7 @@ const getPercentage = (scores: string[], index: number) => {
 const Voting = () => {
   const { account, chainId, library } = useActiveWeb3React();
   const { zNA, proposalId } = useParams();
+  const toast = useToast();
 
   const textColor = useColorModeValue('gray.700', 'gray.400');
   const borderColor = useColorModeValue('gray.200', 'gray.600');
@@ -93,19 +97,20 @@ const Voting = () => {
     | undefined
   >();
 
-  useEffect(() => {
-    const fetch = async () => {
-      if (!zDAO || !proposalId) return;
+  const handleRefreshPage = useCallback(async () => {
+    if (!zDAO || !proposalId) return;
 
-      const item = await zDAO.getProposal(proposalId);
-      console.log('proposal', item);
-      setProposal(item);
-      setProposalLoading(false);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    fetch();
+    setProposalLoading(true);
+    const item = await zDAO.getProposal(proposalId);
+    setProposal(item);
+    setProposalLoading(false);
+    console.log('proposal', item);
   }, [zDAO, proposalId]);
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    handleRefreshPage();
+  }, [handleRefreshPage]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -150,33 +155,129 @@ const Voting = () => {
     return showAll ? votes : votes.slice(0, MAX_VISIBLE_COUNT);
   }, [votes, showAll]);
 
-  const handleVote = async () => {
+  const handleVote = useCallback(async () => {
     if (!zDAO || !library || !proposal) return;
     setProcessingTx(true);
-    await proposal.vote(library.getSigner(), proposal.choices[myChoice]);
+    try {
+      await proposal.vote(library.getSigner(), proposal.choices[myChoice]);
+      if (toast) {
+        toast({
+          title: 'Success',
+          description: "You've casted your vote. Updating page now ...",
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+      await handleRefreshPage();
+    } catch (error) {
+      console.error('Vote', error);
+      if (toast) {
+        toast({
+          title: 'Error',
+          description: 'Casting vote failed.',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+    }
     setProcessingTx(false);
-  };
+  }, [zDAO, library, proposal, toast, handleRefreshPage, myChoice]);
 
-  const handleCollectProposal = async () => {
+  const handleCollectProposal = useCallback(async () => {
     if (!zDAO || !library || !proposal) return;
     setProcessingTx(true);
-    await proposal.collect(library.getSigner());
+    try {
+      await proposal.collect(library.getSigner());
+      if (toast) {
+        toast({
+          title: 'Success',
+          description: "You've collected proposal. Updating page now ...",
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+      await handleRefreshPage();
+    } catch (error) {
+      console.error('Collect proposal', error);
+      if (toast) {
+        toast({
+          title: 'Error',
+          description: 'Collecting proposal failed.',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+    }
     setProcessingTx(false);
-  };
+  }, [zDAO, library, proposal, handleRefreshPage, toast]);
 
-  const handleReceiveCollectProposal = async (txhash: string) => {
-    if (!zDAO || !library) return;
-    setProcessingTx(true);
-    await zDAO.syncState(library.getSigner(), txhash);
-    setProcessingTx(false);
-  };
+  const handleReceiveCollectProposal = useCallback(
+    async (txhash: string) => {
+      if (!zDAO || !library) return;
+      setProcessingTx(true);
+      try {
+        await zDAO.syncState(library.getSigner(), txhash);
+        if (toast) {
+          toast({
+            title: 'Success',
+            description:
+              'Proposal has been received the result. Updating page now ...',
+            status: 'success',
+            duration: 4000,
+            isClosable: true,
+          });
+        }
+        await handleRefreshPage();
+      } catch (error) {
+        console.error('Receive result', error);
+        if (toast) {
+          toast({
+            title: 'Error',
+            description: 'Receiving result failed.',
+            status: 'error',
+            duration: 4000,
+            isClosable: true,
+          });
+        }
+      }
+      setProcessingTx(false);
+    },
+    [zDAO, library, toast, handleRefreshPage],
+  );
 
-  const handleExecuteProposal = async () => {
+  const handleExecuteProposal = useCallback(async () => {
     if (!zDAO || !library || !proposal) return;
     setProcessingTx(true);
-    await proposal.execute(library.getSigner());
+    try {
+      await proposal.execute(library.getSigner());
+      if (toast) {
+        toast({
+          title: 'Success',
+          description: 'Proposal has been executed. Updating page now ...',
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+      await handleRefreshPage();
+    } catch (error) {
+      console.errror('Execute proposal', error);
+      if (toast) {
+        toast({
+          title: 'Error',
+          description: 'Executing proposal failed.',
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+    }
     setProcessingTx(false);
-  };
+  }, [zDAO, library, proposal, handleRefreshPage, toast]);
 
   const handleShowAll = () => {
     setShowAll(true);
@@ -197,374 +298,347 @@ const Voting = () => {
             <Loader />
           </Stack>
         ) : (
-          <Stack
-            spacing={12}
-            flex={2}
-            direction={{ base: 'column', sm: 'row' }}
-            w="full"
-          >
-            <Stack direction="column" spacing={6} flex={1}>
-              <Heading textAlign="left">{proposal.title}</Heading>
-              <Box style={{ overflow: 'hidden' }}>
-                <ReactMarkdown>{proposal.body}</ReactMarkdown>
-              </Box>
-              {proposal.metadata && (
-                <Stack spacing={2}>
-                  <Text color={textColor}>
-                    {`Let's send
+          <>
+            <IconButton
+              variant="outline"
+              aria-label="Refresh"
+              fontSize="20px"
+              icon={<RepeatIcon />}
+              onClick={handleRefreshPage}
+            />
+            <Stack
+              spacing={12}
+              flex={2}
+              direction={{ base: 'column', sm: 'row' }}
+              w="full"
+            >
+              <Stack direction="column" spacing={6} flex={1}>
+                <Heading textAlign="left">{proposal.title}</Heading>
+                <Box style={{ overflow: 'hidden' }}>
+                  <ReactMarkdown>{proposal.body}</ReactMarkdown>
+                </Box>
+                {proposal.metadata && (
+                  <Stack spacing={2}>
+                    <Text color={textColor}>
+                      {`Let's send
                       ${getFullDisplayBalance(
                         new BigNumber(proposal.metadata.amount),
                         proposal.metadata.decimals,
                       )}
                       token to this address: `}
-                    <LinkButton
-                      href={getExternalLink(
-                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                        chainId!,
-                        'address',
-                        proposal.metadata.recipient,
-                      )}
-                      isExternal
-                    >
-                      {proposal.metadata.recipient}
-                    </LinkButton>
-                  </Text>
-                  <Text color={textColor}>
-                    {`ERC20 token address: `}
-                    {proposal.metadata.token.length > 0 ? (
                       <LinkButton
                         href={getExternalLink(
                           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                           chainId!,
                           'address',
-                          proposal.metadata.token,
+                          proposal.metadata.recipient,
                         )}
                         isExternal
                       >
-                        {proposal.metadata.token}
+                        {proposal.metadata.recipient}
                       </LinkButton>
-                    ) : (
-                      'ETH'
-                    )}
-                  </Text>
-                </Stack>
-              )}
-
-              {proposal.state === 'active' && !alreadyVoted && (
-                <Card title="Cast your vote">
-                  <Stack spacing={2} direction="column">
-                    {account ? (
-                      <>
-                        {proposal.choices.map((choice, index) => (
-                          <Button
-                            key={choice}
-                            bg="transparent"
-                            borderColor={
-                              index === myChoice
-                                ? voteSelectedBorderColor
-                                : voteBorderColor
-                            }
-                            borderWidth="1px"
-                            color={
-                              index === myChoice
-                                ? voteSelectedTextColor
-                                : textColor
-                            }
-                            rounded="full"
-                            _focus={{
-                              borderColor: voteHoverBorderColor,
-                            }}
-                            _hover={{
-                              borderColor: voteHoverBorderColor,
-                            }}
-                            onClick={() => setMyChoice(index)}
-                          >
-                            {choice}
-                          </Button>
-                        ))}
-
-                        {chainId && chainId !== SupportedChainId.MUMBAI && (
-                          <Button
-                            borderWidth="1px"
-                            borderRadius="md"
-                            px={4}
-                            py={2}
-                            _hover={{
-                              borderColor,
-                            }}
-                            onClick={() =>
-                              // eslint-disable-next-line prettier/prettier
-                              setupNetwork(SupportedChainId.MUMBAI)}
-                          >
-                            <Heading size="sm">Switch to Mumbai</Heading>
-                          </Button>
-                        )}
-
-                        <PrimaryButton
-                          disabled={
-                            proposalLoading ||
-                            votesLoading ||
-                            proposal.state !== 'active' ||
-                            chainId !== SupportedChainId.MUMBAI
-                          }
-                          rounded="full"
-                          onClick={handleVote}
+                    </Text>
+                    <Text color={textColor}>
+                      {`ERC20 token address: `}
+                      {proposal.metadata.token.length > 0 ? (
+                        <LinkButton
+                          href={getExternalLink(
+                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                            chainId!,
+                            'address',
+                            proposal.metadata.token,
+                          )}
+                          isExternal
                         >
-                          Vote
-                        </PrimaryButton>
-                      </>
+                          {proposal.metadata.token}
+                        </LinkButton>
+                      ) : (
+                        'ETH'
+                      )}
+                    </Text>
+                  </Stack>
+                )}
+
+                {proposal.state === 'active' && !alreadyVoted && (
+                  <Card title="Cast your vote">
+                    <Stack spacing={2} direction="column">
+                      {account ? (
+                        <>
+                          {proposal.choices.map((choice, index) => (
+                            <Button
+                              key={choice}
+                              bg="transparent"
+                              borderColor={
+                                index === myChoice
+                                  ? voteSelectedBorderColor
+                                  : voteBorderColor
+                              }
+                              borderWidth="1px"
+                              color={
+                                index === myChoice
+                                  ? voteSelectedTextColor
+                                  : textColor
+                              }
+                              rounded="full"
+                              _focus={{
+                                borderColor: voteHoverBorderColor,
+                              }}
+                              _hover={{
+                                borderColor: voteHoverBorderColor,
+                              }}
+                              onClick={() => setMyChoice(index)}
+                            >
+                              {VoteChoiceText[choice]}
+                            </Button>
+                          ))}
+
+                          <SimpleGrid
+                            columns={2}
+                            spacing={4}
+                            templateColumns={{
+                              base:
+                                chainId && chainId !== SupportedChainId.MUMBAI
+                                  ? '1fr 2fr'
+                                  : '1fr',
+                            }}
+                            alignItems="center"
+                          >
+                            {chainId && chainId !== SupportedChainId.MUMBAI && (
+                              <Button
+                                borderWidth="1px"
+                                borderRadius="md"
+                                px={4}
+                                py={2}
+                                _hover={{
+                                  borderColor,
+                                }}
+                                onClick={() =>
+                                  // eslint-disable-next-line prettier/prettier
+                              setupNetwork(SupportedChainId.MUMBAI)}
+                              >
+                                <Heading size="sm">Switch to Mumbai</Heading>
+                              </Button>
+                            )}
+
+                            <PrimaryButton
+                              disabled={
+                                proposalLoading ||
+                                votesLoading ||
+                                proposal.state !== 'active' ||
+                                chainId !== SupportedChainId.MUMBAI
+                              }
+                              width="full"
+                              rounded="full"
+                              onClick={handleVote}
+                            >
+                              Vote
+                            </PrimaryButton>
+                          </SimpleGrid>
+                        </>
+                      ) : (
+                        <ConnectWalletButton />
+                      )}
+                    </Stack>
+                  </Card>
+                )}
+
+                <Card
+                  title={
+                    proposal.voters !== undefined
+                      ? `Votes(${proposal.voters})`
+                      : 'Votes'
+                  }
+                >
+                  <Stack spacing={4} direction="column">
+                    {votesLoading || !sortedVotes ? (
+                      <Loader />
                     ) : (
-                      <ConnectWalletButton />
+                      sortedVotes.map((vote) => (
+                        <SimpleGrid columns={3} key={vote.voter} spacing={10}>
+                          <LinkExternal
+                            chainId={SupportedChainId.MUMBAI}
+                            type={ExternalLinkType.address}
+                            value={vote.voter}
+                          />
+                          <Text textAlign="center">
+                            {VoteChoiceText[vote.choice]}
+                          </Text>
+                          <Text textAlign="right">
+                            {getFormatedValue(vote.votes)}
+                          </Text>
+                        </SimpleGrid>
+                      ))
+                    )}
+                    {!showAll && votes && MAX_VISIBLE_COUNT < votes.length && (
+                      <LinkButton
+                        textAlign="center"
+                        width="full"
+                        onClick={handleShowAll}
+                      >
+                        Show All
+                      </LinkButton>
                     )}
                   </Stack>
                 </Card>
-              )}
+              </Stack>
 
-              <Card
-                title={proposal.voters ? `Votes(${proposal.voters})` : 'Votes'}
-              >
-                <Stack spacing={4} direction="column">
-                  {votesLoading || !sortedVotes ? (
-                    <Loader />
-                  ) : (
-                    sortedVotes.map((vote) => (
-                      <SimpleGrid columns={3} key={vote.voter} spacing={10}>
-                        <LinkExternal
-                          chainId={SupportedChainId.MUMBAI}
-                          type={ExternalLinkType.address}
-                          value={vote.voter}
-                        />
-                        <Text textAlign="center">
-                          {proposal.choices[vote.choice - 1]}
-                        </Text>
-                        <Text textAlign="right">
-                          {getFormatedValue(vote.votes)}
-                        </Text>
-                      </SimpleGrid>
-                    ))
-                  )}
-                  {!showAll && votes && MAX_VISIBLE_COUNT < votes.length && (
-                    <LinkButton
-                      textAlign="center"
-                      width="full"
-                      onClick={handleShowAll}
+              <Stack direction="column" width={{ base: 'full', sm: '400px' }}>
+                <Card title="Details">
+                  <Stack spacing={2} direction="column">
+                    <SimpleGrid
+                      columns={2}
+                      spacing={4}
+                      templateColumns={{ base: '1fr 2fr' }}
                     >
-                      Show All
-                    </LinkButton>
-                  )}
-                </Stack>
-              </Card>
-            </Stack>
+                      <Text>Identifier</Text>
+                      <Text>{proposal.id}</Text>
 
-            <Stack direction="column" width={{ base: 'full', sm: '400px' }}>
-              <Card title="Details">
-                <Stack spacing={2} direction="column">
-                  <SimpleGrid
-                    columns={2}
-                    spacing={4}
-                    templateColumns={{ base: '1fr 2fr' }}
-                  >
-                    <Text>Identifier</Text>
-                    <Text>{proposal.id}</Text>
-
-                    {account && (
-                      <>
-                        <Text>Creator</Text>
-                        <LinkExternal
-                          chainId={SupportedChainId.GOERLI}
-                          type={ExternalLinkType.address}
-                          value={proposal.createdBy}
-                        />
-                      </>
-                    )}
-
-                    <Text>Majority</Text>
-                    <Text>
-                      {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
-                    </Text>
-
-                    <Text>Quorum Participants</Text>
-                    <Text>{zDAO?.quorumParticipants}</Text>
-
-                    <Text>Quorum Votes</Text>
-                    <Text>{zDAO?.quorumVotes}</Text>
-
-                    <Text>Snapshot</Text>
-                    <LinkExternal
-                      chainId={SupportedChainId.MUMBAI}
-                      type={ExternalLinkType.block}
-                      value={proposal.snapshot}
-                    />
-
-                    <Badge
-                      textAlign="center"
-                      rounded="full"
-                      p="1"
-                      fontSize="0.8em"
-                      colorScheme="red"
-                    >
-                      {proposal.state}
-                    </Badge>
-                    <Text>{ProposalStateText(proposal.state)}</Text>
-
-                    <Text>Start Date</Text>
-                    <Text>
-                      {proposal.start
-                        ? format(proposal.start, 'yyyy-MM-dd HH:mm')
-                        : '...'}
-                    </Text>
-
-                    <Text>End Date</Text>
-                    <Text>
-                      {proposal.end
-                        ? format(proposal.end, 'yyyy-MM-dd HH:mm')
-                        : '...'}
-                    </Text>
-
-                    {proposal.state === 'active' && proposal.end && (
-                      <>
-                        <Text>Remain Date:</Text>
-                        <EventCountDown
-                          nextEventTime={Math.floor(
-                            proposal.end.getTime() / 1000,
-                          )}
-                          postCountDownText="until executing proposal"
-                        />
-                      </>
-                    )}
-                  </SimpleGrid>
-                </Stack>
-              </Card>
-
-              <Card title="Current Results">
-                <Stack spacing={2} direction="column">
-                  {proposal.choices.map((choice, index) => (
-                    <div key={choice}>
-                      <Text>{choice}</Text>
-                      {proposal.scores ? (
+                      {account && (
                         <>
-                          <Progress
-                            borderRadius="full"
-                            min={0}
-                            max={100}
-                            value={getPercentage(proposal.scores, index)}
+                          <Text>Creator</Text>
+                          <LinkExternal
+                            chainId={SupportedChainId.GOERLI}
+                            type={ExternalLinkType.address}
+                            value={proposal.createdBy}
                           />
-                          <Text>{proposal.scores[index]}</Text>
                         </>
+                      )}
+
+                      <Text>Majority</Text>
+                      <Text>
+                        {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
+                      </Text>
+
+                      <Text>Quorum Participants</Text>
+                      <Text>{zDAO?.quorumParticipants}</Text>
+
+                      <Text>Quorum Votes</Text>
+                      <Text>{zDAO?.quorumVotes}</Text>
+
+                      <Text>Snapshot</Text>
+                      <LinkExternal
+                        chainId={SupportedChainId.MUMBAI}
+                        type={ExternalLinkType.block}
+                        value={proposal.snapshot}
+                      />
+
+                      <Badge
+                        textAlign="center"
+                        rounded="full"
+                        p="1"
+                        fontSize="0.8em"
+                        colorScheme="red"
+                      >
+                        {proposal.state}
+                      </Badge>
+                      <Text>{ProposalStateText(proposal.state)}</Text>
+
+                      <Text>Start Date</Text>
+                      <Text>
+                        {proposal.start
+                          ? format(proposal.start, 'yyyy-MM-dd HH:mm')
+                          : '...'}
+                      </Text>
+
+                      <Text>End Date</Text>
+                      <Text>
+                        {proposal.end
+                          ? format(proposal.end, 'yyyy-MM-dd HH:mm')
+                          : '...'}
+                      </Text>
+
+                      {proposal.state === 'active' && proposal.end && (
+                        <>
+                          <Text>Remain Date:</Text>
+                          <EventCountDown
+                            nextEventTime={Math.floor(
+                              proposal.end.getTime() / 1000,
+                            )}
+                            postCountDownText="until executing proposal"
+                          />
+                        </>
+                      )}
+                    </SimpleGrid>
+                  </Stack>
+                </Card>
+
+                <Card title="Current Results">
+                  <Stack spacing={2} direction="column">
+                    {proposal.choices.map((choice, index) => (
+                      <div key={choice}>
+                        <Text>{VoteChoiceText[choice]}</Text>
+                        {proposal.scores ? (
+                          <>
+                            <Progress
+                              borderRadius="full"
+                              min={0}
+                              max={100}
+                              value={getPercentage(proposal.scores, index)}
+                            />
+                            <Text>{proposal.scores[index]}</Text>
+                          </>
+                        ) : (
+                          <Loader />
+                        )}
+
+                        <Spacer />
+                      </div>
+                    ))}
+
+                    <SimpleGrid
+                      columns={2}
+                      spacing={4}
+                      templateColumns={{ base: '1fr 2fr' }}
+                    >
+                      <Text>Total Votes</Text>
+                      {proposal.scores ? (
+                        <Text>
+                          {new BigNumber(proposal.scores[0])
+                            .plus(new BigNumber(proposal.scores[1]))
+                            .toString()}
+                        </Text>
                       ) : (
                         <Loader />
                       )}
-
-                      <Spacer />
-                    </div>
-                  ))}
-
-                  <SimpleGrid
-                    columns={2}
-                    spacing={4}
-                    templateColumns={{ base: '1fr 2fr' }}
-                  >
-                    <Text>Total Votes</Text>
-                    <Text>
-                      {proposal.scores
-                        ? new BigNumber(proposal.scores[0])
-                            .plus(new BigNumber(proposal.scores[1]))
-                            .toString()
-                        : ''}
-                    </Text>
-                    <Text>Total Voters</Text>
-                    <Text>{proposal.voters}</Text>
-                  </SimpleGrid>
-                </Stack>
-              </Card>
-              <Box pt={1} />
-
-              {
-                // eslint-disable-next-line no-nested-ternary
-                proposal.state === 'queueing' ? (
-                  <>
-                    {chainId && chainId !== SupportedChainId.MUMBAI && (
-                      <Button
-                        borderWidth="1px"
-                        borderRadius="md"
-                        px={4}
-                        py={2}
-                        _hover={{
-                          borderColor,
-                        }}
-                        onClick={() => setupNetwork(SupportedChainId.MUMBAI)}
-                      >
-                        <Heading size="sm">Switch to Mumbai</Heading>
-                      </Button>
-                    )}
-                    <PrimaryButton
-                      disabled={
-                        isProcessingTx || chainId !== SupportedChainId.GOERLI
-                      }
-                      onClick={handleCollectProposal}
-                    >
-                      Collect Proposal
-                    </PrimaryButton>
-                  </>
-                ) : proposal.state === 'collecting' ? (
-                  <>
-                    {chainId && chainId !== SupportedChainId.GOERLI && (
-                      <Button
-                        borderWidth="1px"
-                        borderRadius="md"
-                        px={4}
-                        py={2}
-                        _hover={{
-                          borderColor,
-                        }}
-                        onClick={() => setupNetwork(SupportedChainId.GOERLI)}
-                      >
-                        <Heading size="sm">Switch to Goerli</Heading>
-                      </Button>
-                    )}
-
-                    {collectHashesLoading ? (
-                      <Stack direction="row" spacing={4}>
+                      <Text>Total Voters</Text>
+                      {proposal.voters !== undefined ? (
+                        <Text>{proposal.voters}</Text>
+                      ) : (
                         <Loader />
-                        <Text>Looking for transaction hashes collected</Text>
-                      </Stack>
-                    ) : (
-                      collectedHashes && (
-                        <SimpleGrid
-                          columns={2}
-                          spacing={4}
-                          templateColumns={{ base: '1fr 2fr' }}
-                          alignItems="center"
+                      )}
+                    </SimpleGrid>
+                  </Stack>
+                </Card>
+                <Box pt={1} />
+
+                {
+                  // eslint-disable-next-line no-nested-ternary
+                  proposal.state === 'queueing' ? (
+                    <>
+                      {chainId && chainId !== SupportedChainId.MUMBAI && (
+                        <Button
+                          borderWidth="1px"
+                          borderRadius="md"
+                          px={4}
+                          py={2}
+                          _hover={{
+                            borderColor,
+                          }}
+                          onClick={() => setupNetwork(SupportedChainId.MUMBAI)}
                         >
-                          {collectedHashes.map((collected) => (
-                            <>
-                              <LinkExternal
-                                chainId={SupportedChainId.MUMBAI}
-                                type={ExternalLinkType.tx}
-                                value={collected.hash}
-                              />
-                              <PrimaryButton
-                                disabled={
-                                  isProcessingTx ||
-                                  !collected.isCheckPointed ||
-                                  chainId !== SupportedChainId.GOERLI
-                                }
-                                onClick={() =>
-                                  // eslint-disable-next-line prettier/prettier
-                                  handleReceiveCollectProposal(collected.hash)}
-                              >
-                                {!collected.isCheckPointed
-                                  ? 'Checkpointing'
-                                  : 'Receive result'}
-                              </PrimaryButton>
-                            </>
-                          ))}
-                        </SimpleGrid>
-                      )
-                    )}
-                  </>
-                ) : (
-                  proposal.state === 'succeeded' && (
+                          <Heading size="sm">Switch to Mumbai</Heading>
+                        </Button>
+                      )}
+                      <PrimaryButton
+                        disabled={
+                          isProcessingTx || chainId !== SupportedChainId.GOERLI
+                        }
+                        onClick={handleCollectProposal}
+                      >
+                        Collect Proposal
+                      </PrimaryButton>
+                    </>
+                  ) : proposal.state === 'collecting' ? (
                     <>
                       {chainId && chainId !== SupportedChainId.GOERLI && (
                         <Button
@@ -580,21 +654,83 @@ const Voting = () => {
                           <Heading size="sm">Switch to Goerli</Heading>
                         </Button>
                       )}
-                      <PrimaryButton
-                        disabled={
-                          isProcessingTx || chainId !== SupportedChainId.GOERLI
-                        }
-                        onClick={handleExecuteProposal}
-                      >
-                        Execute Proposal
-                      </PrimaryButton>
+
+                      {collectHashesLoading ? (
+                        <Stack direction="row" spacing={4}>
+                          <Loader />
+                          <Text>Looking for transaction hashes collected</Text>
+                        </Stack>
+                      ) : (
+                        collectedHashes && (
+                          <SimpleGrid
+                            columns={2}
+                            spacing={4}
+                            templateColumns={{ base: '1fr 2fr' }}
+                            alignItems="center"
+                          >
+                            {collectedHashes.map((collected) => (
+                              <>
+                                <LinkExternal
+                                  chainId={SupportedChainId.MUMBAI}
+                                  type={ExternalLinkType.tx}
+                                  value={collected.hash}
+                                />
+                                <PrimaryButton
+                                  disabled={
+                                    isProcessingTx ||
+                                    !collected.isCheckPointed ||
+                                    chainId !== SupportedChainId.GOERLI
+                                  }
+                                  onClick={() =>
+                                    // eslint-disable-next-line prettier/prettier
+                                  handleReceiveCollectProposal(collected.hash)}
+                                >
+                                  {!collected.isCheckPointed
+                                    ? 'Checkpointing'
+                                    : 'Receive result'}
+                                </PrimaryButton>
+                              </>
+                            ))}
+                          </SimpleGrid>
+                        )
+                      )}
                     </>
+                  ) : (
+                    proposal.state === 'succeeded' && (
+                      <>
+                        {chainId && chainId !== SupportedChainId.GOERLI && (
+                          <Button
+                            borderWidth="1px"
+                            borderRadius="md"
+                            px={4}
+                            py={2}
+                            _hover={{
+                              borderColor,
+                            }}
+                            onClick={() =>
+                              // eslint-disable-next-line prettier/prettier
+                              setupNetwork(SupportedChainId.GOERLI)}
+                          >
+                            <Heading size="sm">Switch to Goerli</Heading>
+                          </Button>
+                        )}
+                        <PrimaryButton
+                          disabled={
+                            isProcessingTx ||
+                            chainId !== SupportedChainId.GOERLI
+                          }
+                          onClick={handleExecuteProposal}
+                        >
+                          Execute Proposal
+                        </PrimaryButton>
+                      </>
+                    )
                   )
-                )
-              }
-              <Spacer pt={2} />
+                }
+                <Spacer pt={2} />
+              </Stack>
             </Stack>
-          </Stack>
+          </>
         )}
       </VStack>
     </Container>
