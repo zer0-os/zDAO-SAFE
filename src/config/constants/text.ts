@@ -24,7 +24,7 @@ export const ProposalStateText = (state: ProposalState): string => {
     return 'Waiting for collecting';
   }
   if (state === 'collecting') {
-    return 'Waiting to sync proposal collection';
+    return 'Waiting to receive voting rsult';
   }
   if (state === 'succeeded') {
     return 'Proposal can be executable';
