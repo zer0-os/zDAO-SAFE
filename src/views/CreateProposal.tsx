@@ -261,7 +261,7 @@ const CreateProposal = () => {
             <Heading size="sm">Back</Heading>
           </Stack>
         </Link>
-        
+
         <Stack
           spacing={12}
           flex={2}

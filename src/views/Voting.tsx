@@ -450,7 +450,9 @@ const Voting = () => {
                   }
                 >
                   <Stack spacing={4} direction="column">
-                    {votesLoading || !sortedVotes ? (
+                    {votesLoading ||
+                    !sortedVotes ||
+                    proposal.state === 'pending' ? (
                       <Loader />
                     ) : (
                       sortedVotes.map((vote) => (
@@ -567,7 +569,7 @@ const Voting = () => {
                     {proposal.choices.map((choice, index) => (
                       <div key={choice}>
                         <Text>{VoteChoiceText[choice]}</Text>
-                        {proposal.scores ? (
+                        {proposal.state !== 'pending' && proposal.scores ? (
                           <>
                             <Progress
                               borderRadius="full"
@@ -590,19 +592,19 @@ const Voting = () => {
                       spacing={4}
                       templateColumns={{ base: '1fr 2fr' }}
                     >
+                      <Text>Total Voters</Text>
+                      {proposal.state !== 'pending' ? (
+                        <Text>{proposal.voters}</Text>
+                      ) : (
+                        <Loader />
+                      )}
                       <Text>Total Votes</Text>
-                      {proposal.scores ? (
+                      {proposal.state !== 'pending' && proposal.scores ? (
                         <Text>
                           {new BigNumber(proposal.scores[0])
                             .plus(new BigNumber(proposal.scores[1]))
                             .toString()}
                         </Text>
-                      ) : (
-                        <Loader />
-                      )}
-                      <Text>Total Voters</Text>
-                      {proposal.voters !== undefined ? (
-                        <Text>{proposal.voters}</Text>
                       ) : (
                         <Loader />
                       )}
