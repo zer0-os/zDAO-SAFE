@@ -3996,7 +3996,7 @@
 
 "@zero-tech/zdao-sdk@github:zer0-os/zdao-sdk#feat/polygon-sdk":
   version "0.0.6"
-  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/59b7e782d6f5011abc11e7c4be7e153fbf88e100"
+  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/7a0086ed67948293137df23b1f772a0ba4feb285"
   dependencies:
     "@fleekhq/fleek-storage-js" "1.0.21"
     "@gnosis.pm/safe-core-sdk" "2.0.0"

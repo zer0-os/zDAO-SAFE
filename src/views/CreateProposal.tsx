@@ -222,12 +222,12 @@ const CreateProposal = () => {
       }
 
       navigate(`/${zNA}/${proposal.id}`);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Proposal creation error', error);
       if (toast) {
         toast({
           title: 'Error',
-          description: 'Failed to create a proposal',
+          description: `Failed to create a proposal - ${error.message}`,
           status: 'error',
           duration: 4000,
           isClosable: true,

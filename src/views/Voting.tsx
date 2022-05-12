@@ -116,6 +116,7 @@ const Voting = () => {
     const fetch = async () => {
       if (!zDAO || !proposal) return;
 
+      setCollectHashesLoading(true);
       const items = await proposal.listVotes();
       console.log('votes', items);
       setVotes(items);
@@ -170,12 +171,12 @@ const Voting = () => {
         });
       }
       await handleRefreshPage();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Vote', error);
       if (toast) {
         toast({
           title: 'Error',
-          description: 'Casting vote failed.',
+          description: `Casting vote failed - ${error.message}`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -200,12 +201,12 @@ const Voting = () => {
         });
       }
       await handleRefreshPage();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Collect proposal', error);
       if (toast) {
         toast({
           title: 'Error',
-          description: 'Collecting proposal failed.',
+          description: `Collecting proposal failed - ${error.message}`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -232,12 +233,12 @@ const Voting = () => {
           });
         }
         await handleRefreshPage();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Receive result', error);
         if (toast) {
           toast({
             title: 'Error',
-            description: 'Receiving result failed.',
+            description: `Receiving result failed - ${error.message}`,
             status: 'error',
             duration: 4000,
             isClosable: true,
@@ -264,12 +265,12 @@ const Voting = () => {
         });
       }
       await handleRefreshPage();
-    } catch (error) {
+    } catch (error: any) {
       console.errror('Execute proposal', error);
       if (toast) {
         toast({
           title: 'Error',
-          description: 'Executing proposal failed.',
+          description: `Executing proposal failed - ${error.message}`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -425,7 +426,8 @@ const Voting = () => {
                                 proposalLoading ||
                                 votesLoading ||
                                 proposal.state !== 'active' ||
-                                chainId !== SupportedChainId.MUMBAI
+                                chainId !== SupportedChainId.MUMBAI ||
+                                isProcessingTx
                               }
                               width="full"
                               rounded="full"
@@ -633,7 +635,7 @@ const Voting = () => {
                       )}
                       <PrimaryButton
                         disabled={
-                          isProcessingTx || chainId !== SupportedChainId.GOERLI
+                          isProcessingTx || chainId !== SupportedChainId.MUMBAI
                         }
                         onClick={handleCollectProposal}
                       >

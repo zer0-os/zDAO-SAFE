@@ -47,12 +47,12 @@ const Updater = (): null => {
     library
       .getBlockNumber()
       .then(blockNumberCallback)
-      .catch((error: any) =>
-        console.error(
-          `Failed to get block number for chainId: ${chainId}`,
-          error,
-        ),
-      );
+      .catch((_: unknown) => {
+        // console.error(
+        //   `Failed to get block number for chainId: ${chainId}`,
+        //   error,
+        // ),
+      });
 
     library.on('block', blockNumberCallback);
     return () => {
