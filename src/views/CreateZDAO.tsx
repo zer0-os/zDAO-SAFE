@@ -20,7 +20,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
-import React, { ChangeEvent, useCallback, useState } from 'react';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -29,7 +29,7 @@ import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { setupNetwork } from '../utils/wallet';
 
-const zNAs = ['wilder.wheels', 'wilder.cats'];
+const zNAsAvailable = ['', 'wilder.kicks', 'wilder.wheels', 'wilder.cats'];
 
 const Durations = {
   300: '5 Minutes',
@@ -40,7 +40,7 @@ const Durations = {
 
 interface ZDAOFormat {
   title: string;
-  zNA: string;
+  zNA: number;
   gnosisSafe: string;
   erc20?: string;
   erc20Amount?: string;
@@ -54,14 +54,14 @@ interface ZDAOFormat {
 
 const CreateZDAO = () => {
   const { account, chainId, library } = useActiveWeb3React();
-  const { instance } = useSdkContext();
+  const { instance, zNAs } = useSdkContext();
   const navigate = useNavigate();
   const [showTooltip, setShowTooltip] = useState(false);
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
   const [state, setState] = useState<ZDAOFormat>({
     title: '',
-    zNA: zNAs[0],
+    zNA: 0,
     gnosisSafe: '',
     erc20: undefined,
     erc20Amount: undefined,
@@ -73,6 +73,10 @@ const CreateZDAO = () => {
     minimumTotalVotingTokens: '0',
   });
   const [executing, setExecuting] = useState<boolean>(false);
+
+  const zNAsEmpty = useMemo(() => {
+    return zNAsAvailable.filter((zNA) => zNAs.indexOf(zNA) < 0);
+  }, [zNAs]);
 
   const {
     title,
@@ -92,7 +96,8 @@ const CreateZDAO = () => {
     !!account &&
     chainId === SupportedChainId.GOERLI &&
     title.length > 0 &&
-    zNA.length > 0 &&
+    zNAsEmpty.length > zNA &&
+    zNAsEmpty[zNA].length > 0 &&
     ((erc20 !== undefined &&
       erc20Amount !== undefined &&
       erc20.length > 0 &&
@@ -129,7 +134,7 @@ const CreateZDAO = () => {
     try {
       const signer = library.getSigner(account).connectUnchecked();
       await instance.createZDAO(signer, {
-        zNA,
+        zNA: zNAsEmpty[zNA],
         title,
         gnosisSafe,
         token: erc20 || (erc721 ?? ''),
@@ -151,7 +156,7 @@ const CreateZDAO = () => {
         });
       }
 
-      navigate(`/${zNA}`);
+      navigate(`/${zNAsEmpty[zNA]}`);
     } catch (error: any) {
       console.error('zDAO creation error', error);
       if (toast) {
@@ -171,6 +176,7 @@ const CreateZDAO = () => {
     library,
     account,
     navigate,
+    zNAsEmpty,
     zNA,
     title,
     gnosisSafe,
@@ -219,10 +225,10 @@ const CreateZDAO = () => {
             />
             <Text>zNA</Text>
             <Select name="zNA" onChange={handleSelectChange} value={zNA}>
-              {zNAs &&
-                Object.keys(zNAs).map((key) => (
+              {zNAsEmpty &&
+                Object.keys(zNAsEmpty).map((key) => (
                   <option key={key} value={key}>
-                    {(zNAs as any)[key]}
+                    {(zNAsEmpty as any)[key]}
                   </option>
                 ))}
             </Select>
