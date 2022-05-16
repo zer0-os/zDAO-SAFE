@@ -22,6 +22,7 @@ export const Header = () => {
       <Flex
         as="header"
         pos="fixed"
+        left="0"
         top="0"
         w="full"
         minH="60px"

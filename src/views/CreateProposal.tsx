@@ -13,7 +13,6 @@ import {
 } from '@chakra-ui/react';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
-import { addSeconds, format } from 'date-fns';
 import React, { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -33,18 +32,10 @@ import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { useBlockNumber } from '../states/application/hooks';
 import { setupNetwork } from '../utils/wallet';
 
-const Periods = {
-  300: '5 Minutes',
-  900: '15 Minutes',
-  3600: '1 Hour',
-  86400: '1 Day',
-};
-
 interface ProposalFormat {
   title: string;
   body: string;
   startDateTime: Date;
-  period: number;
   snapshot: number;
   abi: string;
   sender: string;
@@ -62,7 +53,6 @@ const CreateProposal = () => {
     title: '',
     body: '',
     startDateTime: new Date(),
-    period: 86400,
     snapshot: 0,
     abi: JSON.stringify(TransferAbi),
     sender: '',
@@ -74,7 +64,6 @@ const CreateProposal = () => {
     title,
     body,
     startDateTime,
-    period,
     snapshot,
     abi,
     sender,
@@ -168,7 +157,6 @@ const CreateProposal = () => {
       console.log('proposal params', {
         title,
         body,
-        duration: period,
         transfer: {
           abi,
           sender: zDAO.gnosisSafe,
@@ -186,7 +174,6 @@ const CreateProposal = () => {
       const proposal = await zDAO.createProposal(signer, {
         title,
         body,
-        duration: period,
         transfer: {
           abi,
           sender: zDAO.gnosisSafe,
@@ -235,7 +222,6 @@ const CreateProposal = () => {
     navigate,
     title,
     body,
-    period,
     abi,
     recipient,
     token,
@@ -396,28 +382,8 @@ const CreateProposal = () => {
                   templateColumns={{ base: '1fr 2fr' }}
                   alignItems="center"
                 >
-                  <Text>Period</Text>
-                  <Select
-                    name="period"
-                    onChange={handleSelectChange}
-                    value={period.toString()}
-                  >
-                    {Object.keys(Periods).map((key) => (
-                      <option key={key} value={key}>
-                        {(Periods as unknown)[key]}
-                      </option>
-                    ))}
-                  </Select>
-                  <Text>Start DateTime</Text>
-                  <Text>{format(startDateTime, 'yyyy-MM-dd HH:mm:ss')}</Text>
-
-                  <Text>End DateTime</Text>
-                  <Text>
-                    {format(
-                      addSeconds(startDateTime, period),
-                      'yyyy-MM-dd HH:mm:ss',
-                    )}
-                  </Text>
+                  <Text>Majority</Text>
+                  <Text>{zDAO?.duration}</Text>
 
                   {account && (
                     <>
@@ -430,46 +396,16 @@ const CreateProposal = () => {
                     </>
                   )}
 
-                  {/* <Text>Majority</Text>
-                  <Checkbox
-                    isChecked={majority}
-                    name="majority"
-                    onChange={handleCheckboxChange}
-                  >
-                    Relative
-                  </Checkbox>
+                  <Text>Majority</Text>
+                  <Text>
+                    {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
+                  </Text>
 
                   <Text>Quorum Participants</Text>
-                  <Input
-                    borderColor={borderColor}
-                    fontSize="md"
-                    name="quorumParticipants"
-                    onChange={handleInputChange}
-                    placeholder="Quorum Participants"
-                    size="md"
-                    value={quorumParticipants}
-                    _hover={{
-                      borderRadius: 'gray.300',
-                    }}
-                    required
-                  />
+                  <Text>{zDAO?.minimumVotingParticipants}</Text>
 
                   <Text>Quorum Votes</Text>
-                  <Input
-                    pattern="^[0-9]*[.,]?[0-9]$"
-                    inputMode="decimal"
-                    borderColor={borderColor}
-                    fontSize="md"
-                    name="quorumVotes"
-                    onChange={handleInputChange}
-                    placeholder="Quorum Votes"
-                    size="md"
-                    value={quorumVotes}
-                    _hover={{
-                      borderRadius: 'gray.300',
-                    }}
-                    required
-                  /> */}
+                  <Text>{zDAO?.minimumTotalVotingTokens}</Text>
                 </SimpleGrid>
 
                 {account ? (

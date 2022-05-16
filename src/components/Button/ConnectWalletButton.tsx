@@ -30,7 +30,7 @@ const IconWrapper = styled.div<{ size?: number | null }>`
   }
 `;
 
-const ConnectWalletButton = () => {
+const ConnectWalletButton = ({ ...props }) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const modalSize = useBreakpointValue({ base: 'sm' });
   const { login, error } = useAuth();
@@ -46,7 +46,7 @@ const ConnectWalletButton = () => {
       {error && error instanceof UnsupportedChainIdError && (
         <Text paddingRight={3}>Unsupported Chain</Text>
       )}
-      <PrimaryButton size="sm" onClick={onOpen}>
+      <PrimaryButton size="sm" onClick={onOpen} {...props}>
         Connect Wallet
       </PrimaryButton>
 

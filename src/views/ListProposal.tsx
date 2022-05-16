@@ -10,11 +10,18 @@ import {
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
-import { Proposal, zDAO as zDAOType } from '@zero-tech/zdao-sdk';
+import {
+  Proposal,
+  SupportedChainId,
+  zDAO as zDAOType,
+} from '@zero-tech/zdao-sdk';
 import React, { useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
+import LinkExternal, {
+  ExternalLinkType,
+} from '../components/Button/LinkExternal';
 import Card from '../components/Card';
 import { Loader } from '../components/Loader';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
@@ -25,14 +32,25 @@ const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
   return (
     <Card title={zDAO.title}>
       <SimpleGrid
-        columns={{ base: 2, sm: 4 }}
-        spacing={4}
-        templateColumns={{ sm: '1fr 2fr 1fr 2fr' }}
+        columns={{ base: 2, sm: 4, md: 6 }}
+        spacing={2}
+        templateColumns={{
+          sm: '1fr 2fr 1fr 2fr',
+          md: '1fr 2fr 1fr 2fr 1fr 2fr',
+        }}
       >
         <Text>Created By</Text>
-        <Text>{zDAO.createdBy}</Text>
+        <LinkExternal
+          chainId={SupportedChainId.GOERLI}
+          type={ExternalLinkType.address}
+          value={zDAO.createdBy}
+        />
         <Text>Gnosis Safe</Text>
-        <Text>{zDAO.gnosisSafe}</Text>
+        <LinkExternal
+          chainId={SupportedChainId.GOERLI}
+          type={ExternalLinkType.address}
+          value={zDAO.gnosisSafe}
+        />
         <Text>Duration</Text>
         <Text>{zDAO.duration}</Text>
         <Text>Voting Threshold</Text>

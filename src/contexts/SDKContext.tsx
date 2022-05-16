@@ -15,6 +15,7 @@ import { ApplicationStatus, setApplicationStatus } from '../states/application';
 interface SDKContextValue {
   isInitialized: boolean;
   instance?: SDKInstance;
+  zNAs: string[];
   zDAOs: zDAO[];
 }
 
@@ -91,6 +92,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       value={{
         isInitialized: initialized,
         instance,
+        zNAs,
         zDAOs,
       }}
     >

@@ -10,12 +10,11 @@ import {
 } from '@chakra-ui/react';
 import { zDAO } from '@zero-tech/zdao-sdk';
 import { formatBytes32String } from 'ethers/lib/utils';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 
 import Blockie from '../components/Blockie';
 import Card from '../components/Card';
-import { Loader } from '../components/Loader';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { shortenAddress } from '../utils/address';
 
@@ -51,35 +50,15 @@ const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
 };
 
 const Home = () => {
-  const { instance } = useSdkContext();
-  const [loading, setLoading] = useState(true);
-  const [zDAOs, setZDAOs] = useState<zDAO[] | undefined>();
-
-  useEffect(() => {
-    const fetch = async () => {
-      if (!instance) return;
-      const list = await instance.listZDAOs();
-      setZDAOs(list);
-      setLoading(false);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    fetch();
-  }, [instance]);
+  const { zDAOs } = useSdkContext();
 
   return (
     <Container as={Stack} maxW="7xl">
-      {loading ? (
-        <Stack justifyContent="start">
-          <Loader />
-        </Stack>
-      ) : (
-        <VStack spacing={{ base: 6, sm: 12 }} alignItems="center">
-          <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
-            {zDAOs && zDAOs.map((dao) => <ZDAOBlock key={dao.id} zDAO={dao} />)}
-          </SimpleGrid>
-        </VStack>
-      )}
+      <VStack spacing={{ base: 6, sm: 12 }} alignItems="center">
+        <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
+          {zDAOs && zDAOs.map((dao) => <ZDAOBlock key={dao.id} zDAO={dao} />)}
+        </SimpleGrid>
+      </VStack>
     </Container>
   );
 };

@@ -16,6 +16,7 @@ const GnosisSafe = lazy(() => import('./views/GnosisSafe'));
 const ListProposal = lazy(() => import('./views/ListProposal'));
 const Voting = lazy(() => import('./views/Voting'));
 const CreateProposal = lazy(() => import('./views/CreateProposal'));
+const CreateZDAO = lazy(() => import('./views/CreateZDAO'));
 
 // This config is required for number formatting
 BigNumber.config({
@@ -55,12 +56,13 @@ function App() {
 
   return (
     <AppWrapper>
-      <Header />
-      <BodyWrapper background={color}>
-        <BrowserRouter>
-          <SuspenseWithChunkError fallback={<FullScreenLoader />}>
+      <BrowserRouter>
+        <SuspenseWithChunkError fallback={<FullScreenLoader />}>
+          <BodyWrapper background={color}>
+            <Header />
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/create-zdao" element={<CreateZDAO />} />
               <Route path="/:zNA" element={<ListProposal />} />
               <Route path="/:zNA/:proposalId" element={<Voting />} />
               <Route path="/:zNA/gnosis-safe" element={<GnosisSafe />} />
@@ -69,9 +71,9 @@ function App() {
                 element={<CreateProposal />}
               />
             </Routes>
-          </SuspenseWithChunkError>
-        </BrowserRouter>
-      </BodyWrapper>
+          </BodyWrapper>
+        </SuspenseWithChunkError>
+      </BrowserRouter>
     </AppWrapper>
   );
 }
