@@ -513,11 +513,11 @@ const Voting = () => {
                         {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
                       </Text>
 
-                      <Text>Quorum Participants</Text>
-                      <Text>{zDAO?.quorumParticipants}</Text>
+                      <Text>Minimum Voting Participants</Text>
+                      <Text>{zDAO?.minimumVotingParticipants}</Text>
 
-                      <Text>Quorum Votes</Text>
-                      <Text>{zDAO?.quorumVotes}</Text>
+                      <Text>Minimum Total Votes</Text>
+                      <Text>{zDAO?.minimumTotalVotingTokens}</Text>
 
                       <Text>Snapshot</Text>
                       <LinkExternal

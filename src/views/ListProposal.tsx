@@ -4,12 +4,13 @@ import {
   Container,
   Flex,
   Heading,
+  SimpleGrid,
   Stack,
   Text,
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
-import { Proposal } from '@zero-tech/zdao-sdk';
+import { Proposal, zDAO as zDAOType } from '@zero-tech/zdao-sdk';
 import React, { useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -19,6 +20,35 @@ import { Loader } from '../components/Loader';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { shortenAddress } from '../utils/address';
+
+const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
+  return (
+    <Card title={zDAO.title}>
+      <SimpleGrid
+        columns={{ base: 2, sm: 4 }}
+        spacing={4}
+        templateColumns={{ sm: '1fr 2fr 1fr 2fr' }}
+      >
+        <Text>Created By</Text>
+        <Text>{zDAO.createdBy}</Text>
+        <Text>Gnosis Safe</Text>
+        <Text>{zDAO.gnosisSafe}</Text>
+        <Text>Duration</Text>
+        <Text>{zDAO.duration}</Text>
+        <Text>Voting Threshold</Text>
+        <Text>
+          {zDAO.votingThreshold && `${zDAO.votingThreshold / 100.0}%`}
+        </Text>
+        <Text>Minimum Voting Participants</Text>
+        <Text>{zDAO.minimumVotingParticipants}</Text>
+        <Text>Minimum Total Voting Tokens</Text>
+        <Text>{zDAO.minimumTotalVotingTokens}</Text>
+        <Text>Majority</Text>
+        <Text>{zDAO.isRelativeMajority ? 'Relative' : 'Absolute'}</Text>
+      </SimpleGrid>
+    </Card>
+  );
+};
 
 const ProposalCard = ({
   zNA,
@@ -171,6 +201,8 @@ const ListProposal = () => {
                 </Button>
               </Link>
             </Stack>
+
+            <ZDAOInfoCard zDAO={zDAO} />
 
             {proposals.list.map((proposal) => (
               <ProposalCard key={proposal.id} zNA={zNA} proposal={proposal} />
