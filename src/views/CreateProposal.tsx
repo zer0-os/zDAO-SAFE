@@ -1,6 +1,5 @@
 import {
   Button,
-  Checkbox,
   Container,
   Heading,
   Input,
@@ -46,9 +45,6 @@ interface ProposalFormat {
   body: string;
   startDateTime: Date;
   period: number;
-  majority: boolean;
-  quorumParticipants: number;
-  quorumVotes: string;
   snapshot: number;
   abi: string;
   sender: string;
@@ -67,9 +63,6 @@ const CreateProposal = () => {
     body: '',
     startDateTime: new Date(),
     period: 86400,
-    majority: true, // true if relative majority
-    quorumParticipants: 0,
-    quorumVotes: '0',
     snapshot: 0,
     abi: JSON.stringify(TransferAbi),
     sender: '',
@@ -82,9 +75,6 @@ const CreateProposal = () => {
     body,
     startDateTime,
     period,
-    majority,
-    quorumParticipants,
-    quorumVotes,
     snapshot,
     abi,
     sender,
@@ -414,7 +404,7 @@ const CreateProposal = () => {
                   >
                     {Object.keys(Periods).map((key) => (
                       <option key={key} value={key}>
-                        {(Periods as any)[key]}
+                        {(Periods as unknown)[key]}
                       </option>
                     ))}
                   </Select>
@@ -440,7 +430,7 @@ const CreateProposal = () => {
                     </>
                   )}
 
-                  <Text>Majority</Text>
+                  {/* <Text>Majority</Text>
                   <Checkbox
                     isChecked={majority}
                     name="majority"
@@ -479,7 +469,7 @@ const CreateProposal = () => {
                       borderRadius: 'gray.300',
                     }}
                     required
-                  />
+                  /> */}
                 </SimpleGrid>
 
                 {account ? (
