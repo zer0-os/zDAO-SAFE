@@ -2456,9 +2456,9 @@
     web3-utils "^1.7.1"
 
 "@gnosis.pm/safe-deployments@^1.12.0", "@gnosis.pm/safe-deployments@^1.8.0":
-  version "1.12.0"
-  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-deployments/-/safe-deployments-1.12.0.tgz#aabad66f5467821b9a965411f9747016811d7554"
-  integrity sha512-fNwQqTdBushxlkqp8WpgXVP9HTePa/VFWM9VYPzbSsdqYqSUnXYDDOMyHH3H6eNltwRV8RVp/cxqUZLrvQ3YPg==
+  version "1.14.0"
+  resolved "https://registry.yarnpkg.com/@gnosis.pm/safe-deployments/-/safe-deployments-1.14.0.tgz#6595b6797510432d3a738ccc8d8ae90e00a04575"
+  integrity sha512-KbuKppBkEAVmnvI9R6212Ne9paBzoDPGb2yye7BSFuhiVTMRSJftZAZXQoENqj+jA5r53d/t0DVjiPx0RE8/IQ==
 
 "@gnosis.pm/safe-ethers-adapters@0.1.0-alpha.8":
   version "0.1.0-alpha.8"
@@ -4021,7 +4021,7 @@
 
 "@zero-tech/zdao-sdk@github:zer0-os/zdao-sdk#feat/polygon-sdk":
   version "0.0.6"
-  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/cb12ebffae6e81e50d7371182f53c924016d569e"
+  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/fda5bd2aec3452b1e6007a06c2e586d08b9a494a"
   dependencies:
     "@fleekhq/fleek-storage-js" "1.0.21"
     "@gnosis.pm/safe-core-sdk" "2.0.0"
@@ -4450,9 +4450,9 @@ available-typed-arrays@^1.0.5:
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
 aws-sdk@^2.814.0, aws-sdk@^2.989.0:
-  version "2.1135.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1135.0.tgz#8c14aa6894be529cb5fb7b6d19f3dc70e4f35816"
-  integrity sha512-bl9n4QgrEh52hmQ+Jo76BgJXM/p+PwfVZvImEQHFeel/33H/PDLcTJquEw5bzxM1HRNI24iH+FNPwyWLMrttTw==
+  version "2.1136.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1136.0.tgz#d103aed0313af2c254a2dbd54823af8057c7a0b9"
+  integrity sha512-cuXPB1lNoiK/oNTAN+Bud2Pp8/PvY7erL2DYPVN2zsk2nh9e8VG3yldf6KcEO6mm4q/FgZc4X6Zq+fOyuBY/wA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"

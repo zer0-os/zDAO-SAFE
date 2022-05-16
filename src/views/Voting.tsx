@@ -202,11 +202,11 @@ const Voting = () => {
       }
       await handleRefreshPage();
     } catch (error: any) {
-      console.error('Collect proposal', error);
+      console.error('Calculating proposal', error);
       if (toast) {
         toast({
           title: 'Error',
-          description: `Collecting proposal failed - ${error.message}`,
+          description: `Calculating proposal failed - ${error.message}`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -617,7 +617,7 @@ const Voting = () => {
 
                 {
                   // eslint-disable-next-line no-nested-ternary
-                  proposal.state === 'queueing' ? (
+                  proposal.state === 'calculating' ? (
                     <>
                       {chainId && chainId !== SupportedChainId.MUMBAI && (
                         <Button
@@ -642,7 +642,7 @@ const Voting = () => {
                         Collect Proposal
                       </PrimaryButton>
                     </>
-                  ) : proposal.state === 'collecting' ? (
+                  ) : proposal.state === 'finalizing' ? (
                     <>
                       {chainId && chainId !== SupportedChainId.GOERLI && (
                         <Button

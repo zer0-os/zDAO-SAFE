@@ -20,11 +20,11 @@ export const ProposalStateText = (state: ProposalState): string => {
   if (state === 'active') {
     return 'User can cast a vote';
   }
-  if (state === 'queueing') {
-    return 'Waiting for collecting';
+  if (state === 'calculating') {
+    return 'Calculating voting result';
   }
-  if (state === 'collecting') {
-    return 'Waiting to receive voting rsult';
+  if (state === 'finalizing') {
+    return 'Finalizing voting rsult';
   }
   if (state === 'succeeded') {
     return 'Proposal can be executable';

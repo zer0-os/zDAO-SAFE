@@ -29,7 +29,13 @@ import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { setupNetwork } from '../utils/wallet';
 
-const zNAsAvailable = ['', 'wilder.kicks', 'wilder.wheels', 'wilder.cats'];
+const zNAsAvailable = [
+  '',
+  'wilder.kicks',
+  'wilder.wheels',
+  'wilder.cats',
+  'wilder.breasts',
+];
 
 const Durations = {
   300: '5 Minutes',
