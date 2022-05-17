@@ -64,15 +64,13 @@ const SDKProvider = ({ children }: SDKContextProps) => {
 
     const sdk = await createSDKInstance(config);
 
-    const zNAsList = await sdk.listZNAs();
-    setZNAs(zNAsList);
-
-    console.log('zNAs', zNAsList);
+    const zNAAssociates = await sdk.listZNAs();
+    console.log('all the associated zNAs', zNAAssociates);
+    setZNAs(zNAAssociates);
 
     const zDAOsList = await sdk.listZDAOs();
-    setZDAOs(zDAOsList);
-
     console.log('zDAOs', zDAOsList);
+    setZDAOs(zDAOsList);
 
     setInstance(sdk);
     setInitialized(true);

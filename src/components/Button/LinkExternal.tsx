@@ -20,10 +20,12 @@ const LinkExternal = ({
   chainId,
   type,
   value,
+  shortenize = true,
 }: {
   chainId: number;
   type: ExternalLinkType;
   value: string | number;
+  shortenize?: boolean;
 }) => {
   const link = useMemo(() => {
     if (
@@ -38,16 +40,16 @@ const LinkExternal = ({
 
   const display = useMemo(() => {
     if (type === ExternalLinkType.address) {
-      return shortenAddress(value as string);
+      return shortenize ? shortenAddress(value as string) : (value as string);
     }
     if (type === ExternalLinkType.tx) {
-      return shortenTx(value as string);
+      return shortenize ? shortenTx(value as string) : (value as string);
     }
     if (type === ExternalLinkType.proposal) {
       return value as string;
     }
     return value;
-  }, [type, value]);
+  }, [type, shortenize, value]);
 
   return (
     <LinkButton href={link} isExternal>

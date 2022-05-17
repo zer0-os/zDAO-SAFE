@@ -31,7 +31,7 @@ const DesktopNav = (props: BoxProps) => {
         <ConnectWalletButton />
       ) : (
         <>
-          <Link to="/create-zdao">
+          <Link to="/create-token">
             <Button
               borderWidth="1px"
               borderRadius="md"

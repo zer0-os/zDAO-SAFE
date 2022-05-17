@@ -22,7 +22,7 @@ import {
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { ConnectWalletButton, PrimaryButton } from '../components/Button';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
@@ -59,6 +59,7 @@ interface ZDAOFormat {
 }
 
 const CreateZDAO = () => {
+  const { token } = useParams();
   const { account, chainId, library } = useActiveWeb3React();
   const { instance, zNAs } = useSdkContext();
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ const CreateZDAO = () => {
     title: '',
     zNA: 0,
     gnosisSafe: '',
-    erc20: undefined,
+    erc20: token,
     erc20Amount: undefined,
     erc721: undefined,
     duration: 300,
@@ -199,7 +200,7 @@ const CreateZDAO = () => {
   return (
     <Container as={Stack} maxW="7xl">
       <VStack spacing={{ base: 6, sm: 12 }} alignItems="flex-start">
-        <Link to="/">
+        <Link to="/create-token">
           <Stack align="center" direction="row">
             <IoArrowBack size={15} />
             <Heading size="sm">Back</Heading>
@@ -268,6 +269,7 @@ const CreateZDAO = () => {
                 size="md"
                 value={erc20}
                 onChange={handleInputChange}
+                readOnly
                 required
               />
               <Input
@@ -289,6 +291,7 @@ const CreateZDAO = () => {
               size="md"
               value={erc721}
               onChange={handleInputChange}
+              disabled
               required
             />
 

@@ -16,6 +16,7 @@ const GnosisSafe = lazy(() => import('./views/GnosisSafe'));
 const ListProposal = lazy(() => import('./views/ListProposal'));
 const Voting = lazy(() => import('./views/Voting'));
 const CreateProposal = lazy(() => import('./views/CreateProposal'));
+const CreateZToken = lazy(() => import('./views/CreateZToken'));
 const CreateZDAO = lazy(() => import('./views/CreateZDAO'));
 
 // This config is required for number formatting
@@ -48,7 +49,6 @@ function App() {
   const color = useColorModeValue('#F7FAFC', '#060514');
 
   const applicationStatus = useApplicationStatus();
-  console.log('applicationStatus', applicationStatus);
 
   if (applicationStatus === ApplicationStatus.INITIAL) {
     return <FullScreenLoader />;
@@ -62,7 +62,8 @@ function App() {
             <Header />
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/create-zdao" element={<CreateZDAO />} />
+              <Route path="/create-token" element={<CreateZToken />} />
+              <Route path="/create-zdao/:token" element={<CreateZDAO />} />
               <Route path="/:zNA" element={<ListProposal />} />
               <Route path="/:zNA/:proposalId" element={<Voting />} />
               <Route path="/:zNA/gnosis-safe" element={<GnosisSafe />} />
