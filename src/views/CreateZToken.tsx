@@ -36,7 +36,7 @@ import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import { ERC1967Proxy } from '../config/types/ERC1967Proxy';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
-import { calculateGasMargin, setupNetwork } from '../utils/wallet';
+import { setupNetwork } from '../utils/wallet';
 
 interface ZTokenFormat {
   name: string;
@@ -113,12 +113,12 @@ const CreateZToken = () => {
         ZeroTokenAbi.bytecode,
         signer,
       );
-      const estimatedGas = await library.estimateGas(
-        zTokenFactory.getDeployTransaction(),
-      );
-      const options = {
-        gasLimit: calculateGasMargin(estimatedGas),
-      };
+      // const estimatedGas = await library.estimateGas(
+      //   zTokenFactory.getDeployTransaction(),
+      // );
+      // const options = {
+      //   gasLimit: calculateGasMargin(estimatedGas),
+      // };
       const zTokenImplementation = await zTokenFactory.deploy();
       await zTokenImplementation.deployed();
       console.log('zTokenImplementation', zTokenImplementation.address);
@@ -233,7 +233,7 @@ const CreateZToken = () => {
             {account ? (
               <PrimaryButton
                 width="full"
-                disabled={!isValidSelecting}
+                disabled={!isValidSelecting || !isValidCreating}
                 onClick={handleSelectToken}
               >
                 Select Token
@@ -357,7 +357,7 @@ const CreateZToken = () => {
                 )}
                 <PrimaryButton
                   width="full"
-                  disabled={!isValidCreating}
+                  disabled={!isValidSelecting || !isValidCreating}
                   onClick={handleCreateZToken}
                 >
                   Create Token
