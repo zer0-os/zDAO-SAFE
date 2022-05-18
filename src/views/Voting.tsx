@@ -508,9 +508,11 @@ const Voting = () => {
                         </>
                       )}
 
-                      <Text>Majority</Text>
+                      <Text>Voting Type</Text>
                       <Text>
-                        {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
+                        {zDAO?.isRelativeMajority
+                          ? 'Relative Majority'
+                          : 'Absolute Majority'}
                       </Text>
 
                       <Text>Minimum Voting Participants</Text>

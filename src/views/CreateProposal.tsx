@@ -30,6 +30,7 @@ import { getToken, TESTNET_TOKEN_LIST } from '../config/constants/tokens';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { useBlockNumber } from '../states/application/hooks';
+import { time2string } from '../utils/strings';
 import { setupNetwork } from '../utils/wallet';
 
 interface ProposalFormat {
@@ -171,7 +172,7 @@ const CreateProposal = () => {
       });
 
       const signer = library.getSigner(account).connectUnchecked();
-      const proposal = await zDAO.createProposal(signer, {
+      const proposalId = await zDAO.createProposal(signer, {
         title,
         body,
         transfer: {
@@ -186,7 +187,7 @@ const CreateProposal = () => {
             .toString(),
         },
       });
-      console.log('Proposal created', proposal);
+      console.log('Proposal created, id', proposalId);
 
       if (toast) {
         toast({
@@ -198,7 +199,7 @@ const CreateProposal = () => {
         });
       }
 
-      navigate(`/${zNA}/${proposal.id}`);
+      navigate(`/${zNA}/${proposalId}`);
     } catch (error: any) {
       console.error('Proposal creation error', error);
       if (toast) {
@@ -382,8 +383,8 @@ const CreateProposal = () => {
                   templateColumns={{ base: '1fr 2fr' }}
                   alignItems="center"
                 >
-                  <Text>Majority</Text>
-                  <Text>{zDAO?.duration}</Text>
+                  <Text>Duration</Text>
+                  <Text>{time2string(zDAO?.duration)}</Text>
 
                   {account && (
                     <>
@@ -396,15 +397,17 @@ const CreateProposal = () => {
                     </>
                   )}
 
-                  <Text>Majority</Text>
+                  <Text>Voting Type</Text>
                   <Text>
-                    {zDAO?.isRelativeMajority ? 'Relative' : 'Absolute'}
+                    {zDAO?.isRelativeMajority
+                      ? 'Relative Majority'
+                      : 'Absolute Majority'}
                   </Text>
 
-                  <Text>Quorum Participants</Text>
+                  <Text>Minimum Voting Participants</Text>
                   <Text>{zDAO?.minimumVotingParticipants}</Text>
 
-                  <Text>Quorum Votes</Text>
+                  <Text>Minimum Total Voting Tokens</Text>
                   <Text>{zDAO?.minimumTotalVotingTokens}</Text>
                 </SimpleGrid>
 

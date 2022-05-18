@@ -35,6 +35,7 @@ import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from '../config/abi/ZeroToken.json';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
+import { isAddress } from '../utils/address';
 import { setupNetwork } from '../utils/wallet';
 
 interface ZTokenFormat {
@@ -64,18 +65,26 @@ const CreateZToken = () => {
 
   const { name, symbol, totalSupply, target, amount } = state;
 
+  const isValid = {
+    deployedToken: deployedTokenDAOId >= 0 || !!isAddress(deployedToken),
+    name: name.length > 0,
+    symbol: symbol.length > 0,
+    totalSupply: /^[0-9]+$/.test(totalSupply),
+    target: !!isAddress(target),
+    amount: /^[0-9]+$/.test(amount),
+  };
   const isValidSelecting =
     zDAOs &&
-    (deployedToken.length > 0 ||
+    (isValid.deployedToken ||
       (deployedTokenDAOId >= 0 && deployedTokenDAOId < zDAOs.length));
   const isValidCreating =
     !!account &&
     chainId === SupportedChainId.GOERLI &&
-    name.length > 0 &&
-    symbol.length > 0 &&
-    totalSupply.length > 0 &&
-    target.length > 0 &&
-    amount.length > 0 &&
+    isValid.name &&
+    isValid.symbol &&
+    isValid.totalSupply &&
+    isValid.target &&
+    isValid.amount &&
     !executing;
 
   const updateValue = (key: string, value: string | number | boolean) => {
@@ -87,7 +96,20 @@ const CreateZToken = () => {
 
   const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
-    updateValue(inputName, value);
+    if (value.length < 1) {
+      updateValue(inputName, value);
+    } else if (
+      (inputName === 'totalSupply' || inputName === 'amount') &&
+      /^[0-9]+$/.test(value)
+    ) {
+      updateValue(inputName, value);
+    } else if (
+      inputName === 'target' ||
+      inputName === 'name' ||
+      inputName === 'symbol'
+    ) {
+      updateValue(inputName, value);
+    }
   };
 
   const handleChangeToken = (value: string) => {
@@ -97,7 +119,7 @@ const CreateZToken = () => {
   const handleDeployedToken = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
     setDeployedToken(value);
-    if (deployedTokenDAOId > 0) {
+    if (deployedTokenDAOId >= 0) {
       setDeployedTokenDAOId(-1);
     }
   };
@@ -213,7 +235,7 @@ const CreateZToken = () => {
           direction={{ base: 'column', md: 'row' }}
           w="full"
         >
-          <Stack spacing={12} flex={2} direction={{ base: 'column' }} w="full">
+          <Stack spacing={12} direction={{ base: 'column' }} w="full">
             <RadioGroup
               onChange={handleChangeToken}
               value={deployedTokenDAOId}
@@ -265,6 +287,7 @@ const CreateZToken = () => {
                 placeholder="Token Address"
                 size="md"
                 value={deployedToken}
+                isInvalid={!isValid.deployedToken}
                 onChange={handleDeployedToken}
                 required
               />
@@ -313,6 +336,7 @@ const CreateZToken = () => {
               placeholder="Token Name"
               size="md"
               value={name}
+              isInvalid={!isValid.name}
               onChange={handleInputChange}
               required
             />
@@ -323,6 +347,7 @@ const CreateZToken = () => {
               placeholder="Token Ticker"
               size="md"
               value={symbol}
+              isInvalid={!isValid.symbol}
               onChange={handleInputChange}
               required
             />
@@ -333,6 +358,7 @@ const CreateZToken = () => {
               placeholder="Total Supply"
               size="md"
               value={totalSupply}
+              isInvalid={!isValid.totalSupply}
               onChange={handleInputChange}
               required
             />
@@ -344,6 +370,7 @@ const CreateZToken = () => {
                 placeholder="Address to mint to"
                 size="md"
                 value={target}
+                isInvalid={!isValid.target}
                 onChange={handleInputChange}
                 required
               />
@@ -353,6 +380,7 @@ const CreateZToken = () => {
                 placeholder="Mint Amount"
                 size="md"
                 value={amount}
+                isInvalid={!isValid.amount}
                 onChange={handleInputChange}
                 required
               />

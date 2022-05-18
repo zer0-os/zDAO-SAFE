@@ -61,8 +61,10 @@ const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
         <Text>{zDAO.minimumVotingParticipants}</Text>
         <Text>Minimum Total Voting Tokens</Text>
         <Text>{zDAO.minimumTotalVotingTokens}</Text>
-        <Text>Majority</Text>
-        <Text>{zDAO.isRelativeMajority ? 'Relative' : 'Absolute'}</Text>
+        <Text>Voting Type</Text>
+        <Text>
+          {zDAO.isRelativeMajority ? 'Relative Majority' : 'Absolute Majority'}
+        </Text>
       </SimpleGrid>
     </Card>
   );
