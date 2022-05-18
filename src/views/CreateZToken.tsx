@@ -39,11 +39,11 @@ import { isAddress } from '../utils/address';
 import { setupNetwork } from '../utils/wallet';
 
 interface ZTokenFormat {
-  name: string;
-  symbol: string;
-  totalSupply: string;
-  target: string;
-  amount: string;
+  name: string | null;
+  symbol: string | null;
+  totalSupply: string | null;
+  target: string | null;
+  amount: string | null;
 }
 
 const CreateZToken = () => {
@@ -53,30 +53,29 @@ const CreateZToken = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
   const [state, setState] = useState<ZTokenFormat>({
-    name: 'meow',
-    symbol: 'MEOW',
-    totalSupply: '100000000000000000000000',
-    target: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
-    amount: '100000000000000000000000',
+    name: null,
+    symbol: null,
+    totalSupply: null,
+    target: null,
+    amount: null,
   });
   const [executing, setExecuting] = useState<boolean>(false);
   const [deployedTokenDAOId, setDeployedTokenDAOId] = useState<number>(0);
-  const [deployedToken, setDeployedToken] = useState<string>('');
+  const [deployedToken, setDeployedToken] = useState<string | null>(null);
 
   const { name, symbol, totalSupply, target, amount } = state;
 
   const isValid = {
-    deployedToken: deployedTokenDAOId >= 0 || !!isAddress(deployedToken),
-    name: name.length > 0,
-    symbol: symbol.length > 0,
-    totalSupply: /^[0-9]+$/.test(totalSupply),
-    target: !!isAddress(target),
-    amount: /^[0-9]+$/.test(amount),
+    deployedToken:
+      deployedTokenDAOId >= 0 ||
+      (deployedToken !== null && !!isAddress(deployedToken)),
+    name: name !== null && name.length > 0,
+    symbol: symbol !== null && symbol.length > 0,
+    totalSupply: totalSupply !== null && /^[0-9]+$/.test(totalSupply),
+    target: target !== null && !!isAddress(target),
+    amount: amount !== null && /^[0-9]+$/.test(amount),
   };
-  const isValidSelecting =
-    zDAOs &&
-    (isValid.deployedToken ||
-      (deployedTokenDAOId >= 0 && deployedTokenDAOId < zDAOs.length));
+  const isValidSelecting = zDAOs && isValid.deployedToken && !executing;
   const isValidCreating =
     !!account &&
     chainId === SupportedChainId.GOERLI &&
@@ -286,7 +285,7 @@ const CreateZToken = () => {
                 name="deployedToken"
                 placeholder="Token Address"
                 size="md"
-                value={deployedToken}
+                value={deployedToken ?? ''}
                 isInvalid={!isValid.deployedToken}
                 onChange={handleDeployedToken}
                 required
@@ -302,7 +301,7 @@ const CreateZToken = () => {
             {account ? (
               <PrimaryButton
                 width="full"
-                disabled={!isValidSelecting || !isValidCreating}
+                disabled={!isValidSelecting}
                 onClick={handleSelectToken}
               >
                 Select Token
@@ -335,8 +334,8 @@ const CreateZToken = () => {
               name="name"
               placeholder="Token Name"
               size="md"
-              value={name}
-              isInvalid={!isValid.name}
+              value={name ?? ''}
+              isInvalid={name !== null && !isValid.name}
               onChange={handleInputChange}
               required
             />
@@ -346,8 +345,8 @@ const CreateZToken = () => {
               name="symbol"
               placeholder="Token Ticker"
               size="md"
-              value={symbol}
-              isInvalid={!isValid.symbol}
+              value={symbol ?? ''}
+              isInvalid={symbol !== null && !isValid.symbol}
               onChange={handleInputChange}
               required
             />
@@ -357,8 +356,8 @@ const CreateZToken = () => {
               name="totalSupply"
               placeholder="Total Supply"
               size="md"
-              value={totalSupply}
-              isInvalid={!isValid.totalSupply}
+              value={totalSupply ?? ''}
+              isInvalid={totalSupply !== null && !isValid.totalSupply}
               onChange={handleInputChange}
               required
             />
@@ -369,8 +368,8 @@ const CreateZToken = () => {
                 name="target"
                 placeholder="Address to mint to"
                 size="md"
-                value={target}
-                isInvalid={!isValid.target}
+                value={target ?? ''}
+                isInvalid={target !== null && !isValid.target}
                 onChange={handleInputChange}
                 required
               />
@@ -379,8 +378,8 @@ const CreateZToken = () => {
                 name="amount"
                 placeholder="Mint Amount"
                 size="md"
-                value={amount}
-                isInvalid={!isValid.amount}
+                value={amount ?? ''}
+                isInvalid={amount !== null && !isValid.amount}
                 onChange={handleInputChange}
                 required
               />
@@ -411,7 +410,7 @@ const CreateZToken = () => {
                 )}
                 <PrimaryButton
                   width="full"
-                  disabled={!isValidSelecting || !isValidCreating}
+                  disabled={!isValidCreating}
                   onClick={handleCreateZToken}
                 >
                   Create Token

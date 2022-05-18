@@ -28,6 +28,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { ConnectWalletButton, PrimaryButton } from '../components/Button';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
+import { isAddress } from '../utils/address';
 import { setupNetwork } from '../utils/wallet';
 
 const Durations = {
@@ -38,17 +39,17 @@ const Durations = {
 };
 
 interface ZDAOFormat {
-  title: string;
-  zNA: string;
-  gnosisSafe: string;
-  erc20?: string;
-  erc20Amount?: string;
-  erc721?: string;
+  title: string | null;
+  zNA: string | null;
+  gnosisSafe: string | null;
+  erc20?: string | null;
+  erc20Amount?: string | null;
+  erc721?: string | null;
   duration: number;
   isRelativeMajority: boolean;
   votingThreshold: number;
-  minimumVotingParticipants: number;
-  minimumTotalVotingTokens: string;
+  minimumVotingParticipants: number | null;
+  minimumTotalVotingTokens: string | null;
 }
 
 const CreateZDAO = () => {
@@ -60,17 +61,17 @@ const CreateZDAO = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
   const [state, setState] = useState<ZDAOFormat>({
-    title: '',
-    zNA: '',
-    gnosisSafe: '',
+    title: null,
+    zNA: null,
+    gnosisSafe: null,
     erc20: token,
-    erc20Amount: undefined,
-    erc721: undefined,
+    erc20Amount: null,
+    erc721: null,
     duration: 300,
     isRelativeMajority: true,
     votingThreshold: 50.01,
     minimumVotingParticipants: 1,
-    minimumTotalVotingTokens: '0',
+    minimumTotalVotingTokens: null,
   });
   const [executing, setExecuting] = useState<boolean>(false);
 
@@ -88,16 +89,27 @@ const CreateZDAO = () => {
     minimumTotalVotingTokens,
   } = state;
 
-  const isValid =
+  const isValid = {
+    title: title !== null && title.length > 0,
+    zNA: zNA !== null && zNA.length > 0,
+    gnosisSafe: gnosisSafe != null && !!isAddress(gnosisSafe),
+    erc20: erc20 && !!isAddress(erc20),
+    erc20Amount: erc20Amount && /^[0-9]+$/.test(erc20Amount),
+    erc721: erc721 && !!isAddress(erc721),
+    minimumVotingParticipants:
+      minimumVotingParticipants !== null && minimumVotingParticipants > 0,
+    minimumTotalVotingTokens:
+      minimumTotalVotingTokens != null &&
+      /^[0-9]+$/.test(minimumTotalVotingTokens),
+  };
+  const isValidCreating =
     !!account &&
     chainId === SupportedChainId.GOERLI &&
-    title.length > 0 &&
-    zNA.length > 0 &&
-    ((erc20 !== undefined &&
-      erc20Amount !== undefined &&
-      erc20.length > 0 &&
-      erc20Amount.length > 0) ||
-      (erc721 !== undefined && erc721.length > 0)) &&
+    isValid.title &&
+    isValid.zNA &&
+    ((isValid.erc20 && isValid.erc20Amount) || isValid.erc721) &&
+    isValid.minimumVotingParticipants &&
+    isValid.minimumTotalVotingTokens &&
     !executing;
 
   const updateValue = (key: string, value: string | number | boolean) => {
@@ -123,6 +135,14 @@ const CreateZDAO = () => {
 
   const handleCreateZDAO = useCallback(async () => {
     if (!instance || !library || !account) return;
+    if (
+      !zNA ||
+      !title ||
+      !gnosisSafe ||
+      !minimumTotalVotingTokens ||
+      !minimumVotingParticipants
+    )
+      return;
 
     setExecuting(true);
     try {
@@ -213,7 +233,8 @@ const CreateZDAO = () => {
               name="title"
               placeholder="zDAO Name"
               size="md"
-              value={title}
+              value={title ?? ''}
+              isInvalid={title !== null && !isValid.title}
               onChange={handleInputChange}
               required
             />
@@ -231,7 +252,8 @@ const CreateZDAO = () => {
               name="zNA"
               placeholder="0://"
               size="md"
-              value={zNA}
+              value={zNA ?? ''}
+              isInvalid={zNA !== null && !isValid.zNA}
               onChange={handleInputChange}
               required
             />
@@ -242,7 +264,8 @@ const CreateZDAO = () => {
               name="gnosisSafe"
               placeholder="Gnosis Safe"
               size="md"
-              value={gnosisSafe}
+              value={gnosisSafe ?? ''}
+              isInvalid={gnosisSafe !== null && !isValid.gnosisSafe}
               onChange={handleInputChange}
               required
             />
@@ -254,7 +277,8 @@ const CreateZDAO = () => {
                 name="erc20"
                 placeholder="ERC20"
                 size="md"
-                value={erc20}
+                value={erc20 ?? ''}
+                isInvalid={erc20 !== null && !isValid.erc20}
                 onChange={handleInputChange}
                 readOnly
                 required
@@ -262,9 +286,10 @@ const CreateZDAO = () => {
               <Input
                 fontSize="md"
                 name="erc20Amount"
-                placeholder="Amount"
+                placeholder="Minimum Token Amount to create proposal"
                 size="md"
-                value={erc20Amount}
+                value={erc20Amount ?? ''}
+                isInvalid={erc20Amount !== null && !isValid.erc20Amount}
                 onChange={handleInputChange}
                 required
               />
@@ -276,7 +301,8 @@ const CreateZDAO = () => {
               name="erc721"
               placeholder="ERC721"
               size="md"
-              value={erc721}
+              value={erc721 ?? ''}
+              isInvalid={erc721 !== null && !isValid.erc721}
               onChange={handleInputChange}
               disabled
               required
@@ -346,10 +372,14 @@ const CreateZDAO = () => {
               borderColor={borderColor}
               fontSize="md"
               name="minimumVotingParticipants"
+              isInvalid={
+                minimumVotingParticipants !== null &&
+                !isValid.minimumVotingParticipants
+              }
               onChange={handleInputChange}
               placeholder="Quorum Participants"
               size="md"
-              value={minimumVotingParticipants}
+              value={minimumVotingParticipants ?? ''}
               _hover={{
                 borderRadius: 'gray.300',
               }}
@@ -363,10 +393,14 @@ const CreateZDAO = () => {
               borderColor={borderColor}
               fontSize="md"
               name="minimumTotalVotingTokens"
+              isInvalid={
+                minimumTotalVotingTokens !== null &&
+                !isValid.minimumTotalVotingTokens
+              }
               onChange={handleInputChange}
               placeholder="Quorum Votes"
               size="md"
-              value={minimumTotalVotingTokens}
+              value={minimumTotalVotingTokens ?? ''}
               _hover={{
                 borderRadius: 'gray.300',
               }}
@@ -398,7 +432,7 @@ const CreateZDAO = () => {
                 )}
                 <PrimaryButton
                   width="full"
-                  disabled={!isValid}
+                  disabled={!isValidCreating}
                   onClick={handleCreateZDAO}
                 >
                   Publish
