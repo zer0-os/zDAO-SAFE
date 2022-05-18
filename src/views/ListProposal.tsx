@@ -121,12 +121,14 @@ const ProposalCard = ({
             {proposal.start && proposal.end ? (
               <>
                 <Text>
-                  {proposal.end.getTime() > currentTime ? 'Ends in' : 'Ended'}
+                  {proposal.end.getTime() > currentTime ? 'Ends in ' : 'Ended '}
                 </Text>
-                {days && days > 0 && (
-                  <Text marginLeft={1}>{`${days} days`}</Text>
-                )}
-                {hrs && hrs > 0 && <Text marginLeft={1}>{`${hrs} hours`}</Text>}
+                {days && days > 0 ? (
+                  <Text marginLeft={1}>{`${days} days `}</Text>
+                ) : null}
+                {hrs && hrs > 0 ? (
+                  <Text marginLeft={1}>{`${hrs} hours `}</Text>
+                ) : null}
                 {proposal.end.getTime() < currentTime && (
                   <Text marginLeft={1}>ago</Text>
                 )}
