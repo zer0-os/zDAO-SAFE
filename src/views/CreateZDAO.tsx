@@ -1,9 +1,10 @@
 import {
   Button,
-  Checkbox,
   Container,
   Heading,
   Input,
+  Radio,
+  RadioGroup,
   Select,
   SimpleGrid,
   Slider,
@@ -20,7 +21,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import React, { ChangeEvent, useCallback, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -28,14 +29,6 @@ import { ConnectWalletButton, PrimaryButton } from '../components/Button';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { setupNetwork } from '../utils/wallet';
-
-const zNAsAvailable = [
-  '',
-  'wilder.kicks',
-  'wilder.wheels',
-  'wilder.cats',
-  'wilder.breasts',
-];
 
 const Durations = {
   300: '5 Minutes',
@@ -46,7 +39,7 @@ const Durations = {
 
 interface ZDAOFormat {
   title: string;
-  zNA: number;
+  zNA: string;
   gnosisSafe: string;
   erc20?: string;
   erc20Amount?: string;
@@ -61,14 +54,14 @@ interface ZDAOFormat {
 const CreateZDAO = () => {
   const { token } = useParams();
   const { account, chainId, library } = useActiveWeb3React();
-  const { instance, zNAs } = useSdkContext();
+  const { instance } = useSdkContext();
   const navigate = useNavigate();
   const [showTooltip, setShowTooltip] = useState(false);
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
   const [state, setState] = useState<ZDAOFormat>({
     title: '',
-    zNA: 0,
+    zNA: '',
     gnosisSafe: '',
     erc20: token,
     erc20Amount: undefined,
@@ -80,10 +73,6 @@ const CreateZDAO = () => {
     minimumTotalVotingTokens: '0',
   });
   const [executing, setExecuting] = useState<boolean>(false);
-
-  const zNAsEmpty = useMemo(() => {
-    return zNAsAvailable.filter((zNA) => zNAs.indexOf(zNA) < 0);
-  }, [zNAs]);
 
   const {
     title,
@@ -103,8 +92,7 @@ const CreateZDAO = () => {
     !!account &&
     chainId === SupportedChainId.GOERLI &&
     title.length > 0 &&
-    zNAsEmpty.length > zNA &&
-    zNAsEmpty[zNA].length > 0 &&
+    zNA.length > 0 &&
     ((erc20 !== undefined &&
       erc20Amount !== undefined &&
       erc20.length > 0 &&
@@ -129,9 +117,8 @@ const CreateZDAO = () => {
     updateValue(inputName, value);
   };
 
-  const handleCheckboxChange = (evt: ChangeEvent<HTMLInputElement>) => {
-    const { name: inputName, checked } = evt.currentTarget;
-    updateValue(inputName, checked);
+  const handleChangeRelative = (value: string | number) => {
+    updateValue('isRelativeMajority', !!Number(value));
   };
 
   const handleCreateZDAO = useCallback(async () => {
@@ -141,7 +128,7 @@ const CreateZDAO = () => {
     try {
       const signer = library.getSigner(account).connectUnchecked();
       await instance.createZDAO(signer, {
-        zNA: zNAsEmpty[zNA],
+        zNA,
         title,
         gnosisSafe,
         token: erc20 || (erc721 ?? ''),
@@ -163,7 +150,8 @@ const CreateZDAO = () => {
         });
       }
 
-      navigate(`/${zNAsEmpty[zNA]}`);
+      navigate(`/${zNA}`);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('zDAO creation error', error);
       if (toast) {
@@ -183,7 +171,6 @@ const CreateZDAO = () => {
     library,
     account,
     navigate,
-    zNAsEmpty,
     zNA,
     title,
     gnosisSafe,
@@ -231,15 +218,15 @@ const CreateZDAO = () => {
               required
             />
             <Text>zNA</Text>
-            <Select name="zNA" onChange={handleSelectChange} value={zNA}>
+            {/* <Select name="zNA" onChange={handleSelectChange} value={zNA}>
               {zNAsEmpty &&
                 Object.keys(zNAsEmpty).map((key) => (
                   <option key={key} value={key}>
                     {(zNAsEmpty as any)[key]}
                   </option>
                 ))}
-            </Select>
-            {/* <Input
+            </Select> */}
+            <Input
               fontSize="md"
               name="zNA"
               placeholder="0://"
@@ -247,7 +234,7 @@ const CreateZDAO = () => {
               value={zNA}
               onChange={handleInputChange}
               required
-            /> */}
+            />
 
             <Text>Gnosis Safe</Text>
             <Input
@@ -309,13 +296,15 @@ const CreateZDAO = () => {
             </Select>
 
             <Text>Voting Type</Text>
-            <Checkbox
-              name="majority"
-              isChecked={isRelativeMajority}
-              onChange={handleCheckboxChange}
+            <RadioGroup
+              onChange={handleChangeRelative}
+              value={Number(isRelativeMajority)}
             >
-              Relative
-            </Checkbox>
+              <Stack direction="row">
+                <Radio value={1}>Relative Majority</Radio>
+                <Radio value={0}>Absolute Majority</Radio>
+              </Stack>
+            </RadioGroup>
 
             <Text>Voting Threshold</Text>
             <Slider
@@ -356,7 +345,7 @@ const CreateZDAO = () => {
             <Input
               borderColor={borderColor}
               fontSize="md"
-              name="quorumParticipants"
+              name="minimumVotingParticipants"
               onChange={handleInputChange}
               placeholder="Quorum Participants"
               size="md"
