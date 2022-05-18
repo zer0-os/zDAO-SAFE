@@ -33,7 +33,6 @@ import LinkExternal, {
 } from '../components/Button/LinkExternal';
 import ERC1967ProxyAbi from '../config/abi/ERC1967Proxy.json';
 import ZeroTokenAbi from '../config/abi/ZeroToken.json';
-import { ERC1967Proxy } from '../config/types/ERC1967Proxy';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { setupNetwork } from '../utils/wallet';
@@ -41,9 +40,7 @@ import { setupNetwork } from '../utils/wallet';
 interface ZTokenFormat {
   name: string;
   symbol: string;
-  zNA: string;
   totalSupply: string;
-  maxSupply: string;
   target: string;
   amount: string;
 }
@@ -57,26 +54,26 @@ const CreateZToken = () => {
   const [state, setState] = useState<ZTokenFormat>({
     name: 'meow',
     symbol: 'MEOW',
-    zNA: 'meow',
     totalSupply: '100000000000000000000000',
-    maxSupply: '1000000000000000000000000000',
     target: '0x22C38E74B8C0D1AAB147550BcFfcC8AC544E0D8C',
     amount: '100000000000000000000000',
   });
   const [executing, setExecuting] = useState<boolean>(false);
   const [deployedTokenDAOId, setDeployedTokenDAOId] = useState<number>(0);
+  const [deployedToken, setDeployedToken] = useState<string>('');
 
-  const { name, symbol, zNA, totalSupply, maxSupply, target, amount } = state;
+  const { name, symbol, totalSupply, target, amount } = state;
 
-  const isValidSelecting = zDAOs && deployedTokenDAOId < zDAOs.length;
+  const isValidSelecting =
+    zDAOs &&
+    (deployedToken.length > 0 ||
+      (deployedTokenDAOId >= 0 && deployedTokenDAOId < zDAOs.length));
   const isValidCreating =
     !!account &&
     chainId === SupportedChainId.GOERLI &&
     name.length > 0 &&
     symbol.length > 0 &&
-    zNA.length > 0 &&
     totalSupply.length > 0 &&
-    maxSupply.length > 0 &&
     target.length > 0 &&
     amount.length > 0 &&
     !executing;
@@ -97,6 +94,14 @@ const CreateZToken = () => {
     setDeployedTokenDAOId(Number(value));
   };
 
+  const handleDeployedToken = (evt: ChangeEvent<HTMLInputElement>) => {
+    const { name: inputName, value } = evt.currentTarget;
+    setDeployedToken(value);
+    if (deployedTokenDAOId > 0) {
+      setDeployedTokenDAOId(-1);
+    }
+  };
+
   const handleSelectToken = useCallback(() => {
     if (!zDAOs || zDAOs.length <= deployedTokenDAOId) return;
     navigate(`/create-zdao/${zDAOs[deployedTokenDAOId].token}`);
@@ -108,6 +113,8 @@ const CreateZToken = () => {
     setExecuting(true);
     try {
       const signer = library.getSigner(account);
+
+      // create implementation of zToken
       const zTokenFactory = new ContractFactory(
         ZeroTokenAbi.abi,
         ZeroTokenAbi.bytecode,
@@ -123,27 +130,35 @@ const CreateZToken = () => {
       await zTokenImplementation.deployed();
       console.log('zTokenImplementation', zTokenImplementation.address);
 
+      // create ERC1967 proxy contract
       const zTokenInterface = new Interface(ZeroTokenAbi.abi);
       const proxyData = zTokenInterface.encodeFunctionData('initialize', [
         name,
         symbol,
       ]);
       console.log('proxyData', proxyData);
-
       const proxyFactory = new ContractFactory(
         ERC1967ProxyAbi.abi,
         ERC1967ProxyAbi.bytecode,
         signer,
       );
       console.log('proxyFactory', proxyFactory);
-      const proxyContract = (await proxyFactory.deploy(
+      const proxyContract = await proxyFactory.deploy(
         zTokenImplementation.address,
         proxyData,
-      )) as ERC1967Proxy;
+      );
       await proxyContract.deployed();
       console.log('proxyContract', proxyContract.address);
 
+      // initialize upgradeable contract
+      await proxyContract.initialize(name, symbol);
+      console.log('initialized');
       const token = proxyContract.address;
+      console.log('new token address', token);
+
+      // mint tokens
+      await proxyContract.mint(target, amount);
+      console.log('successfully minted');
 
       if (toast) {
         toast({
@@ -169,7 +184,17 @@ const CreateZToken = () => {
       }
     }
     setExecuting(false);
-  }, [toast, instance, library, account, name, symbol, navigate]);
+  }, [
+    toast,
+    instance,
+    library,
+    account,
+    name,
+    symbol,
+    amount,
+    target,
+    navigate,
+  ]);
 
   return (
     <Container as={Stack} maxW="7xl">
@@ -188,42 +213,63 @@ const CreateZToken = () => {
           direction={{ base: 'column', md: 'row' }}
           w="full"
         >
-          <RadioGroup
-            onChange={handleChangeToken}
-            value={deployedTokenDAOId}
-            width="full"
-          >
-            <TableContainer width="full">
-              <Table variant="simple">
-                <Thead>
-                  <Tr>
-                    <Th>#</Th>
-                    <Th>Token</Th>
-                    <Th>zDAO</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {zDAOs &&
-                    zDAOs.map((zDAO, index) => (
-                      <Tr key={zDAO.id}>
-                        <Td>
-                          <Radio value={index} />
-                        </Td>
-                        <Td>
-                          <LinkExternal
-                            chainId={SupportedChainId.GOERLI}
-                            type={ExternalLinkType.address}
-                            value={zDAO.token}
-                            shortenize={false}
-                          />
-                        </Td>
-                        <Td>{zDAO.title}</Td>
-                      </Tr>
-                    ))}
-                </Tbody>
-              </Table>
-            </TableContainer>
-          </RadioGroup>
+          <Stack spacing={12} flex={2} direction={{ base: 'column' }} w="full">
+            <RadioGroup
+              onChange={handleChangeToken}
+              value={deployedTokenDAOId}
+              width="full"
+            >
+              <TableContainer width="full">
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>#</Th>
+                      <Th>Token</Th>
+                      <Th>zDAO</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {zDAOs &&
+                      zDAOs.map((zDAO, index) => (
+                        <Tr key={zDAO.id}>
+                          <Td>
+                            <Radio value={index} />
+                          </Td>
+                          <Td>
+                            <LinkExternal
+                              chainId={SupportedChainId.GOERLI}
+                              type={ExternalLinkType.address}
+                              value={zDAO.token}
+                              shortenize={false}
+                            />
+                          </Td>
+                          <Td>{zDAO.title}</Td>
+                        </Tr>
+                      ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </RadioGroup>
+
+            <SimpleGrid
+              columns={2}
+              spacing={4}
+              templateColumns={{ base: '180px 1fr' }}
+              alignItems="center"
+              width="full"
+            >
+              <Text>Token Address</Text>
+              <Input
+                fontSize="md"
+                name="deployedToken"
+                placeholder="Token Address"
+                size="md"
+                value={deployedToken}
+                onChange={handleDeployedToken}
+                required
+              />
+            </SimpleGrid>
+          </Stack>
 
           <VStack
             width={{ base: 'full', sm: '400px' }}
@@ -280,16 +326,6 @@ const CreateZToken = () => {
               onChange={handleInputChange}
               required
             />
-            <Text>zNA</Text>
-            <Input
-              fontSize="md"
-              name="zNA"
-              placeholder="0://"
-              size="md"
-              value={zNA}
-              onChange={handleInputChange}
-              required
-            />
             <Text>Total Supply</Text>
             <Input
               fontSize="md"
@@ -297,16 +333,6 @@ const CreateZToken = () => {
               placeholder="Total Supply"
               size="md"
               value={totalSupply}
-              onChange={handleInputChange}
-              required
-            />
-            <Text>Maximum Supply</Text>
-            <Input
-              fontSize="md"
-              name="maxSupply"
-              placeholder="Maximum Supply"
-              size="md"
-              value={maxSupply}
               onChange={handleInputChange}
               required
             />
