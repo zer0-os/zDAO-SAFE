@@ -62,6 +62,7 @@ const CreateZToken = () => {
   const [executing, setExecuting] = useState<boolean>(false);
   const [deployedTokenDAOId, setDeployedTokenDAOId] = useState<number>(0);
   const [deployedToken, setDeployedToken] = useState<string | null>(null);
+  const [deployStatus, setDeployStatus] = useState<string>('');
 
   const { name, symbol, totalSupply, target, amount } = state;
 
@@ -135,6 +136,7 @@ const CreateZToken = () => {
     try {
       const signer = library.getSigner(account);
 
+      setDeployStatus('Deploying new token');
       // create implementation of zToken
       const zTokenFactory = new ContractFactory(
         ZeroTokenAbi.abi,
@@ -171,12 +173,14 @@ const CreateZToken = () => {
       await proxyContract.deployed();
       console.log('proxyContract', proxyContract.address);
 
+      setDeployStatus('Initializing new token');
       // initialize upgradeable contract
       await proxyContract.initialize(name, symbol);
       console.log('initialized');
       const token = proxyContract.address;
       console.log('new token address', token);
 
+      setDeployStatus('Minting new token');
       // mint tokens
       await proxyContract.mint(target, amount);
       console.log('successfully minted');
@@ -393,6 +397,7 @@ const CreateZToken = () => {
           >
             {account ? (
               <>
+                <Text>{deployStatus}</Text>
                 {chainId && chainId !== SupportedChainId.GOERLI && (
                   <Button
                     borderWidth="1px"

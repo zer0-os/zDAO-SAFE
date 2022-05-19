@@ -266,7 +266,7 @@ const Voting = () => {
       }
       await handleRefreshPage();
     } catch (error: any) {
-      console.errror('Execute proposal', error);
+      console.error('Execute proposal', error);
       if (toast) {
         toast({
           title: 'Error',

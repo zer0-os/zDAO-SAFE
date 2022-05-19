@@ -27,6 +27,7 @@ import { Loader } from '../components/Loader';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { shortenAddress } from '../utils/address';
+import { time2string } from '../utils/strings';
 
 const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
   return (
@@ -52,7 +53,7 @@ const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
           value={zDAO.gnosisSafe}
         />
         <Text>Duration</Text>
-        <Text>{zDAO.duration}</Text>
+        <Text>{time2string(zDAO.duration)}</Text>
         <Text>Voting Threshold</Text>
         <Text>
           {zDAO.votingThreshold && `${zDAO.votingThreshold / 100.0}%`}
@@ -128,7 +129,9 @@ const ProposalCard = ({
                 ) : null}
                 {hrs && hrs > 0 ? (
                   <Text marginLeft={1}>{`${hrs} hours `}</Text>
-                ) : null}
+                ) : (
+                  <Text marginLeft={1}>{`0 hours `}</Text>
+                )}
                 {proposal.end.getTime() < currentTime && (
                   <Text marginLeft={1}>ago</Text>
                 )}
@@ -220,6 +223,20 @@ const ListProposal = () => {
                   }}
                 >
                   <Heading size="sm">Create Proposal</Heading>
+                </Button>
+              </Link>
+
+              <Link to={`/${zNA}/stake`}>
+                <Button
+                  borderWidth="1px"
+                  borderRadius="md"
+                  px={4}
+                  py={2}
+                  _hover={{
+                    borderColor,
+                  }}
+                >
+                  <Heading size="sm">Stake tokens</Heading>
                 </Button>
               </Link>
             </Stack>

@@ -18,6 +18,7 @@ const Voting = lazy(() => import('./views/Voting'));
 const CreateProposal = lazy(() => import('./views/CreateProposal'));
 const CreateZToken = lazy(() => import('./views/CreateZToken'));
 const CreateZDAO = lazy(() => import('./views/CreateZDAO'));
+const Stake = lazy(() => import('./views/Stake'));
 
 // This config is required for number formatting
 BigNumber.config({
@@ -71,6 +72,7 @@ function App() {
                 path="/:zNA/create-proposal"
                 element={<CreateProposal />}
               />
+              <Route path="/stake" element={<Stake />} />
             </Routes>
           </BodyWrapper>
         </SuspenseWithChunkError>

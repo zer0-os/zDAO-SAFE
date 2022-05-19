@@ -31,6 +31,20 @@ const DesktopNav = (props: BoxProps) => {
         <ConnectWalletButton />
       ) : (
         <>
+          <Link to="/stake">
+            <Button
+              borderWidth="1px"
+              borderRadius="md"
+              px={4}
+              py={2}
+              _hover={{
+                borderColor,
+              }}
+            >
+              <Heading size="sm">Staking</Heading>
+            </Button>
+          </Link>
+
           <Link to="/create-token">
             <Button
               borderWidth="1px"
