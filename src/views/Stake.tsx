@@ -12,15 +12,22 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import React, {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { IoArrowBack } from 'react-icons/io5';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { ConnectWalletButton, PrimaryButton } from '../components/Button';
 import LinkExternal, {
   ExternalLinkType,
 } from '../components/Button/LinkExternal';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
+import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { useBlockNumber } from '../states/application/hooks';
 import { isAddress } from '../utils/address';
@@ -34,15 +41,17 @@ interface StakeFormat {
 }
 
 const Stake = () => {
-  const { account, chainId, library } = useActiveWeb3React();
+  const { zNA } = useParams();
+  const zDAO = useCurrentZDAO(zNA);
   const { instance } = useSdkContext();
+  const { account, chainId, library } = useActiveWeb3React();
   const navigate = useNavigate();
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
   const blockNumber = useBlockNumber();
 
   const [state, setState] = useState<StakeFormat>({
-    erc20: '0xe6445D91C03C22DE0Deb9F887aFcf96420D869c7',
+    erc20: null,
     erc20Amount: null,
     erc721: null,
     erc721TokenId: null,
@@ -67,12 +76,20 @@ const Stake = () => {
       (isValid.erc721 && isValid.erc721TokenId)) &&
     !executing;
 
-  const updateValue = (key: string, value: string | number | boolean) => {
-    setState((prevState) => ({
-      ...prevState,
-      [key]: value,
-    }));
-  };
+  const updateValue = useCallback(
+    (key: string, value: string | number | boolean) => {
+      setState((prevState) => ({
+        ...prevState,
+        [key]: value,
+      }));
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!zDAO) return;
+    updateValue('erc20', zDAO.childToken);
+  }, [updateValue, zDAO]);
 
   const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
@@ -135,7 +152,7 @@ const Stake = () => {
   return (
     <Container as={Stack} maxW="7xl">
       <VStack spacing={{ base: 6, sm: 12 }} alignItems="flex-start">
-        <Link to="/">
+        <Link to={`/${zNA}`}>
           <Stack align="center" direction="row">
             <IoArrowBack size={15} />
             <Heading size="sm">Home</Heading>

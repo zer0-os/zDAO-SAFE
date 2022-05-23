@@ -72,7 +72,7 @@ function App() {
                 path="/:zNA/create-proposal"
                 element={<CreateProposal />}
               />
-              <Route path="/stake" element={<Stake />} />
+              <Route path="/:zNA/stake" element={<Stake />} />
             </Routes>
           </BodyWrapper>
         </SuspenseWithChunkError>

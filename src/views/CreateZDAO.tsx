@@ -367,7 +367,7 @@ const CreateZDAO = () => {
               </Tooltip>
             </Slider>
 
-            <Text>Quorum Participants</Text>
+            <Text>Minumum Voting Participants</Text>
             <Input
               borderColor={borderColor}
               fontSize="md"
@@ -377,7 +377,7 @@ const CreateZDAO = () => {
                 !isValid.minimumVotingParticipants
               }
               onChange={handleInputChange}
-              placeholder="Quorum Participants"
+              placeholder="Minumum Voting Participants"
               size="md"
               value={minimumVotingParticipants ?? ''}
               _hover={{
@@ -386,7 +386,7 @@ const CreateZDAO = () => {
               required
             />
 
-            <Text>Quorum Votes</Text>
+            <Text>Minimum Total Votes</Text>
             <Input
               pattern="^[0-9]*[.,]?[0-9]$"
               inputMode="decimal"
@@ -398,7 +398,7 @@ const CreateZDAO = () => {
                 !isValid.minimumTotalVotingTokens
               }
               onChange={handleInputChange}
-              placeholder="Quorum Votes"
+              placeholder="Minimum Total Votes"
               size="md"
               value={minimumTotalVotingTokens ?? ''}
               _hover={{

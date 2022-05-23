@@ -66,6 +66,8 @@ const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
         <Text>
           {zDAO.isRelativeMajority ? 'Relative Majority' : 'Absolute Majority'}
         </Text>
+        <Text>State</Text>
+        <Text>{zDAO.state}</Text>
       </SimpleGrid>
     </Card>
   );

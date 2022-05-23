@@ -96,6 +96,7 @@ const Voting = () => {
       }[]
     | undefined
   >();
+  const [votingPower, setVotingPower] = useState<string | undefined>('');
 
   const handleRefreshPage = useCallback(async () => {
     if (!zDAO || !proposalId) return;
@@ -103,9 +104,16 @@ const Voting = () => {
     setProposalLoading(true);
     const item = await zDAO.getProposal(proposalId);
     setProposal(item);
+
+    if (account) {
+      const vp = await item.getVotingPowerOfUser(account);
+      console.log('vp', vp);
+      setVotingPower(vp);
+    }
+
     setProposalLoading(false);
     console.log('proposal', item);
-  }, [zDAO, proposalId]);
+  }, [account, zDAO, proposalId]);
 
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
@@ -365,6 +373,17 @@ const Voting = () => {
                     <Stack spacing={2} direction="column">
                       {account ? (
                         <>
+                          {votingPower && (
+                            <Stack spacing={2} direction="row">
+                              <Text>Your Voting Power</Text>
+                              <Text>
+                                {getFullDisplayBalance(
+                                  new BigNumber(votingPower),
+                                  0,
+                                )}
+                              </Text>
+                            </Stack>
+                          )}
                           {proposal.choices.map((choice, index) => (
                             <Button
                               key={choice}
