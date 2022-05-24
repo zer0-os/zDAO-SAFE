@@ -1,3 +1,4 @@
+import { useColorModeValue } from '@chakra-ui/react';
 import React from 'react';
 import styled, { keyframes } from 'styled-components/macro';
 
@@ -25,19 +26,24 @@ const StyledSVG = styled.svg<{ size: string; stroke?: string }>`
  */
 export default function Loader({
   size = '24px',
-  stroke = 'var(--chakra-colors-whiteAlpha-700)',
+  stroke,
   ...rest
 }: {
   size?: string;
   stroke?: string;
 }) {
+  const borderColor = useColorModeValue(
+    'var(--chakra-colors-gray-700)',
+    'var(--chakra-colors-gray-300)',
+  );
+
   return (
     <StyledSVG
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       size={size}
-      stroke={stroke}
+      stroke={stroke ?? borderColor}
       {...rest}
     >
       <path
