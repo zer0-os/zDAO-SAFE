@@ -4,14 +4,17 @@ import {
   Heading,
   Input,
   SimpleGrid,
-  Spacer,
   Stack,
   Text,
   useColorModeValue,
   useToast,
   VStack,
 } from '@chakra-ui/react';
+import { MaxUint256 } from '@ethersproject/constants';
+import { JsonRpcProvider } from '@ethersproject/providers';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
+import BigNumber from 'bignumber.js';
+import { Contract } from 'ethers';
 import React, {
   ChangeEvent,
   useCallback,
@@ -26,6 +29,13 @@ import { ConnectWalletButton, PrimaryButton } from '../components/Button';
 import LinkExternal, {
   ExternalLinkType,
 } from '../components/Button/LinkExternal';
+import { Loader } from '../components/Loader';
+import ERC20Upgradeable from '../config/abi/ERC20Upgradeable.json';
+import {
+  extendToDecimals,
+  getFullDisplayBalance,
+} from '../config/constants/number';
+import { env } from '../config/env';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { useSdkContext } from '../hooks/useSdkContext';
@@ -38,6 +48,9 @@ interface StakeFormat {
   erc20Amount?: string | null;
   erc721?: string | null;
   erc721TokenId: string | null;
+  balance?: string | null;
+  decimals?: number | null;
+  staked?: string | null;
 }
 
 const Stake = () => {
@@ -55,10 +68,21 @@ const Stake = () => {
     erc20Amount: null,
     erc721: null,
     erc721TokenId: null,
+    balance: null,
+    decimals: null,
+    staked: null,
   });
   const [executing, setExecuting] = useState<boolean>(false);
 
-  const { erc20, erc20Amount, erc721, erc721TokenId } = state;
+  const {
+    erc20,
+    erc20Amount,
+    erc721,
+    erc721TokenId,
+    balance,
+    decimals,
+    staked,
+  } = state;
 
   const isValid = useMemo(
     () => ({
@@ -87,9 +111,37 @@ const Stake = () => {
   );
 
   useEffect(() => {
-    if (!zDAO) return;
-    updateValue('erc20', zDAO.childToken);
-  }, [updateValue, zDAO]);
+    const fetch = async () => {
+      if (!zDAO || !account || !instance) return;
+      updateValue('erc20', zDAO.childToken);
+
+      const contract = new Contract(
+        zDAO.childToken,
+        ERC20Upgradeable.abi,
+        new JsonRpcProvider(env.polygon.rpc, env.polygon.network),
+      );
+      const balance = await contract.balanceOf(account);
+      updateValue('balance', balance.toString());
+      const decimals = await contract.decimals(); // if ERC20
+      updateValue('decimals', decimals);
+    };
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetch();
+  }, [account, updateValue, zDAO, instance]);
+
+  useEffect(() => {
+    const fetch = async () => {
+      if (!account || !zDAO || !instance) return;
+
+      const staked = await instance.staking.stakingPower(
+        account,
+        zDAO.childToken,
+      );
+      updateValue('staked', staked);
+    };
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    fetch();
+  }, [account, updateValue, instance, zDAO, executing]);
 
   const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
@@ -110,7 +162,39 @@ const Stake = () => {
       const signer = library.getSigner(account);
 
       if (isValid.erc20) {
-        await instance.staking.stakeERC20(signer, erc20!, erc20Amount!);
+        const address = erc20!;
+        const amount = extendToDecimals(decimals!).multipliedBy(
+          new BigNumber(erc20Amount!),
+        );
+
+        const contract = new Contract(address, ERC20Upgradeable.abi, signer);
+        const allowance = await contract?.allowance(
+          account,
+          instance.staking.address,
+        );
+        const allowanceBigNumber = new BigNumber(allowance.toString());
+        if (allowanceBigNumber.lt(amount)) {
+          const txApprove = await contract.approve(
+            instance.staking.address,
+            MaxUint256,
+          );
+          const receipt = await txApprove.wait();
+          if (!receipt.status) {
+            if (toast) {
+              toast({
+                title: 'Token staking',
+                description: 'Approval failed',
+                status: 'error',
+                duration: 4000,
+                isClosable: true,
+              });
+            }
+            setExecuting(false);
+            return;
+          }
+        }
+
+        await instance.staking.stakeERC20(signer, address, amount.toString());
       } else if (isValid.erc721) {
         await instance.staking.stakeERC721(signer, erc721!, erc721TokenId!);
       } else return;
@@ -147,6 +231,7 @@ const Stake = () => {
     erc20Amount,
     erc721,
     erc721TokenId,
+    decimals,
   ]);
 
   return (
@@ -175,11 +260,15 @@ const Stake = () => {
             width="full"
           >
             <Text>Staking Address</Text>
-            <LinkExternal
-              chainId={SupportedChainId.MUMBAI}
-              type={ExternalLinkType.address}
-              value={instance?.staking?.address ?? ''}
-            />
+            {instance?.staking?.address ? (
+              <LinkExternal
+                chainId={SupportedChainId.MUMBAI}
+                type={ExternalLinkType.address}
+                value={instance.staking.address}
+              />
+            ) : (
+              <Loader />
+            )}
 
             <Text>Block Number</Text>
             <LinkExternal
@@ -188,8 +277,10 @@ const Stake = () => {
               value={blockNumber ?? '0x0'}
             />
 
-            <Text>Voting Token</Text>
-            <Stack spacing={4} direction="row">
+            <Text>
+              {erc20 ? 'Staking Token(ERC20)' : 'Staking Token(ERC721)'}
+            </Text>
+            {erc20 ? (
               <Input
                 fontSize="md"
                 name="erc20"
@@ -201,20 +292,7 @@ const Stake = () => {
                 readOnly
                 required
               />
-              <Input
-                fontSize="md"
-                name="erc20Amount"
-                placeholder="Token Amount to participate voting"
-                size="md"
-                value={erc20Amount ?? ''}
-                isInvalid={erc20Amount !== null && !isValid.erc20Amount}
-                onChange={handleInputChange}
-                required
-              />
-            </Stack>
-
-            <Spacer />
-            <Stack spacing={4} direction="row">
+            ) : (
               <Input
                 fontSize="md"
                 name="erc721"
@@ -226,6 +304,20 @@ const Stake = () => {
                 disabled
                 required
               />
+            )}
+            <Text>Staking Amount</Text>
+            {erc20 ? (
+              <Input
+                fontSize="md"
+                name="erc20Amount"
+                placeholder="Token Amount to participate voting"
+                size="md"
+                value={erc20Amount ?? ''}
+                isInvalid={erc20Amount !== null && !isValid.erc20Amount}
+                onChange={handleInputChange}
+                required
+              />
+            ) : (
               <Input
                 fontSize="md"
                 name="erc721TokenId"
@@ -237,7 +329,21 @@ const Stake = () => {
                 disabled
                 required
               />
-            </Stack>
+            )}
+            <Text>Balance</Text>
+            {balance && decimals ? (
+              <Text>
+                {getFullDisplayBalance(new BigNumber(balance), decimals)}
+              </Text>
+            ) : (
+              <Loader />
+            )}
+            <Text>Staked Amount</Text>
+            {instance && account && erc20 && staked ? (
+              <Text>{staked}</Text>
+            ) : (
+              <Loader />
+            )}
           </SimpleGrid>
 
           <VStack

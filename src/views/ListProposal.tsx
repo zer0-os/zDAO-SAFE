@@ -162,8 +162,6 @@ const ListProposal = () => {
   });
   const borderColor = useColorModeValue('blue.600', 'rgb(145, 85, 230)');
 
-  console.log('listProposal, zDAO', zDAO);
-
   useEffect(() => {
     const fetch = async () => {
       if (!zDAO) return;

@@ -39,7 +39,14 @@ const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
             />
           </Box>
 
-          <Heading as="h4" textAlign="center" fontSize="md">
+          <Heading
+            as="h4"
+            textAlign="center"
+            fontSize="md"
+            style={
+              zDAO.destroyed ? { textDecoration: 'line-through' } : undefined
+            }
+          >
             {zDAO.title}
           </Heading>
           <Text textAlign="center">{shortenAddress(zDAO.createdBy)}</Text>

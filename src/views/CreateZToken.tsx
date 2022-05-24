@@ -126,8 +126,10 @@ const CreateZToken = () => {
 
   const handleSelectToken = useCallback(() => {
     if (!zDAOs || zDAOs.length <= deployedTokenDAOId) return;
-    navigate(`/create-zdao/${zDAOs[deployedTokenDAOId].token}`);
-  }, [deployedTokenDAOId, zDAOs, navigate]);
+    const token =
+      deployedTokenDAOId >= 0 ? zDAOs[deployedTokenDAOId].token : deployedToken;
+    navigate(`/create-zdao/${token}`);
+  }, [deployedTokenDAOId, deployedToken, zDAOs, navigate]);
 
   const handleCreateZToken = useCallback(async () => {
     if (!instance || !library || !account) return;

@@ -25,7 +25,8 @@ export const getBalanceAmount = (amount: BigNumber, decimals = 18) => {
   return new BigNumber(amount).dividedBy(BIG_TEN.pow(decimals));
 };
 
-export const getFormatedValue = (value) =>
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const getFormatedValue = (value: any) =>
   parseFloat(value).toLocaleString(undefined, {
     minimumFractionDigits: 0,
     maximumFractionDigits: DECIMALS,
