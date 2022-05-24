@@ -12,9 +12,9 @@ export const TESTNET_TOKEN_LIST: { [token: string]: TokenType } = {
     symbol: 'ETH',
     decimals: 18,
   },
-  zDAOTesting: {
-    address: '0x1981cc4517AB60A2edcf62f4E5817eA7A89F96fe',
-    symbol: 'zDAOVT',
+  WILDER: {
+    address: '0xa80152CB820463a1B50228D2b8dE50717E849BBd',
+    symbol: 'WILDER',
     decimals: 18,
   },
 };

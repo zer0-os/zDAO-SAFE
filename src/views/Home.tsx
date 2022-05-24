@@ -63,7 +63,10 @@ const Home = () => {
     <Container as={Stack} maxW="7xl">
       <VStack spacing={{ base: 6, sm: 12 }} alignItems="center">
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
-          {zDAOs && zDAOs.map((dao) => <ZDAOBlock key={dao.id} zDAO={dao} />)}
+          {zDAOs &&
+            zDAOs.map(
+              (dao) => !dao.destroyed && <ZDAOBlock key={dao.id} zDAO={dao} />,
+            )}
         </SimpleGrid>
       </VStack>
     </Container>

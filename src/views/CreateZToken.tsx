@@ -127,7 +127,9 @@ const CreateZToken = () => {
   const handleSelectToken = useCallback(() => {
     if (!zDAOs || zDAOs.length <= deployedTokenDAOId) return;
     const token =
-      deployedTokenDAOId >= 0 ? zDAOs[deployedTokenDAOId].token : deployedToken;
+      deployedTokenDAOId >= 0
+        ? zDAOs[deployedTokenDAOId].rootToken
+        : deployedToken;
     navigate(`/create-zdao/${token}`);
   }, [deployedTokenDAOId, deployedToken, zDAOs, navigate]);
 
@@ -257,22 +259,25 @@ const CreateZToken = () => {
                   </Thead>
                   <Tbody>
                     {zDAOs &&
-                      zDAOs.map((zDAO, index) => (
-                        <Tr key={zDAO.id}>
-                          <Td>
-                            <Radio value={index} />
-                          </Td>
-                          <Td>
-                            <LinkExternal
-                              chainId={SupportedChainId.GOERLI}
-                              type={ExternalLinkType.address}
-                              value={zDAO.token}
-                              shortenize={false}
-                            />
-                          </Td>
-                          <Td>{zDAO.title}</Td>
-                        </Tr>
-                      ))}
+                      zDAOs.map(
+                        (zDAO, index) =>
+                          !zDAO.destroyed && (
+                            <Tr key={zDAO.id}>
+                              <Td>
+                                <Radio value={index} />
+                              </Td>
+                              <Td>
+                                <LinkExternal
+                                  chainId={SupportedChainId.GOERLI}
+                                  type={ExternalLinkType.address}
+                                  value={zDAO.rootToken}
+                                  shortenize={false}
+                                />
+                              </Td>
+                              <Td>{zDAO.title}</Td>
+                            </Tr>
+                          ),
+                      )}
                   </Tbody>
                 </Table>
               </TableContainer>
