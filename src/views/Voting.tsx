@@ -667,7 +667,7 @@ const Voting = () => {
                         }
                         onClick={handleCollectProposal}
                       >
-                        Collect Proposal
+                        Calculate Proposal
                       </PrimaryButton>
                     </>
                   ) : proposal.state === 'finalizing' ? (
@@ -690,7 +690,7 @@ const Voting = () => {
                       {collectHashesLoading ? (
                         <Stack direction="row" spacing={4}>
                           <Loader />
-                          <Text>Looking for transaction hashes collected</Text>
+                          <Text>Looking for transaction hashes calculated</Text>
                         </Stack>
                       ) : (
                         collectedHashes && (
@@ -718,8 +718,8 @@ const Voting = () => {
                                   handleReceiveCollectProposal(collected.hash)}
                                 >
                                   {!collected.isCheckPointed
-                                    ? 'Checkpointing'
-                                    : 'Receive result'}
+                                    ? 'Calculating proposal'
+                                    : 'Finalize proposal'}
                                 </PrimaryButton>
                               </>
                             ))}
