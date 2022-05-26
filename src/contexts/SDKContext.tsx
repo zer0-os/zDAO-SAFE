@@ -17,6 +17,8 @@ interface SDKContextValue {
   instance?: SDKInstance;
   zNAs: string[];
   zDAOs: zDAO[];
+  refreshzDAO: (zNA: zNA) => Promise<void>;
+  refreshing: boolean;
 }
 
 const SDKContext = React.createContext<undefined | SDKContextValue>(undefined);
@@ -30,6 +32,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
   const [instance, setInstance] = useState<SDKInstance | undefined>(undefined);
   const [zNAs, setZNAs] = useState<zNA[]>([]);
   const [zDAOs, setZDAOs] = useState<zDAO[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const { account } = useActiveWeb3React();
 
@@ -80,6 +83,23 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     console.timeEnd('createInstance');
   }, [dispatch, account]);
 
+  const refreshzDAO = useCallback(
+    async (zNA: zNA) => {
+      if (!instance) return;
+
+      setRefreshing(true);
+      const zDAO = await instance.getZDAOByZNA(zNA);
+      setZDAOs(
+        zDAOs.reduce(
+          (prev, current) => [...prev, current.id === zDAO.id ? zDAO : current],
+          [] as zDAO[],
+        ),
+      );
+      setRefreshing(false);
+    },
+    [instance, zDAOs],
+  );
+
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     createInstance();
@@ -92,6 +112,8 @@ const SDKProvider = ({ children }: SDKContextProps) => {
         instance,
         zNAs,
         zDAOs,
+        refreshzDAO,
+        refreshing,
       }}
     >
       {children}

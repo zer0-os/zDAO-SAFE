@@ -240,7 +240,7 @@ const Stake = () => {
         <Link to={`/${zNA}`}>
           <Stack align="center" direction="row">
             <IoArrowBack size={15} />
-            <Heading size="sm">Home</Heading>
+            <Heading size="sm">Back</Heading>
           </Stack>
         </Link>
 

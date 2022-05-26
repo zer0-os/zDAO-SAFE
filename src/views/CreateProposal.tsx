@@ -23,9 +23,14 @@ import LinkExternal, {
   ExternalLinkType,
 } from '../components/Button/LinkExternal';
 import Card from '../components/Card';
+import { Loader } from '../components/Loader';
 import ReactMdEditor from '../components/ReactMdEditor';
 import TransferAbi from '../config/abi/transfer.json';
-import { DECIMALS, extendToDecimals } from '../config/constants/number';
+import {
+  DECIMALS,
+  extendToDecimals,
+  getFullDisplayBalance,
+} from '../config/constants/number';
 import { getToken, TESTNET_TOKEN_LIST } from '../config/constants/tokens';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
@@ -239,28 +244,33 @@ const CreateProposal = () => {
           </Stack>
         </Link>
 
-        <Stack
-          spacing={12}
-          flex={2}
-          direction={{ base: 'column', md: 'row' }}
-          w="full"
-        >
-          <VStack spacing={6} flex={1}>
-            {/* Proposal title & content */}
-            <Input
-              borderColor={borderColor}
-              fontSize="md"
-              name="title"
-              onChange={handleInputChange}
-              placeholder="Proposal title"
-              size="lg"
-              value={title}
-              _hover={{
-                borderRadius: 'gray.300',
-              }}
-              required
-            />
-            {/* <Textarea
+        {!zDAO ? (
+          <Stack justifyContent="center">
+            <Loader />
+          </Stack>
+        ) : (
+          <Stack
+            spacing={12}
+            flex={2}
+            direction={{ base: 'column', md: 'row' }}
+            w="full"
+          >
+            <VStack spacing={6} flex={1}>
+              {/* Proposal title & content */}
+              <Input
+                borderColor={borderColor}
+                fontSize="md"
+                name="title"
+                onChange={handleInputChange}
+                placeholder="Proposal title"
+                size="lg"
+                value={title}
+                _hover={{
+                  borderRadius: 'gray.300',
+                }}
+                required
+              />
+              {/* <Textarea
               borderColor={borderColor}
               fontSize={'md'}
               name={'body'}
@@ -273,37 +283,37 @@ const CreateProposal = () => {
               }}
             ></Textarea> */}
 
-            <ReactMdEditor body={body} onChange={handleBodyChange} />
+              <ReactMdEditor body={body} onChange={handleBodyChange} />
 
-            <Card title="Transfer tokens">
-              <Stack spacing={2} direction="column">
-                <Select
-                  borderColor={borderColor}
-                  name="token"
-                  onChange={handleSelectChange}
-                  defaultValue={token}
-                >
-                  {Object.keys(TESTNET_TOKEN_LIST).map((key) => (
-                    <option key={key} value={TESTNET_TOKEN_LIST[key].address}>
-                      {key}
-                    </option>
-                  ))}
-                </Select>
-                <Input
-                  borderColor={borderColor}
-                  fontSize="md"
-                  name="token"
-                  onChange={handleInputChange}
-                  placeholder="ERC20 Token Address"
-                  size="md"
-                  value={token}
-                  _hover={{
-                    borderRadius: 'gray.900',
-                  }}
-                  readOnly
-                  required
-                />
-                {/* <Textarea
+              <Card title="Transfer tokens">
+                <Stack spacing={2} direction="column">
+                  <Select
+                    borderColor={borderColor}
+                    name="token"
+                    onChange={handleSelectChange}
+                    defaultValue={token}
+                  >
+                    {Object.keys(TESTNET_TOKEN_LIST).map((key) => (
+                      <option key={key} value={TESTNET_TOKEN_LIST[key].address}>
+                        {key}
+                      </option>
+                    ))}
+                  </Select>
+                  <Input
+                    borderColor={borderColor}
+                    fontSize="md"
+                    name="token"
+                    onChange={handleInputChange}
+                    placeholder="ERC20 Token Address"
+                    size="md"
+                    value={token}
+                    _hover={{
+                      borderRadius: 'gray.900',
+                    }}
+                    readOnly
+                    required
+                  />
+                  {/* <Textarea
                   borderColor={borderColor}
                   fontSize={'md'}
                   name={'abi'}
@@ -317,7 +327,7 @@ const CreateProposal = () => {
                     borderRadius: 'gray.900',
                   }}
                 ></Textarea> */}
-                {/* <Input
+                  {/* <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}
                   name={'sender'}
@@ -331,116 +341,129 @@ const CreateProposal = () => {
                   }}
                   required
                 ></Input> */}
-                <Input
-                  borderColor={borderColor}
-                  fontSize="md"
-                  name="recipient"
-                  onChange={handleInputChange}
-                  placeholder="Recipient Address"
-                  size="md"
-                  value={recipient}
-                  _hover={{
-                    borderRadius: 'gray.900',
-                  }}
-                  required
-                />
-                <SimpleGrid
-                  columns={2}
-                  spacing={4}
-                  templateColumns={{ base: '1fr 100px' }}
-                  justifyContent="center"
-                  alignItems="center"
-                >
                   <Input
                     borderColor={borderColor}
                     fontSize="md"
-                    name="amount"
-                    inputMode="decimal"
-                    min={0}
-                    pattern={`^[0-9]*[.,]?[0-9]{0,${DECIMALS}}$`}
-                    placeholder="Trasnfer Token Amount"
+                    name="recipient"
+                    onChange={handleInputChange}
+                    placeholder="Recipient Address"
                     size="md"
-                    value={amount}
-                    onChange={handleAmountChange}
+                    value={recipient}
                     _hover={{
                       borderRadius: 'gray.900',
                     }}
                     required
                   />
-                  <Text textAlign="center">Tokens</Text>
-                </SimpleGrid>
-              </Stack>
-            </Card>
-          </VStack>
+                  <SimpleGrid
+                    columns={2}
+                    spacing={4}
+                    templateColumns={{ base: '1fr 100px' }}
+                    justifyContent="center"
+                    alignItems="center"
+                  >
+                    <Input
+                      borderColor={borderColor}
+                      fontSize="md"
+                      name="amount"
+                      inputMode="decimal"
+                      min={0}
+                      pattern={`^[0-9]*[.,]?[0-9]{0,${DECIMALS}}$`}
+                      placeholder="Trasnfer Token Amount"
+                      size="md"
+                      value={amount}
+                      onChange={handleAmountChange}
+                      _hover={{
+                        borderRadius: 'gray.900',
+                      }}
+                      required
+                    />
+                    <Text textAlign="center">Tokens</Text>
+                  </SimpleGrid>
+                </Stack>
+              </Card>
+            </VStack>
 
-          {/* Action */}
-          <VStack width={{ base: 'full', sm: '400px' }}>
-            <Card title="Action">
-              <Stack spacing={4} direction="column">
-                <SimpleGrid
-                  columns={2}
-                  spacing={4}
-                  templateColumns={{ base: '1fr 2fr' }}
-                  alignItems="center"
-                >
-                  <Text>Duration</Text>
-                  <Text>{time2string(zDAO?.duration)}</Text>
+            {/* Action */}
+            <VStack width={{ base: 'full', sm: '400px' }}>
+              <Card title="Action">
+                <Stack spacing={4} direction="column">
+                  <SimpleGrid
+                    columns={2}
+                    spacing={4}
+                    templateColumns={{ base: '1fr 2fr' }}
+                    alignItems="center"
+                  >
+                    <Text>Duration</Text>
+                    <Text>{time2string(zDAO.duration)}</Text>
 
-                  {account && (
-                    <>
-                      <Text>Creator</Text>
-                      <LinkExternal
-                        chainId={SupportedChainId.GOERLI}
-                        type={ExternalLinkType.address}
-                        value={account}
-                      />
-                    </>
-                  )}
-
-                  <Text>Voting Type</Text>
-                  <Text>
-                    {zDAO?.isRelativeMajority
-                      ? 'Relative Majority'
-                      : 'Absolute Majority'}
-                  </Text>
-
-                  <Text>Minimum Voting Participants</Text>
-                  <Text>{zDAO?.minimumVotingParticipants}</Text>
-
-                  <Text>Minimum Total Voting Tokens</Text>
-                  <Text>{zDAO?.minimumTotalVotingTokens}</Text>
-                </SimpleGrid>
-
-                {account ? (
-                  <>
-                    {chainId && chainId !== SupportedChainId.GOERLI && (
-                      <Button
-                        borderWidth="1px"
-                        borderRadius="md"
-                        px={4}
-                        py={2}
-                        _hover={{
-                          borderColor,
-                        }}
-                        onClick={() => setupNetwork(SupportedChainId.GOERLI)}
-                      >
-                        <Heading size="sm">Switch to Goerli</Heading>
-                      </Button>
+                    {account && (
+                      <>
+                        <Text>Creator</Text>
+                        <LinkExternal
+                          chainId={SupportedChainId.GOERLI}
+                          type={ExternalLinkType.address}
+                          value={account}
+                        />
+                      </>
                     )}
-                    <PrimaryButton
-                      disabled={!isValid}
-                      onClick={handleSubmitProposal}
-                    >
-                      Publish
-                    </PrimaryButton>
-                  </>
-                ) : (
-                  <ConnectWalletButton />
-                )}
-              </Stack>
-            </Card>
-          </VStack>
-        </Stack>
+
+                    <Text>Voting Token</Text>
+                    <LinkExternal
+                      chainId={SupportedChainId.GOERLI}
+                      type={ExternalLinkType.address}
+                      value={zDAO.rootToken}
+                    />
+
+                    <Text>Minimum Token Holding</Text>
+                    <Text>
+                      {getFullDisplayBalance(new BigNumber(zDAO.amount))}
+                    </Text>
+
+                    <Text>Voting Type</Text>
+                    <Text>
+                      {zDAO.isRelativeMajority
+                        ? 'Relative Majority'
+                        : 'Absolute Majority'}
+                    </Text>
+
+                    <Text>Minimum Voting Participants</Text>
+                    <Text>{zDAO.minimumVotingParticipants}</Text>
+
+                    <Text>Minimum Total Voting Tokens</Text>
+                    <Text>{zDAO.minimumTotalVotingTokens}</Text>
+                  </SimpleGrid>
+
+                  {account ? (
+                    <>
+                      {chainId && chainId !== SupportedChainId.GOERLI && (
+                        <Button
+                          borderWidth="1px"
+                          borderRadius="md"
+                          px={4}
+                          py={2}
+                          _hover={{
+                            borderColor,
+                          }}
+                          onClick={() => setupNetwork(SupportedChainId.GOERLI)}
+                        >
+                          <Heading size="sm">Switch to Goerli</Heading>
+                        </Button>
+                      )}
+                      <PrimaryButton
+                        disabled={!isValid}
+                        onClick={handleSubmitProposal}
+                      >
+                        Publish
+                      </PrimaryButton>
+                    </>
+                  ) : (
+                    <ConnectWalletButton />
+                  )}
+                </Stack>
+              </Card>
+            </VStack>
+          </Stack>
+        )}
       </VStack>
     </Container>
   );

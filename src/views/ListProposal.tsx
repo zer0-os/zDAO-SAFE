@@ -1,10 +1,14 @@
+import { RepeatIcon } from '@chakra-ui/icons';
 import {
   Badge,
+  Box,
   Button,
   Container,
   Flex,
   Heading,
+  IconButton,
   SimpleGrid,
+  Spacer,
   Stack,
   Text,
   useColorModeValue,
@@ -15,7 +19,8 @@ import {
   SupportedChainId,
   zDAO as zDAOType,
 } from '@zero-tech/zdao-sdk';
-import React, { useEffect, useState } from 'react';
+import BigNumber from 'bignumber.js';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
@@ -24,51 +29,102 @@ import LinkExternal, {
 } from '../components/Button/LinkExternal';
 import Card from '../components/Card';
 import { Loader } from '../components/Loader';
+import { getFullDisplayBalance } from '../config/constants/number';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
+import { useSdkContext } from '../hooks/useSdkContext';
 import { shortenAddress } from '../utils/address';
 import { time2string } from '../utils/strings';
 
-const ZDAOInfoCard = ({ zDAO }: { zDAO: zDAOType }) => {
+const ZDAOInfoCard = ({
+  zDAO,
+  zNA,
+}: {
+  zDAO?: zDAOType | null;
+  zNA?: string;
+}) => {
+  const { refreshzDAO, refreshing } = useSdkContext();
+
+  const handleRefreshPage = useCallback(async () => {
+    if (!zNA) return;
+    await refreshzDAO(zNA);
+  }, [refreshzDAO, zNA]);
+
   return (
-    <Card title={zDAO.title}>
-      <SimpleGrid
-        columns={{ base: 2, sm: 4, md: 6 }}
-        spacing={2}
-        templateColumns={{
-          sm: '1fr 2fr 1fr 2fr',
-          md: '1fr 2fr 1fr 2fr 1fr 2fr',
-        }}
-      >
-        <Text>Created By</Text>
-        <LinkExternal
-          chainId={SupportedChainId.GOERLI}
-          type={ExternalLinkType.address}
-          value={zDAO.createdBy}
-        />
-        <Text>Gnosis Safe</Text>
-        <LinkExternal
-          chainId={SupportedChainId.GOERLI}
-          type={ExternalLinkType.address}
-          value={zDAO.gnosisSafe}
-        />
-        <Text>Duration</Text>
-        <Text>{time2string(zDAO.duration)}</Text>
-        <Text>Voting Threshold</Text>
-        <Text>
-          {zDAO.votingThreshold && `${zDAO.votingThreshold / 100.0}%`}
-        </Text>
-        <Text>Minimum Voting Participants</Text>
-        <Text>{zDAO.minimumVotingParticipants}</Text>
-        <Text>Minimum Total Voting Tokens</Text>
-        <Text>{zDAO.minimumTotalVotingTokens}</Text>
-        <Text>Voting Type</Text>
-        <Text>
-          {zDAO.isRelativeMajority ? 'Relative Majority' : 'Absolute Majority'}
-        </Text>
-        <Text>State</Text>
-        <Text>{zDAO.state}</Text>
-      </SimpleGrid>
+    <Card title={zDAO?.title ?? ''}>
+      {!zDAO || refreshing ? (
+        <Loader />
+      ) : (
+        <SimpleGrid
+          columns={{ base: 2, sm: 4, md: 6 }}
+          spacing={4}
+          alignItems="center"
+          templateColumns={{
+            sm: '2fr 1fr 2fr 1fr',
+            md: '2fr 1fr 2fr 1fr 2fr 1fr',
+          }}
+        >
+          <Text>Created By</Text>
+          <LinkExternal
+            chainId={SupportedChainId.GOERLI}
+            type={ExternalLinkType.address}
+            value={zDAO.createdBy}
+          />
+          <Text>Gnosis Safe</Text>
+          <LinkExternal
+            chainId={SupportedChainId.GOERLI}
+            type={ExternalLinkType.address}
+            value={zDAO.gnosisSafe}
+          />
+          <Spacer />
+          <Box justifyContent="flex-end">
+            <IconButton
+              variant="outline"
+              aria-label="Refresh"
+              fontSize="20px"
+              icon={<RepeatIcon />}
+              onClick={handleRefreshPage}
+            />
+          </Box>
+          <Text>Voting Token</Text>
+          <LinkExternal
+            chainId={SupportedChainId.GOERLI}
+            type={ExternalLinkType.address}
+            value={zDAO.rootToken}
+          />
+          <Text>Minimum Token Holding</Text>
+          <Text>{getFullDisplayBalance(new BigNumber(zDAO.amount))}</Text>
+          <Text>Duration</Text>
+          <Text>{time2string(zDAO.duration)}</Text>
+          <Text>Voting Threshold</Text>
+          <Text>
+            {zDAO.votingThreshold && `${zDAO.votingThreshold / 100.0}%`}
+          </Text>
+          <Text>Minimum Voting Participants</Text>
+          <Text>{zDAO.minimumVotingParticipants}</Text>
+          <Text>Minimum Total Voting Tokens</Text>
+          <Text>{zDAO.minimumTotalVotingTokens}</Text>
+          <Text>Voting Type</Text>
+          <Text>
+            {zDAO.isRelativeMajority
+              ? 'Relative Majority'
+              : 'Absolute Majority'}
+          </Text>
+          <Text>State</Text>
+          <Badge
+            borderRadius="full"
+            colorScheme={zDAO.state === 'active' ? 'green' : undefined}
+            px={3}
+            py={1}
+            width="fit-content"
+            height="fit-content"
+          >
+            {zDAO.state}
+          </Badge>
+          <Text>Associated zNAs</Text>
+          <Text>{zDAO.zNAs.join(',')}</Text>
+        </SimpleGrid>
+      )}
     </Card>
   );
 };
@@ -221,6 +277,7 @@ const ListProposal = () => {
                   _hover={{
                     borderColor,
                   }}
+                  disabled={zDAO?.state !== 'active'}
                 >
                   <Heading size="sm">Create Proposal</Heading>
                 </Button>
@@ -235,17 +292,19 @@ const ListProposal = () => {
                   _hover={{
                     borderColor,
                   }}
+                  disabled={zDAO?.state !== 'active'}
                 >
                   <Heading size="sm">Stake tokens</Heading>
                 </Button>
               </Link>
             </Stack>
 
-            <ZDAOInfoCard zDAO={zDAO} />
+            <ZDAOInfoCard zDAO={zDAO} zNA={zNA} />
 
-            {proposals.list.map((proposal) => (
-              <ProposalCard key={proposal.id} zNA={zNA} proposal={proposal} />
-            ))}
+            {zNA &&
+              proposals.list.map((proposal) => (
+                <ProposalCard key={proposal.id} zNA={zNA} proposal={proposal} />
+              ))}
           </>
         )}
       </VStack>

@@ -21,11 +21,13 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
+import BigNumber from 'bignumber.js';
 import React, { ChangeEvent, useCallback, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 
 import { ConnectWalletButton, PrimaryButton } from '../components/Button';
+import { extendToDecimals } from '../config/constants/number';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { isAddress } from '../utils/address';
@@ -152,7 +154,11 @@ const CreateZDAO = () => {
         title,
         gnosisSafe,
         token: erc20 || (erc721 ?? ''),
-        amount: erc20Amount || '1',
+        amount: erc20Amount
+          ? new BigNumber(erc20Amount)
+              .multipliedBy(extendToDecimals())
+              .toString()
+          : '1',
         duration,
         votingThreshold: Math.floor(votingThreshold * 100),
         isRelativeMajority,

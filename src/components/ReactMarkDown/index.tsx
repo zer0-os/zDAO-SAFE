@@ -4,15 +4,14 @@ import gfm from 'remark-gfm';
 
 import markdownComponents from './styles';
 
-const ReactMarkdown = ({ ...props }) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ReactMarkdown = (props: any) => {
   return (
     <ReactMarkdownLib
       remarkPlugins={[gfm]}
       components={markdownComponents}
       {...props}
-    >
-      {' '}
-    </ReactMarkdownLib>
+    />
   );
 };
 

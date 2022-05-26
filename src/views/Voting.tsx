@@ -302,7 +302,7 @@ const Voting = () => {
           </Stack>
         </Link>
 
-        {proposalLoading || !proposal ? (
+        {!zDAO || proposalLoading || !proposal ? (
           <Stack justifyContent="center">
             <Loader />
           </Stack>
@@ -527,24 +527,31 @@ const Voting = () => {
                         </>
                       )}
 
+                      <Text>Voting Token</Text>
+                      <LinkExternal
+                        chainId={SupportedChainId.GOERLI}
+                        type={ExternalLinkType.address}
+                        value={zDAO.rootToken}
+                      />
+
                       <Text>Voting Type</Text>
                       <Text>
-                        {zDAO?.isRelativeMajority
+                        {zDAO.isRelativeMajority
                           ? 'Relative Majority'
                           : 'Absolute Majority'}
                       </Text>
 
                       <Text>Minimum Voting Participants</Text>
-                      <Text>{zDAO?.minimumVotingParticipants}</Text>
+                      <Text>{zDAO.minimumVotingParticipants}</Text>
 
                       <Text>Minimum Total Votes</Text>
-                      <Text>{zDAO?.minimumTotalVotingTokens}</Text>
+                      <Text>{zDAO.minimumTotalVotingTokens}</Text>
 
                       <Text>Snapshot</Text>
                       <LinkExternal
                         chainId={SupportedChainId.MUMBAI}
                         type={ExternalLinkType.block}
-                        value={proposal.snapshot}
+                        value={proposal.snapshot ?? '0'}
                       />
 
                       <Badge
