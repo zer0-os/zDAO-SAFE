@@ -40,7 +40,6 @@ import {
 import Safe from '@gnosis.pm/safe-core-sdk';
 import { SafeTransactionDataPartial } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import { SafeEthersSigner } from '@gnosis.pm/safe-ethers-adapters';
 import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { format } from 'date-fns';
 import { ethers } from 'ethers';
@@ -203,7 +202,6 @@ const Voting = () => {
 
       const nonce = await safeService.getNextNonce(SAFE_ADDRESS);
 
-      let proposedTx;
       if (metaData.token.length > 0) {
         const erc20Interface = new ethers.utils.Interface(ERC20Abi);
         const txData = erc20Interface.encodeFunctionData('transfer', [
