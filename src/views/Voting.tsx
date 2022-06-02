@@ -10,6 +10,7 @@ import {
 import Card from '@/components/Card';
 import { EventCountDown } from '@/components/CountDown';
 import ReactMarkdown from '@/components/ReactMarkDown';
+import ERC20Abi from '@/config/abi/ERC20.json';
 import { SAFE_ADDRESS, SAFE_SERVICE_URL } from '@/config/constants/gnosis-safe';
 import { SPACE_ID } from '@/config/constants/snapshot';
 import { getPower } from '@/helpers/snapshot';
@@ -37,8 +38,10 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import Safe from '@gnosis.pm/safe-core-sdk';
+import { SafeTransactionDataPartial } from '@gnosis.pm/safe-core-sdk-types';
 import EthersAdapter from '@gnosis.pm/safe-ethers-lib';
-import { SafeEthersSigner, SafeService } from '@gnosis.pm/safe-ethers-adapters';
+import { SafeEthersSigner } from '@gnosis.pm/safe-ethers-adapters';
+import SafeServiceClient from '@gnosis.pm/safe-service-client';
 import { format } from 'date-fns';
 import { ethers } from 'ethers';
 import { useMemo, useState } from 'react';
@@ -180,7 +183,7 @@ const Voting = () => {
 
       // console.log('Safe Service Url', SAFE_SERVICE_URL);
       // console.log('Safe Address', SAFE_ADDRESS);
-      const service = new SafeService(SAFE_SERVICE_URL);
+      const safeService = new SafeServiceClient(SAFE_SERVICE_URL);
       const ethAdapter = new EthersAdapter({
         ethers,
         signer: library?.getSigner(),
@@ -198,29 +201,65 @@ const Voting = () => {
         return;
       }
 
-      const safeSigner = new SafeEthersSigner(safe, service, library);
+      const nonce = await safeService.getNextNonce(SAFE_ADDRESS);
+
       let proposedTx;
       if (metaData.token.length > 0) {
-        // ERC20 tokens
-        const transferContract = new ethers.Contract(
-          metaData.token,
-          metaData.abi,
-          safeSigner
-        );
-        proposedTx = await transferContract
-          .connect(safeSigner)
-          .transfer(metaData.recipient, metaData.amount.toString());
+        const erc20Interface = new ethers.utils.Interface(ERC20Abi);
+        const txData = erc20Interface.encodeFunctionData('transfer', [
+          metaData.recipient,
+          metaData.amount.toString(),
+        ]);
+
+        const transaction: SafeTransactionDataPartial = {
+          to: metaData.token,
+          data: txData,
+          value: '0',
+          operation: 0, // Optional
+          safeTxGas: 0, // Optional
+          baseGas: 0, // Optional
+          gasPrice: 0, // Optional
+          gasToken: '0x0000000000000000000000000000000000000000', // Optional
+          refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
+          nonce: Number(nonce), // Optional
+        };
+
+        const safeTransaction = await safe.createTransaction(transaction);
+        await safe.signTransaction(safeTransaction);
+
+        const safeTxHash = await safe.getTransactionHash(safeTransaction);
+        await safeService.proposeTransaction({
+          safeAddress: SAFE_ADDRESS,
+          senderAddress: account,
+          safeTransaction,
+          safeTxHash,
+        });
       } else {
-        proposedTx = await safeSigner.sendTransaction({
+        const transaction: SafeTransactionDataPartial = {
           to: metaData.recipient,
+          data: '0x',
           value: metaData.amount.toString(),
+          operation: 0, // Optional
+          safeTxGas: 0, // Optional
+          baseGas: 0, // Optional
+          gasPrice: 0, // Optional
+          gasToken: '0x0000000000000000000000000000000000000000', // Optional
+          refundReceiver: '0x0000000000000000000000000000000000000000', // Optional
+          nonce: Number(nonce), // Optional
+        };
+
+        const safeTransaction = await safe.createTransaction(transaction);
+        await safe.signTransaction(safeTransaction);
+
+        const safeTxHash = await safe.getTransactionHash(safeTransaction);
+        await safeService.proposeTransaction({
+          safeAddress: SAFE_ADDRESS,
+          senderAddress: account,
+          safeTransaction,
+          safeTxHash,
         });
       }
-
-      // console.log('USER ACTION REQUIRED');
-      // console.log('Go to the Gnosis Safe Web App to confirm the transaction');
-      console.log(await proposedTx.wait());
-      console.log('Transaction has been executed');
+      console.log('Transaction has been proposed');
     } finally {
       setIsExecuting(false);
     }
