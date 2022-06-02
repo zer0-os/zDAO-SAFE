@@ -10,6 +10,7 @@
     "@gnosis.pm/safe-ethers-adapters": "0.1.0-alpha.8",
     "@gnosis.pm/safe-ethers-lib": "1.0.0",
     "@gnosis.pm/safe-react-gateway-sdk": "^2.10.1",
+    "@gnosis.pm/safe-service-client": "^1.1.1",
     "@reduxjs/toolkit": "1.7.2",
     "@snapshot-labs/snapshot.js": "0.3.53",
     "@testing-library/jest-dom": "5.16.2",
