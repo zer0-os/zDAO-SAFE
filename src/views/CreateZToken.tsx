@@ -140,7 +140,7 @@ const CreateZToken = () => {
     try {
       const signer = library.getSigner(account);
 
-      setDeployStatus('Deploying new token');
+      setDeployStatus('Deploying token implementation contract');
       // create implementation of zToken
       const zTokenFactory = new ContractFactory(
         ZeroTokenAbi.abi,
@@ -157,6 +157,7 @@ const CreateZToken = () => {
       await zTokenImplementation.deployed();
       console.log('zTokenImplementation', zTokenImplementation.address);
 
+      setDeployStatus('Deploying token proxy contract with initializing');
       // create ERC1967 proxy contract
       const zTokenInterface = new Interface(ZeroTokenAbi.abi);
       const proxyData = zTokenInterface.encodeFunctionData('initialize', [
@@ -177,10 +178,6 @@ const CreateZToken = () => {
       await proxyContract.deployed();
       console.log('proxyContract', proxyContract.address);
 
-      setDeployStatus('Initializing new token');
-      // initialize upgradeable contract
-      await proxyContract.initialize(name, symbol);
-      console.log('initialized');
       const token = proxyContract.address;
       console.log('new token address', token);
 
