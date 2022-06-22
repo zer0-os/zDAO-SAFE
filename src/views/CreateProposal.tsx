@@ -209,7 +209,9 @@ const CreateProposal = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Failed to create a proposal - ${error.message}`,
+          description: `Failed to create a proposal - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -410,7 +412,7 @@ const CreateProposal = () => {
                     <LinkExternal
                       chainId={SupportedChainId.GOERLI}
                       type={ExternalLinkType.address}
-                      value={zDAO.rootToken}
+                      value={zDAO.votingToken.token}
                     />
 
                     <Text>Minimum Token Holding</Text>

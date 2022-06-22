@@ -3,7 +3,6 @@ import {
   createSDKInstanceBuilder,
   PlatformType,
   Polygon,
-  SDKInstance,
   zDAO,
   zNA,
 } from '@zero-tech/zdao-sdk';
@@ -15,7 +14,7 @@ import { ApplicationStatus, setApplicationStatus } from '../states/application';
 
 interface SDKContextValue {
   isInitialized: boolean;
-  instance?: SDKInstance;
+  instance?: Polygon.SDKInstance;
   zNAs: string[];
   zDAOs: zDAO[];
   refreshzDAO: (zNA: zNA) => Promise<void>;
@@ -30,7 +29,9 @@ interface SDKContextProps {
 
 const SDKProvider = ({ children }: SDKContextProps) => {
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [instance, setInstance] = useState<SDKInstance | undefined>(undefined);
+  const [instance, setInstance] = useState<Polygon.SDKInstance | undefined>(
+    undefined,
+  );
   const [zNAs, setZNAs] = useState<zNA[]>([]);
   const [zDAOs, setZDAOs] = useState<zDAO[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -66,7 +67,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     console.log('zDAOs', zDAOsList);
     setZDAOs(zDAOsList);
 
-    setInstance(sdk);
+    setInstance(sdk as Polygon.SDKInstance);
     setInitialized(true);
 
     dispatch(setApplicationStatus({ appStatus: ApplicationStatus.LIVE }));

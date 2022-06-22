@@ -16,7 +16,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {
-  Proposal,
+  Polygon,
   ProposalState,
   SupportedChainId,
   Vote,
@@ -88,7 +88,7 @@ const Voting = () => {
   const zDAO = useCurrentZDAO(zNA);
 
   const [proposalLoading, setProposalLoading] = useState(true);
-  const [proposal, setProposal] = useState<Proposal | undefined>();
+  const [proposal, setProposal] = useState<Polygon.Proposal | undefined>();
   const [votesLoading, setVotesLoading] = useState(true);
   const [votes, setVotes] = useState<Vote[] | undefined>();
   const [collectHashesLoading, setCollectHashesLoading] = useState<boolean>(
@@ -108,7 +108,7 @@ const Voting = () => {
 
     setProposalLoading(true);
     const item = await zDAO.getProposal(proposalId);
-    setProposal(item);
+    setProposal(item as Polygon.Proposal);
 
     if (account) {
       const vp = await item.getVotingPowerOfUser(account);
@@ -173,7 +173,7 @@ const Voting = () => {
     if (!zDAO || !library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.vote(library, account, myChoice);
+      await proposal.vote(library, account, { choice: myChoice });
       if (toast) {
         toast({
           title: 'Success',
@@ -189,7 +189,9 @@ const Voting = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Casting vote failed - ${error.message}`,
+          description: `Casting vote failed - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -200,10 +202,10 @@ const Voting = () => {
   }, [zDAO, library, account, proposal, toast, handleRefreshPage, myChoice]);
 
   const handleCollectProposal = useCallback(async () => {
-    if (!zDAO || !library || !proposal) return;
+    if (!zDAO || !library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.calculate(library.getSigner());
+      await proposal.calculate(library, account, {});
       if (toast) {
         toast({
           title: 'Success',
@@ -219,7 +221,9 @@ const Voting = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Calculating proposal failed - ${error.message}`,
+          description: `Calculating proposal failed - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -227,14 +231,18 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, proposal, handleRefreshPage, toast]);
+  }, [zDAO, library, account, proposal, handleRefreshPage, toast]);
 
   const handleReceiveCollectProposal = useCallback(
     async (txhash: string) => {
-      if (!zDAO || !library) return;
+      if (!proposal || !library || !account) return;
       setProcessingTx(true);
       try {
-        await zDAO.syncState(library.getSigner(), txhash);
+        await proposal.finalize(library, account, {
+          options: {
+            txHash: txhash,
+          },
+        });
         if (toast) {
           toast({
             title: 'Success',
@@ -251,7 +259,9 @@ const Voting = () => {
         if (toast) {
           toast({
             title: 'Error',
-            description: `Receiving result failed - ${error.message}`,
+            description: `Receiving result failed - ${
+              error.data?.message ?? error.message
+            }`,
             status: 'error',
             duration: 4000,
             isClosable: true,
@@ -260,14 +270,14 @@ const Voting = () => {
       }
       setProcessingTx(false);
     },
-    [zDAO, library, toast, handleRefreshPage],
+    [library, account, proposal, toast, handleRefreshPage],
   );
 
   const handleExecuteProposal = useCallback(async () => {
-    if (!zDAO || !library || !proposal) return;
+    if (!library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.execute(library.getSigner());
+      await proposal.execute(library, account, {});
       if (toast) {
         toast({
           title: 'Success',
@@ -283,7 +293,9 @@ const Voting = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Executing proposal failed - ${error.message}`,
+          description: `Executing proposal failed - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -291,7 +303,7 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, proposal, handleRefreshPage, toast]);
+  }, [library, account, proposal, handleRefreshPage, toast]);
 
   const handleShowAll = () => {
     setShowAll(true);
