@@ -3,8 +3,8 @@ import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import { env } from '../env';
 
 export const INFURA_NETWORK_URLS: { [key: number]: string } = {
-  [SupportedChainId.GOERLI]: env.ethereum.rpc,
-  [SupportedChainId.MUMBAI]: env.polygon.rpc,
+  [SupportedChainId.GOERLI]: env.ethereum.rpcUrl,
+  [SupportedChainId.MUMBAI]: env.polygon.rpcUrl,
 };
 
 export const SCAN_EXPLORER_URLS: { [key: number]: string } = {

@@ -23,15 +23,15 @@ const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
 
   return (
     <Link
-      to={`/${zDAO.title}`}
+      to={`/${zDAO.zNAs[0]}`}
       style={{ width: '100%', textDecoration: 'none' }}
     >
       <Card height="100%" _hover={{ borderColor: textColor }}>
         <Stack direction="column" alignItems="center" spacing={2} p={4}>
           <Box position="relative" width="82px" height="82px">
             <Blockie
-              alt={zDAO.title}
-              seed={formatBytes32String(zDAO.title)}
+              alt={zDAO.name}
+              seed={formatBytes32String(zDAO.name)}
               rounded="full"
               width="full"
               height="full"
@@ -47,7 +47,7 @@ const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
               zDAO.destroyed ? { textDecoration: 'line-through' } : undefined
             }
           >
-            {zDAO.title}
+            {zDAO.name}
           </Heading>
           <Text textAlign="center">{shortenAddress(zDAO.createdBy)}</Text>
         </Stack>

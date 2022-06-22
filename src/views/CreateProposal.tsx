@@ -176,8 +176,7 @@ const CreateProposal = () => {
         },
       });
 
-      const signer = library.getSigner(account).connectUnchecked();
-      const proposalId = await zDAO.createProposal(signer, {
+      const proposalId = await zDAO.createProposal(library, account, {
         title,
         body,
         transfer: {
@@ -430,7 +429,12 @@ const CreateProposal = () => {
                     <Text>{zDAO.minimumVotingParticipants}</Text>
 
                     <Text>Minimum Total Voting Tokens</Text>
-                    <Text>{zDAO.minimumTotalVotingTokens}</Text>
+                    <Text>
+                      {getFullDisplayBalance(
+                        new BigNumber(zDAO.minimumTotalVotingTokens),
+                        zDAO.votingToken.decimals,
+                      )}
+                    </Text>
                   </SimpleGrid>
 
                   {account ? (

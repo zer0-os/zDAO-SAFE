@@ -6,7 +6,7 @@ declare module '*.svg' {
   export default content;
 }
 
-interface WindowChain {
+interface Window {
   ethereum?: {
     isMetaMask?: true;
     request?: (...args: unknown[]) => void;
