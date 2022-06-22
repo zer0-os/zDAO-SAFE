@@ -717,38 +717,36 @@ const Voting = () => {
                           <Text>Looking for transaction hashes calculated</Text>
                         </Stack>
                       ) : (
-                        collectedHashes && (
+                        collectedHashes &&
+                        collectedHashes.map((collected) => (
                           <SimpleGrid
+                            key={collected.hash}
                             columns={2}
                             spacing={4}
                             templateColumns={{ base: '1fr 2fr' }}
                             alignItems="center"
                           >
-                            {collectedHashes.map((collected, index) => (
-                              <div key={collected.hash}>
-                                <LinkExternal
-                                  chainId={SupportedChainId.MUMBAI}
-                                  type={ExternalLinkType.tx}
-                                  value={collected.hash}
-                                />
-                                <PrimaryButton
-                                  disabled={
-                                    isProcessingTx ||
-                                    !collected.isCheckPointed ||
-                                    chainId !== SupportedChainId.GOERLI
-                                  }
-                                  onClick={() =>
-                                    // eslint-disable-next-line prettier/prettier
+                            <LinkExternal
+                              chainId={SupportedChainId.MUMBAI}
+                              type={ExternalLinkType.tx}
+                              value={collected.hash}
+                            />
+                            <PrimaryButton
+                              disabled={
+                                isProcessingTx ||
+                                !collected.isCheckPointed ||
+                                chainId !== SupportedChainId.GOERLI
+                              }
+                              onClick={() =>
+                                // eslint-disable-next-line prettier/prettier
                                   handleReceiveCollectProposal(collected.hash)}
-                                >
-                                  {!collected.isCheckPointed
-                                    ? 'Calculating proposal'
-                                    : 'Finalize proposal'}
-                                </PrimaryButton>
-                              </div>
-                            ))}
+                            >
+                              {!collected.isCheckPointed
+                                ? 'Calculating proposal'
+                                : 'Finalize proposal'}
+                            </PrimaryButton>
                           </SimpleGrid>
-                        )
+                        ))
                       )}
                     </>
                   ) : (
