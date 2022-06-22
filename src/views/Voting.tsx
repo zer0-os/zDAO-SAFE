@@ -724,8 +724,8 @@ const Voting = () => {
                             templateColumns={{ base: '1fr 2fr' }}
                             alignItems="center"
                           >
-                            {collectedHashes.map((collected) => (
-                              <>
+                            {collectedHashes.map((collected, index) => (
+                              <div key={collected.hash}>
                                 <LinkExternal
                                   chainId={SupportedChainId.MUMBAI}
                                   type={ExternalLinkType.tx}
@@ -745,7 +745,7 @@ const Voting = () => {
                                     ? 'Calculating proposal'
                                     : 'Finalize proposal'}
                                 </PrimaryButton>
-                              </>
+                              </div>
                             ))}
                           </SimpleGrid>
                         )
