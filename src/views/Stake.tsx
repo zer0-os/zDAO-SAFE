@@ -135,7 +135,7 @@ const Stake = () => {
       if (!account || !zDAO || !instance) return;
       const childToken = (zDAO.options as Polygon.ZDAOOptions).polygonToken;
 
-      const staked = await instance.staking.stakingPower(
+      const staked = await instance.staking.stakedERC20Amount(
         account,
         childToken.token,
       );
@@ -343,8 +343,13 @@ const Stake = () => {
               <Loader />
             )}
             <Text>Staked Amount</Text>
-            {instance && account && erc20 && staked ? (
-              <Text>{getFullDisplayBalance(new BigNumber(staked), 0)}</Text>
+            {instance && account && erc20 && staked && zDAO ? (
+              <Text>
+                {getFullDisplayBalance(
+                  new BigNumber(staked),
+                  (zDAO.options as Polygon.ZDAOOptions).polygonToken.decimals,
+                )}
+              </Text>
             ) : (
               <Loader />
             )}
