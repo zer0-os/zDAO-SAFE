@@ -1,20 +1,20 @@
+import { JsonRpcProvider } from '@ethersproject/providers';
 import {
-  createSDKInstance,
-  developmentConfiguration,
-  SDKInstance,
+  createSDKInstanceBuilder,
+  PlatformType,
+  Polygon,
   zDAO,
   zNA,
 } from '@zero-tech/zdao-sdk';
 import React, { useCallback, useEffect, useState } from 'react';
 
-import { env, proofFrom } from '../config/env';
-import useActiveWeb3React from '../hooks/useActiveWeb3React';
+import { env } from '../config/env';
 import { useAppDispatch } from '../states';
 import { ApplicationStatus, setApplicationStatus } from '../states/application';
 
 interface SDKContextValue {
   isInitialized: boolean;
-  instance?: SDKInstance;
+  instance?: Polygon.SDKInstance;
   zNAs: string[];
   zDAOs: zDAO[];
   refreshzDAO: (zNA: zNA) => Promise<void>;
@@ -29,12 +29,12 @@ interface SDKContextProps {
 
 const SDKProvider = ({ children }: SDKContextProps) => {
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [instance, setInstance] = useState<SDKInstance | undefined>(undefined);
+  const [instance, setInstance] = useState<Polygon.SDKInstance | undefined>(
+    undefined,
+  );
   const [zNAs, setZNAs] = useState<zNA[]>([]);
   const [zDAOs, setZDAOs] = useState<zDAO[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
-
-  const { account } = useActiveWeb3React();
 
   const dispatch = useAppDispatch();
 
@@ -43,29 +43,21 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     console.time('createInstance');
 
     setInitialized(false);
-    const config = developmentConfiguration({
-      ethereum: {
-        zDAOChef: env.ethereum.zDAOChef,
-        rpcUrl: env.ethereum.rpc,
-        network: env.ethereum.network,
-        blockNumber: env.ethereum.blockNumber,
-      },
-      polygon: {
-        zDAOChef: env.polygon.zDAOChef,
-        rpcUrl: env.polygon.rpc,
-        network: env.polygon.network,
-        blockNumber: env.polygon.blockNumber,
-      },
-      proof: {
-        from: account ?? proofFrom,
-      },
-      fleek: {
-        apiKey: env.fleek.apiKey,
-        apiSecret: env.fleek.apiSecret,
-      },
+    const config = Polygon.developmentConfiguration({
+      ethereum: env.ethereum,
+      polygon: env.polygon,
+      zNA: env.zNA,
+      proof: env.proof,
+      fleek: env.fleek,
+      ipfsGateway: env.ipfsGateway,
+      zNSProvider: new JsonRpcProvider(
+        env.zNSProvider.rpcUrl,
+        env.zNSProvider.network,
+      ),
     });
 
-    const sdk = await createSDKInstance(config);
+    const builder = createSDKInstanceBuilder(PlatformType.Polygon);
+    const sdk = await builder(config);
 
     const zNAAssociates = await sdk.listZNAs();
     console.log('all the associated zNAs', zNAAssociates);
@@ -75,13 +67,12 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     console.log('zDAOs', zDAOsList);
     setZDAOs(zDAOsList);
 
-    setInstance(sdk);
+    setInstance(sdk as Polygon.SDKInstance);
     setInitialized(true);
 
     dispatch(setApplicationStatus({ appStatus: ApplicationStatus.LIVE }));
-
     console.timeEnd('createInstance');
-  }, [dispatch, account]);
+  }, [dispatch]);
 
   const refreshzDAO = useCallback(
     async (zNA: zNA) => {
@@ -103,7 +94,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
   useEffect(() => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     createInstance();
-  }, []);
+  }, [createInstance]);
 
   return (
     <SDKContext.Provider

@@ -75,6 +75,8 @@ export const registerToken = async (
   tokenDecimals: number,
   tokenLogo?: string,
 ) => {
+  if (!window.ethereum) return;
+
   // better leave this undefined for default image instead of broken image url
   // eslint-disable-next-line no-nested-ternary
   const image = tokenLogo
@@ -83,7 +85,7 @@ export const registerToken = async (
       : tokenLogo
     : undefined;
 
-  const tokenAdded = await window.ethereum.request({
+  const tokenAdded = await window.ethereum!.request({
     method: 'wallet_watchAsset',
     params: {
       type: 'ERC20',

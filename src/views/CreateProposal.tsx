@@ -176,8 +176,7 @@ const CreateProposal = () => {
         },
       });
 
-      const signer = library.getSigner(account).connectUnchecked();
-      const proposalId = await zDAO.createProposal(signer, {
+      const proposalId = await zDAO.createProposal(library, account, {
         title,
         body,
         transfer: {
@@ -210,7 +209,9 @@ const CreateProposal = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Failed to create a proposal - ${error.message}`,
+          description: `Failed to create a proposal - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -411,7 +412,7 @@ const CreateProposal = () => {
                     <LinkExternal
                       chainId={SupportedChainId.GOERLI}
                       type={ExternalLinkType.address}
-                      value={zDAO.rootToken}
+                      value={zDAO.votingToken.token}
                     />
 
                     <Text>Minimum Token Holding</Text>
@@ -430,7 +431,12 @@ const CreateProposal = () => {
                     <Text>{zDAO.minimumVotingParticipants}</Text>
 
                     <Text>Minimum Total Voting Tokens</Text>
-                    <Text>{zDAO.minimumTotalVotingTokens}</Text>
+                    <Text>
+                      {getFullDisplayBalance(
+                        new BigNumber(zDAO.minimumTotalVotingTokens),
+                        zDAO.votingToken.decimals,
+                      )}
+                    </Text>
                   </SimpleGrid>
 
                   {account ? (

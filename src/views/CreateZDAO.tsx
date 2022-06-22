@@ -41,7 +41,7 @@ const Durations = {
 };
 
 interface ZDAOFormat {
-  title: string | null;
+  name: string | null;
   zNA: string | null;
   gnosisSafe: string | null;
   erc20?: string | null;
@@ -63,7 +63,7 @@ const CreateZDAO = () => {
   const borderColor = useColorModeValue('gray.200', 'gray.600');
   const toast = useToast();
   const [state, setState] = useState<ZDAOFormat>({
-    title: null,
+    name: null,
     zNA: null,
     gnosisSafe: null,
     erc20: token,
@@ -78,7 +78,7 @@ const CreateZDAO = () => {
   const [executing, setExecuting] = useState<boolean>(false);
 
   const {
-    title,
+    name,
     zNA,
     gnosisSafe,
     erc20,
@@ -92,7 +92,7 @@ const CreateZDAO = () => {
   } = state;
 
   const isValid = {
-    title: title !== null && title.length > 0,
+    name: name !== null && name.length > 0,
     zNA: zNA !== null && zNA.length > 0,
     gnosisSafe: gnosisSafe != null && !!isAddress(gnosisSafe),
     erc20: erc20 && !!isAddress(erc20),
@@ -107,7 +107,7 @@ const CreateZDAO = () => {
   const isValidCreating =
     !!account &&
     chainId === SupportedChainId.GOERLI &&
-    isValid.title &&
+    isValid.name &&
     isValid.zNA &&
     ((isValid.erc20 && isValid.erc20Amount) || isValid.erc721) &&
     isValid.minimumVotingParticipants &&
@@ -139,7 +139,7 @@ const CreateZDAO = () => {
     if (!instance || !library || !account) return;
     if (
       !zNA ||
-      !title ||
+      !name ||
       !gnosisSafe ||
       !minimumTotalVotingTokens ||
       !minimumVotingParticipants
@@ -148,10 +148,10 @@ const CreateZDAO = () => {
 
     setExecuting(true);
     try {
-      const signer = library.getSigner(account).connectUnchecked();
-      await instance.createZDAO(signer, {
+      await instance.createZDAO(library, account, {
         zNA,
-        title,
+        name,
+        network: SupportedChainId.GOERLI,
         gnosisSafe,
         token: erc20 || (erc721 ?? ''),
         amount: erc20Amount
@@ -160,10 +160,12 @@ const CreateZDAO = () => {
               .toString()
           : '1',
         duration,
-        votingThreshold: Math.floor(votingThreshold * 100),
-        isRelativeMajority,
-        minimumVotingParticipants,
-        minimumTotalVotingTokens,
+        options: {
+          votingThreshold: Math.floor(votingThreshold * 100),
+          isRelativeMajority,
+          minimumVotingParticipants,
+          minimumTotalVotingTokens,
+        },
       });
 
       if (toast) {
@@ -183,7 +185,9 @@ const CreateZDAO = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Failed to create a zDAO - ${error.message}`,
+          description: `Failed to create a zDAO - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -198,7 +202,7 @@ const CreateZDAO = () => {
     account,
     navigate,
     zNA,
-    title,
+    name,
     gnosisSafe,
     erc20,
     erc721,
@@ -236,11 +240,11 @@ const CreateZDAO = () => {
             <Text>zDAO Name</Text>
             <Input
               fontSize="md"
-              name="title"
+              name="name"
               placeholder="zDAO Name"
               size="md"
-              value={title ?? ''}
-              isInvalid={title !== null && !isValid.title}
+              value={name ?? ''}
+              isInvalid={name !== null && !isValid.name}
               onChange={handleInputChange}
               required
             />

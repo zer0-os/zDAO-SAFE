@@ -15,7 +15,12 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import { Proposal, SupportedChainId, Vote } from '@zero-tech/zdao-sdk';
+import {
+  Polygon,
+  ProposalState,
+  SupportedChainId,
+  Vote,
+} from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { format } from 'date-fns';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -38,7 +43,7 @@ import {
   getFormatedValue,
   getFullDisplayBalance,
 } from '../config/constants/number';
-import { ProposalStateText, VoteChoiceText } from '../config/constants/text';
+import { ProposalStateText } from '../config/constants/text';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { getExternalLink } from '../utils/address';
@@ -83,7 +88,7 @@ const Voting = () => {
   const zDAO = useCurrentZDAO(zNA);
 
   const [proposalLoading, setProposalLoading] = useState(true);
-  const [proposal, setProposal] = useState<Proposal | undefined>();
+  const [proposal, setProposal] = useState<Polygon.Proposal | undefined>();
   const [votesLoading, setVotesLoading] = useState(true);
   const [votes, setVotes] = useState<Vote[] | undefined>();
   const [collectHashesLoading, setCollectHashesLoading] = useState<boolean>(
@@ -103,7 +108,7 @@ const Voting = () => {
 
     setProposalLoading(true);
     const item = await zDAO.getProposal(proposalId);
-    setProposal(item);
+    setProposal(item as Polygon.Proposal);
 
     if (account) {
       const vp = await item.getVotingPowerOfUser(account);
@@ -130,7 +135,7 @@ const Voting = () => {
       setVotes(items);
       setVotesLoading(false);
 
-      const hashes = await proposal.collectTxHash();
+      const hashes = await proposal.getCheckPointingHashes();
       console.log('collected hashes', hashes);
 
       const promises: Promise<boolean>[] = hashes.map((hash) =>
@@ -165,10 +170,10 @@ const Voting = () => {
   }, [votes, showAll]);
 
   const handleVote = useCallback(async () => {
-    if (!zDAO || !library || !proposal) return;
+    if (!zDAO || !library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.vote(library.getSigner(), proposal.choices[myChoice]);
+      await proposal.vote(library, account, { choice: myChoice + 1 });
       if (toast) {
         toast({
           title: 'Success',
@@ -184,7 +189,9 @@ const Voting = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Casting vote failed - ${error.message}`,
+          description: `Casting vote failed - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -192,13 +199,13 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, proposal, toast, handleRefreshPage, myChoice]);
+  }, [zDAO, library, account, proposal, toast, handleRefreshPage, myChoice]);
 
   const handleCollectProposal = useCallback(async () => {
-    if (!zDAO || !library || !proposal) return;
+    if (!zDAO || !library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.collect(library.getSigner());
+      await proposal.calculate(library, account, {});
       if (toast) {
         toast({
           title: 'Success',
@@ -214,7 +221,9 @@ const Voting = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Calculating proposal failed - ${error.message}`,
+          description: `Calculating proposal failed - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -222,14 +231,18 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, proposal, handleRefreshPage, toast]);
+  }, [zDAO, library, account, proposal, handleRefreshPage, toast]);
 
   const handleReceiveCollectProposal = useCallback(
     async (txhash: string) => {
-      if (!zDAO || !library) return;
+      if (!proposal || !library || !account) return;
       setProcessingTx(true);
       try {
-        await zDAO.syncState(library.getSigner(), txhash);
+        await proposal.finalize(library, account, {
+          options: {
+            txHash: txhash,
+          },
+        });
         if (toast) {
           toast({
             title: 'Success',
@@ -246,7 +259,9 @@ const Voting = () => {
         if (toast) {
           toast({
             title: 'Error',
-            description: `Receiving result failed - ${error.message}`,
+            description: `Receiving result failed - ${
+              error.data?.message ?? error.message
+            }`,
             status: 'error',
             duration: 4000,
             isClosable: true,
@@ -255,14 +270,14 @@ const Voting = () => {
       }
       setProcessingTx(false);
     },
-    [zDAO, library, toast, handleRefreshPage],
+    [library, account, proposal, toast, handleRefreshPage],
   );
 
   const handleExecuteProposal = useCallback(async () => {
-    if (!zDAO || !library || !proposal) return;
+    if (!library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.execute(library.getSigner());
+      await proposal.execute(library, account, {});
       if (toast) {
         toast({
           title: 'Success',
@@ -278,7 +293,9 @@ const Voting = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Executing proposal failed - ${error.message}`,
+          description: `Executing proposal failed - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -286,7 +303,7 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, proposal, handleRefreshPage, toast]);
+  }, [library, account, proposal, handleRefreshPage, toast]);
 
   const handleShowAll = () => {
     setShowAll(true);
@@ -368,7 +385,7 @@ const Voting = () => {
                   </Stack>
                 )}
 
-                {proposal.state === 'active' && !alreadyVoted && (
+                {proposal.state === ProposalState.ACTIVE && !alreadyVoted && (
                   <Card title="Cast your vote">
                     <Stack spacing={2} direction="column">
                       {account ? (
@@ -408,7 +425,7 @@ const Voting = () => {
                               }}
                               onClick={() => setMyChoice(index)}
                             >
-                              {VoteChoiceText[choice]}
+                              {proposal.choices[index]}
                             </Button>
                           ))}
 
@@ -444,7 +461,7 @@ const Voting = () => {
                               disabled={
                                 proposalLoading ||
                                 votesLoading ||
-                                proposal.state !== 'active' ||
+                                proposal.state !== ProposalState.ACTIVE ||
                                 chainId !== SupportedChainId.MUMBAI ||
                                 isProcessingTx
                               }
@@ -473,7 +490,7 @@ const Voting = () => {
                   <Stack spacing={4} direction="column">
                     {votesLoading ||
                     !sortedVotes ||
-                    proposal.state === 'pending' ? (
+                    proposal.state === ProposalState.PENDING ? (
                       <Loader />
                     ) : (
                       sortedVotes.map((vote) => (
@@ -484,7 +501,7 @@ const Voting = () => {
                             value={vote.voter}
                           />
                           <Text textAlign="center">
-                            {VoteChoiceText[vote.choice]}
+                            {proposal.choices[vote.choice]}
                           </Text>
                           <Text textAlign="right">
                             {getFormatedValue(vote.votes)}
@@ -531,7 +548,7 @@ const Voting = () => {
                       <LinkExternal
                         chainId={SupportedChainId.GOERLI}
                         type={ExternalLinkType.address}
-                        value={zDAO.rootToken}
+                        value={zDAO.votingToken.token}
                       />
 
                       <Text>Voting Type</Text>
@@ -544,8 +561,13 @@ const Voting = () => {
                       <Text>Minimum Voting Participants</Text>
                       <Text>{zDAO.minimumVotingParticipants}</Text>
 
-                      <Text>Minimum Total Votes</Text>
-                      <Text>{zDAO.minimumTotalVotingTokens}</Text>
+                      <Text>Minimum Total Voting Tokens</Text>
+                      <Text>
+                        {getFullDisplayBalance(
+                          new BigNumber(zDAO.minimumTotalVotingTokens),
+                          zDAO.votingToken.decimals,
+                        )}
+                      </Text>
 
                       <Text>Snapshot</Text>
                       <LinkExternal
@@ -579,7 +601,7 @@ const Voting = () => {
                           : '...'}
                       </Text>
 
-                      {proposal.state === 'active' && proposal.end && (
+                      {proposal.state === ProposalState.ACTIVE && proposal.end && (
                         <>
                           <Text>Remain Date:</Text>
                           <EventCountDown
@@ -598,8 +620,9 @@ const Voting = () => {
                   <Stack spacing={2} direction="column">
                     {proposal.choices.map((choice, index) => (
                       <div key={choice}>
-                        <Text>{VoteChoiceText[choice]}</Text>
-                        {proposal.state !== 'pending' && proposal.scores ? (
+                        <Text>{proposal.choices[index]}</Text>
+                        {proposal.state !== ProposalState.PENDING &&
+                        proposal.scores ? (
                           <>
                             <Progress
                               borderRadius="full"
@@ -623,13 +646,14 @@ const Voting = () => {
                       templateColumns={{ base: '1fr 2fr' }}
                     >
                       <Text>Total Voters</Text>
-                      {proposal.state !== 'pending' ? (
+                      {proposal.state !== ProposalState.PENDING ? (
                         <Text>{proposal.voters}</Text>
                       ) : (
                         <Loader />
                       )}
                       <Text>Total Votes</Text>
-                      {proposal.state !== 'pending' && proposal.scores ? (
+                      {proposal.state !== ProposalState.PENDING &&
+                      proposal.scores ? (
                         <Text>
                           {new BigNumber(proposal.scores[0])
                             .plus(new BigNumber(proposal.scores[1]))
@@ -645,7 +669,7 @@ const Voting = () => {
 
                 {
                   // eslint-disable-next-line no-nested-ternary
-                  proposal.state === 'calculating' ? (
+                  proposal.state === ProposalState.AWAITING_CALCULATION ? (
                     <>
                       {chainId && chainId !== SupportedChainId.MUMBAI && (
                         <Button
@@ -670,7 +694,7 @@ const Voting = () => {
                         Calculate Proposal
                       </PrimaryButton>
                     </>
-                  ) : proposal.state === 'finalizing' ? (
+                  ) : proposal.state === ProposalState.AWAITING_FINALIZATION ? (
                     <>
                       {chainId && chainId !== SupportedChainId.GOERLI && (
                         <Button
@@ -693,42 +717,40 @@ const Voting = () => {
                           <Text>Looking for transaction hashes calculated</Text>
                         </Stack>
                       ) : (
-                        collectedHashes && (
+                        collectedHashes &&
+                        collectedHashes.map((collected) => (
                           <SimpleGrid
+                            key={collected.hash}
                             columns={2}
                             spacing={4}
                             templateColumns={{ base: '1fr 2fr' }}
                             alignItems="center"
                           >
-                            {collectedHashes.map((collected) => (
-                              <>
-                                <LinkExternal
-                                  chainId={SupportedChainId.MUMBAI}
-                                  type={ExternalLinkType.tx}
-                                  value={collected.hash}
-                                />
-                                <PrimaryButton
-                                  disabled={
-                                    isProcessingTx ||
-                                    !collected.isCheckPointed ||
-                                    chainId !== SupportedChainId.GOERLI
-                                  }
-                                  onClick={() =>
-                                    // eslint-disable-next-line prettier/prettier
+                            <LinkExternal
+                              chainId={SupportedChainId.MUMBAI}
+                              type={ExternalLinkType.tx}
+                              value={collected.hash}
+                            />
+                            <PrimaryButton
+                              disabled={
+                                isProcessingTx ||
+                                !collected.isCheckPointed ||
+                                chainId !== SupportedChainId.GOERLI
+                              }
+                              onClick={() =>
+                                // eslint-disable-next-line prettier/prettier
                                   handleReceiveCollectProposal(collected.hash)}
-                                >
-                                  {!collected.isCheckPointed
-                                    ? 'Calculating proposal'
-                                    : 'Finalize proposal'}
-                                </PrimaryButton>
-                              </>
-                            ))}
+                            >
+                              {!collected.isCheckPointed
+                                ? 'Calculating proposal'
+                                : 'Finalize proposal'}
+                            </PrimaryButton>
                           </SimpleGrid>
-                        )
+                        ))
                       )}
                     </>
                   ) : (
-                    proposal.state === 'succeeded' && (
+                    proposal.state === ProposalState.BRIDGING && (
                       <>
                         {chainId && chainId !== SupportedChainId.GOERLI && (
                           <Button

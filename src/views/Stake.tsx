@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { MaxUint256 } from '@ethersproject/constants';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { SupportedChainId } from '@zero-tech/zdao-sdk';
+import { Polygon, SupportedChainId } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { Contract } from 'ethers';
 import React, {
@@ -113,12 +113,13 @@ const Stake = () => {
   useEffect(() => {
     const fetch = async () => {
       if (!zDAO || !account || !instance) return;
-      updateValue('erc20', zDAO.childToken);
+      const childToken = (zDAO.options as Polygon.ZDAOOptions).polygonToken;
+      updateValue('erc20', childToken.token);
 
       const contract = new Contract(
-        zDAO.childToken,
+        childToken.token,
         ERC20Upgradeable.abi,
-        new JsonRpcProvider(env.polygon.rpc, env.polygon.network),
+        new JsonRpcProvider(env.polygon.rpcUrl, env.polygon.network),
       );
       const balance = await contract.balanceOf(account);
       updateValue('balance', balance.toString());
@@ -132,10 +133,11 @@ const Stake = () => {
   useEffect(() => {
     const fetch = async () => {
       if (!account || !zDAO || !instance) return;
+      const childToken = (zDAO.options as Polygon.ZDAOOptions).polygonToken;
 
-      const staked = await instance.staking.stakingPower(
+      const staked = await instance.staking.stakedERC20Amount(
         account,
-        zDAO.childToken,
+        childToken.token,
       );
       updateValue('staked', staked);
     };
@@ -213,7 +215,9 @@ const Stake = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Failed to stake a Token - ${error.message}`,
+          description: `Failed to stake a Token - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -339,8 +343,13 @@ const Stake = () => {
               <Loader />
             )}
             <Text>Staked Amount</Text>
-            {instance && account && erc20 && staked ? (
-              <Text>{staked}</Text>
+            {instance && account && erc20 && staked && zDAO ? (
+              <Text>
+                {getFullDisplayBalance(
+                  new BigNumber(staked),
+                  (zDAO.options as Polygon.ZDAOOptions).polygonToken.decimals,
+                )}
+              </Text>
             ) : (
               <Loader />
             )}

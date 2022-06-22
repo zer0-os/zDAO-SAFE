@@ -21,7 +21,7 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Interface } from '@ethersproject/abi';
-import { ContractFactory } from '@ethersproject/contracts';
+import { Contract, ContractFactory } from '@ethersproject/contracts';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import React, { ChangeEvent, useCallback, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
@@ -128,7 +128,7 @@ const CreateZToken = () => {
     if (!zDAOs || zDAOs.length <= deployedTokenDAOId) return;
     const token =
       deployedTokenDAOId >= 0
-        ? zDAOs[deployedTokenDAOId].rootToken
+        ? zDAOs[deployedTokenDAOId].votingToken.token
         : deployedToken;
     navigate(`/create-zdao/${token}`);
   }, [deployedTokenDAOId, deployedToken, zDAOs, navigate]);
@@ -182,8 +182,10 @@ const CreateZToken = () => {
       console.log('new token address', token);
 
       setDeployStatus('Minting new token');
+      const tokenContract = new Contract(token, ZeroTokenAbi.abi, signer);
       // mint tokens
-      await proxyContract.mint(target, amount);
+      const tx = await tokenContract.mint(target, amount);
+      await tx.wait();
       console.log('successfully minted');
 
       if (toast) {
@@ -202,7 +204,9 @@ const CreateZToken = () => {
       if (toast) {
         toast({
           title: 'Error',
-          description: `Failed to create a Token - ${error.message}`,
+          description: `Failed to create a Token - ${
+            error.data?.message ?? error.message
+          }`,
           status: 'error',
           duration: 4000,
           isClosable: true,
@@ -267,11 +271,11 @@ const CreateZToken = () => {
                                 <LinkExternal
                                   chainId={SupportedChainId.GOERLI}
                                   type={ExternalLinkType.address}
-                                  value={zDAO.rootToken}
+                                  value={zDAO.votingToken.token}
                                   shortenize={false}
                                 />
                               </Td>
-                              <Td>{zDAO.title}</Td>
+                              <Td>{zDAO.name}</Td>
                             </Tr>
                           ),
                       )}

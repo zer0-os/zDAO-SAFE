@@ -16,8 +16,10 @@ import {
 } from '@chakra-ui/react';
 import {
   Proposal,
+  ProposalState,
   SupportedChainId,
   zDAO as zDAOType,
+  zDAOState,
 } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -51,7 +53,7 @@ const ZDAOInfoCard = ({
   }, [refreshzDAO, zNA]);
 
   return (
-    <Card title={zDAO?.title ?? ''}>
+    <Card title={zDAO?.name ?? ''}>
       {!zDAO || refreshing ? (
         <Loader />
       ) : (
@@ -90,7 +92,7 @@ const ZDAOInfoCard = ({
           <LinkExternal
             chainId={SupportedChainId.GOERLI}
             type={ExternalLinkType.address}
-            value={zDAO.rootToken}
+            value={zDAO.votingToken.token}
           />
           <Text>Minimum Token Holding</Text>
           <Text>{getFullDisplayBalance(new BigNumber(zDAO.amount))}</Text>
@@ -103,7 +105,12 @@ const ZDAOInfoCard = ({
           <Text>Minimum Voting Participants</Text>
           <Text>{zDAO.minimumVotingParticipants}</Text>
           <Text>Minimum Total Voting Tokens</Text>
-          <Text>{zDAO.minimumTotalVotingTokens}</Text>
+          <Text>
+            {getFullDisplayBalance(
+              new BigNumber(zDAO.minimumTotalVotingTokens),
+              zDAO.votingToken.decimals,
+            )}
+          </Text>
           <Text>Voting Type</Text>
           <Text>
             {zDAO.isRelativeMajority
@@ -113,7 +120,7 @@ const ZDAOInfoCard = ({
           <Text>State</Text>
           <Badge
             borderRadius="full"
-            colorScheme={zDAO.state === 'active' ? 'green' : undefined}
+            colorScheme={zDAO.state === zDAOState.ACTIVE ? 'green' : undefined}
             px={3}
             py={1}
             width="fit-content"
@@ -163,7 +170,7 @@ const ProposalCard = ({
                   : shortenAddress(proposal.createdBy)}
               </Text>
             </Flex>
-            {proposal.state === 'active' ? (
+            {proposal.state === ProposalState.ACTIVE ? (
               <Badge borderRadius="full" colorScheme="green" px={3} py={1}>
                 {proposal.state}
               </Badge>
@@ -277,7 +284,7 @@ const ListProposal = () => {
                   _hover={{
                     borderColor,
                   }}
-                  disabled={zDAO?.state !== 'active'}
+                  disabled={zDAO?.state !== zDAOState.ACTIVE}
                 >
                   <Heading size="sm">Create Proposal</Heading>
                 </Button>
@@ -292,7 +299,7 @@ const ListProposal = () => {
                   _hover={{
                     borderColor,
                   }}
-                  disabled={zDAO?.state !== 'active'}
+                  disabled={zDAO?.state !== zDAOState.ACTIVE}
                 >
                   <Heading size="sm">Stake tokens</Heading>
                 </Button>
