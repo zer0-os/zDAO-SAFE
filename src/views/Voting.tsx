@@ -173,7 +173,7 @@ const Voting = () => {
     if (!zDAO || !library || !account || !proposal) return;
     setProcessingTx(true);
     try {
-      await proposal.vote(library, account, { choice: myChoice });
+      await proposal.vote(library, account, { choice: myChoice + 1 });
       if (toast) {
         toast({
           title: 'Success',
