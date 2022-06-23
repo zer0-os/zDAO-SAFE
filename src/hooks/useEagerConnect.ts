@@ -1,9 +1,10 @@
+import { useEffect } from 'react';
+
 import {
   connectorLocalStorageKey,
   ConnectorNames,
-} from '@/config/constants/wallet';
-import useAuth from '@/hooks/useAuth';
-import { useEffect } from 'react';
+} from '../config/constants/wallet';
+import useAuth from '../hooks/useAuth';
 
 const useEagerConnect = () => {
   const { login } = useAuth();

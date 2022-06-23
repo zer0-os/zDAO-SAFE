@@ -1,21 +1,33 @@
 const path = require('path');
+const webpack = require('webpack');
 
 module.exports = function override(config) {
-  config.resolve = {
-    ...config.resolve,
-    alias: {
-      ...config.alias,
-      '@/assets': path.resolve(__dirname, 'src/assets'),
-      '@/components': path.resolve(__dirname, 'src/components'),
-      '@/config': path.resolve(__dirname, 'src/config'),
-      '@/contexts': path.resolve(__dirname, 'src/contexts'),
-      '@/helpers': path.resolve(__dirname, 'src/helpers'),
-      '@/hooks': path.resolve(__dirname, 'src/hooks'),
-      '@/states': path.resolve(__dirname, 'src/states'),
-      '@/utils': path.resolve(__dirname, 'src/utils'),
-      '@/views': path.resolve(__dirname, 'src/views'),
-    },
+  config.resolve.fallback = {
+    url: require.resolve("url"),
+    assert: require.resolve("assert"),
+    crypto: require.resolve("crypto-browserify"),
+    http: require.resolve("stream-http"),
+    https: require.resolve("https-browserify"),
+    os: require.resolve("os-browserify/browser"),
+    buffer: require.resolve("buffer"),
+    stream: require.resolve("stream-browserify"),
+    process: require.resolve("process"),
   };
+
+  config.plugins = [
+    ...config.plugins,
+    new webpack.ProvidePlugin({
+      process: "process/browser",
+      Buffer: ["buffer", "Buffer"],
+    }),
+  ];
+
+  config.module.rules.push({
+    test: /\.m?js/,
+    resolve: {
+        fullySpecified: false
+    }
+  });
 
   return config;
 };

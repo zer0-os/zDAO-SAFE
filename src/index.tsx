@@ -1,10 +1,12 @@
-import ApplicationUpdater from '@/states/application/updater';
+import './index.css';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
+
 import App from './App';
-import './index.css';
 import Providers from './Providers';
 import reportWebVitals from './reportWebVitals';
+import ApplicationUpdater from './states/application/updater';
 
 ReactDOM.render(
   <React.StrictMode>

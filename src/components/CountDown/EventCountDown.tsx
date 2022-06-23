@@ -1,6 +1,7 @@
-import useNextEventCountDown from '@/hooks/useNextEventCountDown';
-import getTimePeriods from '@/utils/getTimePeriods';
 import { Text } from '@chakra-ui/react';
+
+import useNextEventCountDown from '../../hooks/useNextEventCountDown';
+import getTimePeriods from '../../utils/getTimePeriods';
 import Timer from './Timer';
 
 interface EventCountDownProps {

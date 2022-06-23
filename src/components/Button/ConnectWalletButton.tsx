@@ -1,22 +1,23 @@
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalCloseButton,
-  ModalBody,
-  ModalFooter,
-  Text,
-  Stack,
-  useDisclosure,
-  useBreakpointValue,
   Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Stack,
+  Text,
+  useBreakpointValue,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { SUPPORTED_WALLETS, WalletInfo } from '@/config/constants/wallet';
-import useAuth from '@/hooks/useAuth';
 import { UnsupportedChainIdError } from '@web3-react/core';
 import { useEffect } from 'react';
 import styled from 'styled-components';
+
+import { SUPPORTED_WALLETS, WalletInfo } from '../../config/constants/wallet';
+import useAuth from '../../hooks/useAuth';
 import PrimaryButton from './PrimaryButton';
 
 const IconWrapper = styled.div<{ size?: number | null }>`
@@ -42,7 +43,9 @@ const ConnectWalletButton = () => {
 
   return (
     <>
-      {error && error instanceof UnsupportedChainIdError && 'Unsupported Chain'}
+      {error && error instanceof UnsupportedChainIdError && (
+        <Text paddingRight={3}>Unsupported Chain</Text>
+      )}
       <PrimaryButton size={'sm'} onClick={onOpen}>
         Connect Wallet
       </PrimaryButton>

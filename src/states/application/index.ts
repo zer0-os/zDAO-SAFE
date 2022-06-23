@@ -1,11 +1,20 @@
-import { createAction, createSlice } from '@reduxjs/toolkit';
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+export enum ApplicationStatus {
+  INITIAL = 'initial',
+  LIVE = 'live',
+  PAUSED = 'paused',
+  ERROR = 'error',
+}
 
 export interface ApplicationState {
+  readonly applicationStatus: ApplicationStatus;
   readonly blockNumber: { readonly [chainId: string]: number };
   readonly chainId: number;
 }
 
 const initialState: ApplicationState = {
+  applicationStatus: ApplicationStatus.INITIAL,
   blockNumber: {},
   chainId: 1,
 };
@@ -20,7 +29,14 @@ export const updateChainId = createAction<number>('application/updateChainId');
 export const ApplicationSlice = createSlice({
   name: 'Application',
   initialState,
-  reducers: {},
+  reducers: {
+    setApplicationStatus: (
+      state,
+      action: PayloadAction<{ appStatus: ApplicationStatus }>
+    ) => {
+      state.applicationStatus = action.payload.appStatus;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(updateBlockNumber, (state, action) => {
       const { chainId, blockNumber } = action.payload;
@@ -39,5 +55,7 @@ export const ApplicationSlice = createSlice({
     });
   },
 });
+
+export const { setApplicationStatus } = ApplicationSlice.actions;
 
 export default ApplicationSlice.reducer;

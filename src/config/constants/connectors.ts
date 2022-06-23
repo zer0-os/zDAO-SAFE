@@ -1,4 +1,5 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
+
 // import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
 import { ALL_SUPPORTED_CHAIN_IDS } from './chain';
 // import { INFURA_NETWORK_URLS } from './infura';

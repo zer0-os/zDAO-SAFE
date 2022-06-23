@@ -1,8 +1,9 @@
+import 'react-mde/lib/styles/css/react-mde-all.css';
+
 import { Box, BoxProps, useColorMode } from '@chakra-ui/react';
 import { useState } from 'react';
 import ReactMde from 'react-mde';
 import * as Showdown from 'showdown';
-import 'react-mde/lib/styles/css/react-mde-all.css';
 import styled from 'styled-components';
 
 interface ReactMdeProps extends Omit<BoxProps, 'onChange'> {
