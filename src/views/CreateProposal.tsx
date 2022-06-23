@@ -392,22 +392,27 @@ const CreateProposal = () => {
                   </SimpleGrid>
 
                   {account && (
-                    <>
+                    <SimpleGrid
+                      columns={2}
+                      templateColumns={{ base: '1fr 2fr' }}
+                    >
                       <Text>Creator</Text>
                       <LinkExternal
                         chainId={SupportedChainId.RINKEBY}
                         type={ExternalLinkType.address}
                         value={account}
                       />
-                    </>
+                    </SimpleGrid>
                   )}
 
-                  <Text>Voting Token</Text>
-                  <LinkExternal
-                    chainId={SupportedChainId.RINKEBY}
-                    type={ExternalLinkType.address}
-                    value={zDAO.votingToken.token}
-                  />
+                  <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
+                    <Text>Voting Token</Text>
+                    <LinkExternal
+                      chainId={SupportedChainId.RINKEBY}
+                      type={ExternalLinkType.address}
+                      value={zDAO.votingToken.token}
+                    />
+                  </SimpleGrid>
 
                   <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
                     <Text>Start DateTime</Text>
