@@ -15,12 +15,7 @@ import {
   useToast,
   VStack,
 } from '@chakra-ui/react';
-import {
-  ProposalState,
-  Snapshot,
-  SupportedChainId,
-  Vote,
-} from '@zero-tech/zdao-sdk';
+import { ProposalState, Snapshot, SupportedChainId } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -92,9 +87,11 @@ const Voting = () => {
   const zDAO = useCurrentZDAO(zNA);
 
   const [proposalLoading, setProposalLoading] = useState(true);
-  const [proposal, setProposal] = useState<Snapshot.Proposal | undefined>();
+  const [proposal, setProposal] = useState<
+    Snapshot.SnapshotProposal | undefined
+  >();
   const [votesLoading, setVotesLoading] = useState(true);
-  const [votes, setVotes] = useState<Vote[] | undefined>();
+  const [votes, setVotes] = useState<Snapshot.SnapshotVote[] | undefined>();
   const [votingPower, setVotingPower] = useState<string | undefined>('');
 
   const handleRefreshPage = useCallback(async () => {
@@ -102,7 +99,7 @@ const Voting = () => {
 
     setProposalLoading(true);
     const item = await zDAO.getProposal(proposalId);
-    setProposal(item as Snapshot.Proposal);
+    setProposal(item as Snapshot.SnapshotProposal);
 
     if (account) {
       const vp = await item.getVotingPowerOfUser(account);

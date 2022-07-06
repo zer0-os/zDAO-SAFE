@@ -154,7 +154,7 @@ const CreateProposal = () => {
     if (!tokenType) {
       return;
     }
-    if (!zDAO || !library || !account) return;
+    if (!zDAO || !library || !account || !blockNumber) return;
 
     setExecuting(true);
     try {
@@ -178,7 +178,6 @@ const CreateProposal = () => {
         title,
         body,
         transfer: {
-          abi,
           sender: zDAO.gnosisSafe,
           recipient,
           token,
@@ -188,6 +187,8 @@ const CreateProposal = () => {
             .multipliedBy(extendToDecimals(tokenType.decimals))
             .toString(),
         },
+        choices: Choices,
+        snapshot: blockNumber,
       });
       console.log('Proposal created, id', proposalId);
       if (toast) {
@@ -199,6 +200,7 @@ const CreateProposal = () => {
           isClosable: true,
         });
       }
+      navigate(`/${zNA}/${proposalId}`);
     } catch (error: any) {
       console.error('Proposal creation error', error);
       if (toast) {

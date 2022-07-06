@@ -1,10 +1,4 @@
-import {
-  createSDKInstanceBuilder,
-  PlatformType,
-  Snapshot,
-  zDAO,
-  zNA,
-} from '@zero-tech/zdao-sdk';
+import { Snapshot, zNA } from '@zero-tech/zdao-sdk';
 import React, { useCallback, useEffect, useState } from 'react';
 
 import { env } from '../config/env';
@@ -13,9 +7,9 @@ import { ApplicationStatus, setApplicationStatus } from '../states/application';
 
 interface SDKContextValue {
   isInitialized: boolean;
-  instance?: Snapshot.SDKInstance;
+  instance?: Snapshot.SnapshotSDKInstance;
   zNAs: string[];
-  zDAOs: zDAO[];
+  zDAOs: Snapshot.SnapshotZDAO[];
   refreshzDAO: (zNA: zNA) => Promise<void>;
   refreshing: boolean;
 }
@@ -28,11 +22,11 @@ interface SDKContextProps {
 
 const SDKProvider = ({ children }: SDKContextProps) => {
   const [initialized, setInitialized] = useState<boolean>(false);
-  const [instance, setInstance] = useState<Snapshot.SDKInstance | undefined>(
-    undefined
-  );
+  const [instance, setInstance] = useState<
+    Snapshot.SnapshotSDKInstance | undefined
+  >(undefined);
   const [zNAs, setZNAs] = useState<zNA[]>([]);
-  const [zDAOs, setZDAOs] = useState<zDAO[]>([]);
+  const [zDAOs, setZDAOs] = useState<Snapshot.SnapshotZDAO[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
   const dispatch = useAppDispatch();
@@ -49,8 +43,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       ipfsGateway: env.ipfsGateway,
     });
 
-    const builder = createSDKInstanceBuilder(PlatformType.Snapshot);
-    const sdk = await builder(config);
+    const sdk = await Snapshot.createSDKInstance(config);
 
     const zNAAssociates = await sdk.listZNAs();
     console.log('all the associated zNAs', zNAAssociates);
@@ -60,7 +53,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     console.log('zDAOs', zDAOsList);
     setZDAOs(zDAOsList);
 
-    setInstance(sdk as Snapshot.SDKInstance);
+    setInstance(sdk as Snapshot.SnapshotSDKInstance);
     setInitialized(true);
 
     dispatch(setApplicationStatus({ appStatus: ApplicationStatus.LIVE }));
@@ -76,7 +69,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       setZDAOs(
         zDAOs.reduce(
           (prev, current) => [...prev, current.id === zDAO.id ? zDAO : current],
-          [] as zDAO[]
+          [] as Snapshot.SnapshotZDAO[]
         )
       );
       setRefreshing(false);

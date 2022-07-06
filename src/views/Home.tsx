@@ -8,7 +8,7 @@ import {
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
-import { zDAO } from '@zero-tech/zdao-sdk';
+import { Snapshot } from '@zero-tech/zdao-sdk';
 import { formatBytes32String } from 'ethers/lib/utils';
 
 import Blockie from '../components/Blockie';
@@ -17,7 +17,7 @@ import Card from '../components/Card';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { shortenAddress } from '../utils/address';
 
-const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
+const ZDAOBlock = ({ zDAO }: { zDAO: Snapshot.SnapshotZDAO }) => {
   const textColor = useColorModeValue('gray.700', 'gray.400');
 
   return (

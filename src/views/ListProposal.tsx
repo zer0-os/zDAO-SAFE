@@ -15,11 +15,9 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {
-  Proposal,
   ProposalState,
   Snapshot,
   SupportedChainId,
-  zDAO,
   zDAOState,
 } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
@@ -37,7 +35,13 @@ import { shortenAddress } from '../utils/address';
 import { time2string } from '../utils/strings';
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 
-const ZDAOInfoCard = ({ zDAO, zNA }: { zDAO?: zDAO | null; zNA?: string }) => {
+const ZDAOInfoCard = ({
+  zDAO,
+  zNA,
+}: {
+  zDAO?: Snapshot.SnapshotZDAO | null;
+  zNA?: string;
+}) => {
   const { refreshzDAO, refreshing } = useSdkContext();
 
   const handleRefreshPage = useCallback(async () => {
@@ -46,11 +50,7 @@ const ZDAOInfoCard = ({ zDAO, zNA }: { zDAO?: zDAO | null; zNA?: string }) => {
   }, [refreshzDAO, zNA]);
 
   return (
-    <Card
-      title={`${zDAO?.name ?? ''} - ${
-        (zDAO?.options as Snapshot.ZDAOOptions).ens
-      }`}
-    >
+    <Card title={`${zDAO?.name ?? ''} - ${zDAO?.ens}`}>
       {!zDAO || refreshing ? (
         <Loader />
       ) : (
@@ -135,7 +135,7 @@ const ZDAOInfoCard = ({ zDAO, zNA }: { zDAO?: zDAO | null; zNA?: string }) => {
 
 interface ProposalCardProps {
   zNA: string;
-  proposal: Proposal;
+  proposal: Snapshot.SnapshotProposal;
 }
 
 const ProposalCard = ({ zNA, proposal }: ProposalCardProps) => {
@@ -213,7 +213,7 @@ const ListProposal = () => {
 
   const [proposals, setProposals] = useState<{
     loading: boolean;
-    list: Proposal[];
+    list: Snapshot.SnapshotProposal[];
   }>({
     loading: true,
     list: [],
@@ -295,7 +295,7 @@ const ListProposal = () => {
               w={'full'}
             >
               {zNA &&
-                proposals.list.map((proposal: Proposal) => (
+                proposals.list.map((proposal: Snapshot.SnapshotProposal) => (
                   <ProposalCard
                     key={proposal.id}
                     zNA={zNA}
