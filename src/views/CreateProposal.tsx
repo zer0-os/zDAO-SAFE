@@ -164,7 +164,6 @@ const CreateProposal = () => {
         title,
         body,
         transfer: {
-          abi,
           sender: zDAO.gnosisSafe,
           recipient,
           token,
@@ -180,7 +179,6 @@ const CreateProposal = () => {
         title,
         body,
         transfer: {
-          abi,
           sender: zDAO.gnosisSafe,
           recipient,
           token,

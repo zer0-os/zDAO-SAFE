@@ -88,7 +88,9 @@ const Voting = () => {
   const zDAO = useCurrentZDAO(zNA);
 
   const [proposalLoading, setProposalLoading] = useState(true);
-  const [proposal, setProposal] = useState<Polygon.Proposal | undefined>();
+  const [proposal, setProposal] = useState<
+    Polygon.PolygonProposal | undefined
+  >();
   const [votesLoading, setVotesLoading] = useState(true);
   const [votes, setVotes] = useState<Vote[] | undefined>();
   const [collectHashesLoading, setCollectHashesLoading] = useState<boolean>(
@@ -108,7 +110,7 @@ const Voting = () => {
 
     setProposalLoading(true);
     const item = await zDAO.getProposal(proposalId);
-    setProposal(item as Polygon.Proposal);
+    setProposal(item as Polygon.PolygonProposal);
 
     if (account) {
       const vp = await item.getVotingPowerOfUser(account);
@@ -183,7 +185,7 @@ const Voting = () => {
           isClosable: true,
         });
       }
-      await handleRefreshPage();
+      await proposal.updateScoresAndVotes();
     } catch (error: any) {
       console.error('Vote', error);
       if (toast) {
@@ -239,9 +241,7 @@ const Voting = () => {
       setProcessingTx(true);
       try {
         await proposal.finalize(library, account, {
-          options: {
-            txHash: txhash,
-          },
+          txHash: txhash,
         });
         if (toast) {
           toast({
@@ -501,7 +501,7 @@ const Voting = () => {
                             value={vote.voter}
                           />
                           <Text textAlign="center">
-                            {proposal.choices[vote.choice]}
+                            {proposal.choices[vote.choice - 1]}
                           </Text>
                           <Text textAlign="right">
                             {getFormatedValue(vote.votes)}
@@ -577,6 +577,7 @@ const Voting = () => {
                       />
 
                       <Badge
+                        alignItems="center"
                         textAlign="center"
                         rounded="full"
                         p="1"
@@ -585,7 +586,9 @@ const Voting = () => {
                       >
                         {proposal.state}
                       </Badge>
-                      <Text>{ProposalStateText(proposal.state)}</Text>
+                      <Text alignItems="center">
+                        {ProposalStateText(proposal.state)}
+                      </Text>
 
                       <Text>Start Date</Text>
                       <Text>

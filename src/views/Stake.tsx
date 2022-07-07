@@ -12,7 +12,7 @@ import {
 } from '@chakra-ui/react';
 import { MaxUint256 } from '@ethersproject/constants';
 import { JsonRpcProvider } from '@ethersproject/providers';
-import { Polygon, SupportedChainId } from '@zero-tech/zdao-sdk';
+import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
 import { Contract } from 'ethers';
 import React, {
@@ -113,7 +113,7 @@ const Stake = () => {
   useEffect(() => {
     const fetch = async () => {
       if (!zDAO || !account || !instance) return;
-      const childToken = (zDAO.options as Polygon.ZDAOOptions).polygonToken;
+      const childToken = zDAO.polygonToken;
       updateValue('erc20', childToken.token);
 
       const contract = new Contract(
@@ -133,7 +133,7 @@ const Stake = () => {
   useEffect(() => {
     const fetch = async () => {
       if (!account || !zDAO || !instance) return;
-      const childToken = (zDAO.options as Polygon.ZDAOOptions).polygonToken;
+      const childToken = zDAO.polygonToken;
 
       const staked = await instance.staking.stakedERC20Amount(
         account,
@@ -347,7 +347,7 @@ const Stake = () => {
               <Text>
                 {getFullDisplayBalance(
                   new BigNumber(staked),
-                  (zDAO.options as Polygon.ZDAOOptions).polygonToken.decimals,
+                  zDAO.polygonToken.decimals,
                 )}
               </Text>
             ) : (

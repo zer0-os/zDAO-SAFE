@@ -15,10 +15,9 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import {
-  Proposal,
+  Polygon,
   ProposalState,
   SupportedChainId,
-  zDAO as zDAOType,
   zDAOState,
 } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
@@ -42,7 +41,7 @@ const ZDAOInfoCard = ({
   zDAO,
   zNA,
 }: {
-  zDAO?: zDAOType | null;
+  zDAO?: Polygon.PolygonZDAO | null;
   zNA?: string;
 }) => {
   const { refreshzDAO, refreshing } = useSdkContext();
@@ -141,7 +140,7 @@ const ProposalCard = ({
   proposal,
 }: {
   zNA: string;
-  proposal: Proposal;
+  proposal: Polygon.PolygonProposal;
 }) => {
   const { account } = useActiveWeb3React();
   const textColor = useColorModeValue('gray.700', 'gray.400');
@@ -218,7 +217,7 @@ const ListProposal = () => {
 
   const [proposals, setProposals] = useState<{
     loading: boolean;
-    list: Proposal[];
+    list: Polygon.PolygonProposal[];
   }>({
     loading: true,
     list: [],
@@ -233,7 +232,7 @@ const ListProposal = () => {
 
         setProposals({
           loading: false,
-          list: list.reverse(),
+          list,
         });
       } catch (error) {
         console.error(error);

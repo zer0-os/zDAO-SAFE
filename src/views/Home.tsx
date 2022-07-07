@@ -8,7 +8,7 @@ import {
   useColorModeValue,
   VStack,
 } from '@chakra-ui/react';
-import { zDAO } from '@zero-tech/zdao-sdk';
+import { Polygon } from '@zero-tech/zdao-sdk';
 import { formatBytes32String } from 'ethers/lib/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
@@ -18,7 +18,7 @@ import Card from '../components/Card';
 import { useSdkContext } from '../hooks/useSdkContext';
 import { shortenAddress } from '../utils/address';
 
-const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
+const ZDAOBlock = ({ zDAO }: { zDAO: Polygon.PolygonZDAO }) => {
   const textColor = useColorModeValue('gray.700', 'gray.400');
 
   return (

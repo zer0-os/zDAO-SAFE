@@ -1945,24 +1945,24 @@
     strip-json-comments "^3.1.1"
 
 "@ethereumjs/block@^3.6.2":
-  version "3.6.2"
-  resolved "https://registry.yarnpkg.com/@ethereumjs/block/-/block-3.6.2.tgz#63d1e26d0b7a7a3684fce920de6ebabec1e5b674"
-  integrity sha512-mOqYWwMlAZpYUEOEqt7EfMFuVL2eyLqWWIzcf4odn6QgXY8jBI2NhVuJncrMCKeMZrsJAe7/auaRRB6YcdH+Qw==
+  version "3.6.3"
+  resolved "https://registry.yarnpkg.com/@ethereumjs/block/-/block-3.6.3.tgz#d96cbd7af38b92ebb3424223dbf773f5ccd27f84"
+  integrity sha512-CegDeryc2DVKnDkg5COQrE0bJfw/p0v3GBk2W5/Dj5dOVfEmb50Ux0GLnSPypooLnfqjwFaorGuT9FokWB3GRg==
   dependencies:
-    "@ethereumjs/common" "^2.6.3"
-    "@ethereumjs/tx" "^3.5.1"
-    ethereumjs-util "^7.1.4"
+    "@ethereumjs/common" "^2.6.5"
+    "@ethereumjs/tx" "^3.5.2"
+    ethereumjs-util "^7.1.5"
     merkle-patricia-tree "^4.2.4"
 
-"@ethereumjs/common@^2.5.0", "@ethereumjs/common@^2.6.3", "@ethereumjs/common@^2.6.4":
-  version "2.6.4"
-  resolved "https://registry.yarnpkg.com/@ethereumjs/common/-/common-2.6.4.tgz#1b3cdd3aa4ee3b0ca366756fc35e4a03022a01cc"
-  integrity sha512-RDJh/R/EAr+B7ZRg5LfJ0BIpf/1LydFgYdvZEuTraojCbVypO2sQ+QnpP5u2wJf9DASyooKqu8O4FJEWUV6NXw==
+"@ethereumjs/common@^2.5.0", "@ethereumjs/common@^2.6.4", "@ethereumjs/common@^2.6.5":
+  version "2.6.5"
+  resolved "https://registry.yarnpkg.com/@ethereumjs/common/-/common-2.6.5.tgz#0a75a22a046272579d91919cb12d84f2756e8d30"
+  integrity sha512-lRyVQOeCDaIVtgfbowla32pzeDv2Obr8oR8Put5RdUBNRGr1VGPGQNGP6elWIpgK3YdpzqTOh4GyUGOureVeeA==
   dependencies:
     crc-32 "^1.2.0"
-    ethereumjs-util "^7.1.4"
+    ethereumjs-util "^7.1.5"
 
-"@ethereumjs/tx@^3.3.2", "@ethereumjs/tx@^3.5.1":
+"@ethereumjs/tx@^3.3.2", "@ethereumjs/tx@^3.5.2":
   version "3.5.2"
   resolved "https://registry.yarnpkg.com/@ethereumjs/tx/-/tx-3.5.2.tgz#197b9b6299582ad84f9527ca961466fce2296c1c"
   integrity sha512-gQDNJWKrSDGu2w7w0PzVXVBNMzb7wwdDOmOqczmhNjqFxFuIbhVJDwiGEnxFNC2/b8ifcZzY7MLcluizohRzNw==
@@ -4319,8 +4319,8 @@
   integrity sha512-NuHqBY1PB/D8xU6s/thBgOAiAP7HOYDQ32+BFZILJ8ivkUkAHQnWfn6WhL79Owj1qmUnoN/YPhktdIoucipkAQ==
 
 "@zero-tech/zdao-sdk@github:zer0-os/zdao-sdk#fix/refactor-merge":
-  version "0.3.0"
-  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/4af9246a1be22b5176a3ccd8958d1108bd28a390"
+  version "0.4.4"
+  resolved "https://codeload.github.com/zer0-os/zdao-sdk/tar.gz/129e23e1e7afb6a6c2c61f878867f091cb1ea973"
   dependencies:
     "@fleekhq/fleek-storage-js" "1.0.21"
     "@gnosis.pm/safe-core-sdk" "2.0.0"
@@ -4768,9 +4768,9 @@ available-typed-arrays@^1.0.5:
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
 aws-sdk@^2.814.0, aws-sdk@^2.989.0:
-  version "2.1159.0"
-  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1159.0.tgz#64d585ac608d58e6ff62678be71a4c4ca61ca5dc"
-  integrity sha512-zm3k/ufwZnkWc6M+HDz00CWuILot4L9kJ5VJsuDS9fwsT9To6k91Y1njCtIV4tcgcXvUru0Sbm4D0w5bc2847A==
+  version "2.1169.0"
+  resolved "https://registry.yarnpkg.com/aws-sdk/-/aws-sdk-2.1169.0.tgz#06c910092e0dd97ac884ce0939a69c062308184a"
+  integrity sha512-zBJXLih/iBueYt7hDednt7Jncb+6wzUjDh6JMdl2e0A61xb+Z5o0NNkjbJTUJELdx96u3R4+yil0DoRTOipksA==
   dependencies:
     buffer "4.9.2"
     events "1.1.1"
@@ -11544,9 +11544,9 @@ multicodec@^1.0.0:
     varint "^5.0.0"
 
 multiformats@^9.4.7:
-  version "9.6.5"
-  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-9.6.5.tgz#f2d894a26664b454a90abf5a8911b7e39195db80"
-  integrity sha512-vMwf/FUO+qAPvl3vlSZEgEVFY/AxeZq5yg761ScF3CZsXgmTi/HGkicUiNN0CI4PW8FiY2P0OLklOcmQjdQJhw==
+  version "9.7.0"
+  resolved "https://registry.yarnpkg.com/multiformats/-/multiformats-9.7.0.tgz#845799e8df70fbb6b15922500e45cb87cf12f7e5"
+  integrity sha512-uv/tcgwk0yN4DStopnBN4GTgvaAlYdy6KnZpuzEPFOYQd71DYFJjs0MN1ERElAflrZaYyGBWXyGxL5GgrxIx0Q==
 
 multihashes@^0.4.15, multihashes@~0.4.15:
   version "0.4.21"
@@ -11657,9 +11657,9 @@ node-forge@^0.10.0:
   integrity sha512-PPmu8eEeG9saEUvI97fm4OYxXVB6bFvyNTyiUOBichBpFG8A1Ljw3bY62+5oOjDEMHRnd0Y7HQ+x7uzxOzC6JA==
 
 node-gyp-build@^4.2.0, node-gyp-build@^4.3.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.4.0.tgz#42e99687ce87ddeaf3a10b99dc06abc11021f3f4"
-  integrity sha512-amJnQCcgtRVw9SvoebO3BKGESClrfXGCUTX9hSn1OuGQTQBOZmVd0Z0OlecpuRksKvbsUqALE8jls/ErClAPuQ==
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/node-gyp-build/-/node-gyp-build-4.5.0.tgz#7a64eefa0b21112f89f58379da128ac177f20e40"
+  integrity sha512-2iGbaQBV+ITgCz76ZEjmhUKAKVf7xfY1sRl4UiKQspfZMH2h06SyhNsnSVy50cwkFQDGLyif6m/6uFXHkOZ6rg==
 
 node-int64@^0.4.0:
   version "0.4.0"
