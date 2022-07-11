@@ -17,26 +17,16 @@ import {
   zDAOAssets,
 } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
-import { SyntheticEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
 import { Link, useParams } from 'react-router-dom';
 
-import TokenPlaceHolder from '../assets/icons/token_placeholder.svg';
 import { Loader } from '../components/Loader';
 import { getFullDisplayBalance } from '../config/constants/number';
-import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
 import { shortenAddress } from '../utils/address';
 
-const setImageToPlaceholder = (
-  event: SyntheticEvent<HTMLImageElement, Event>
-): void => {
-  const image = event.currentTarget;
-  image.src = TokenPlaceHolder;
-};
-
 const GnosisSafe = () => {
-  const { chainId } = useActiveWeb3React();
   const { zNA } = useParams();
   const zDAO = useCurrentZDAO(zNA);
 

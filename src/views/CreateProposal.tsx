@@ -75,7 +75,7 @@ const CreateProposal = () => {
     startDateTime,
     snapshot,
     abi,
-    sender,
+    // sender,
     recipient,
     token,
     amount,
