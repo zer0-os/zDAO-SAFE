@@ -64,7 +64,10 @@ const Home = () => {
         <SimpleGrid columns={{ base: 1, sm: 2, md: 3 }} spacing={8}>
           {zDAOs &&
             zDAOs.map(
-              (dao) => !dao.destroyed && <ZDAOBlock key={dao.id} zDAO={dao} />
+              (dao, key) =>
+                !dao.destroyed && (
+                  <ZDAOBlock key={`${key}-${dao.id}`} zDAO={dao} />
+                )
             )}
         </SimpleGrid>
       </VStack>
