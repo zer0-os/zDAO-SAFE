@@ -187,6 +187,7 @@ const CreateProposal = () => {
             .multipliedBy(extendToDecimals(tokenType.decimals))
             .toString(),
         },
+        duration: period,
         choices: Choices,
         snapshot: blockNumber,
       });
@@ -216,7 +217,7 @@ const CreateProposal = () => {
       }
     }
     setExecuting(false);
-  }, [zNA, zDAO, library, chainId, account]);
+  }, [zNA, zDAO, library, chainId, account, state]);
 
   return (
     <Container as={Stack} maxW={'7xl'}>
