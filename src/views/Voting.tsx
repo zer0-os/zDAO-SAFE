@@ -39,10 +39,7 @@ import Card from '../components/Card';
 import { EventCountDown } from '../components/CountDown';
 import { Loader } from '../components/Loader';
 import ReactMarkdown from '../components/ReactMarkDown';
-import {
-  getFormatedValue,
-  getFullDisplayBalance,
-} from '../config/constants/number';
+import { getFullDisplayBalance } from '../config/constants/number';
 import { ProposalStateText } from '../config/constants/text';
 import useActiveWeb3React from '../hooks/useActiveWeb3React';
 import useCurrentZDAO from '../hooks/useCurrentZDAO';
@@ -396,7 +393,7 @@ const Voting = () => {
                               <Text>
                                 {getFullDisplayBalance(
                                   new BigNumber(votingPower),
-                                  0,
+                                  zDAO.votingToken.decimals,
                                 )}
                               </Text>
                             </Stack>
@@ -504,7 +501,10 @@ const Voting = () => {
                             {proposal.choices[vote.choice - 1]}
                           </Text>
                           <Text textAlign="right">
-                            {getFormatedValue(vote.votes)}
+                            {getFullDisplayBalance(
+                              new BigNumber(vote.votes),
+                              zDAO.votingToken.decimals,
+                            )}
                           </Text>
                         </SimpleGrid>
                       ))
@@ -577,6 +577,8 @@ const Voting = () => {
                       />
 
                       <Badge
+                        display="flex"
+                        justifyContent="center"
                         alignItems="center"
                         textAlign="center"
                         rounded="full"
@@ -633,7 +635,12 @@ const Voting = () => {
                               max={100}
                               value={getPercentage(proposal.scores, index)}
                             />
-                            <Text>{proposal.scores[index]}</Text>
+                            <Text>
+                              {getFullDisplayBalance(
+                                new BigNumber(proposal.scores[index]),
+                                zDAO.votingToken.decimals,
+                              )}
+                            </Text>
                           </>
                         ) : (
                           <Loader />
@@ -658,9 +665,12 @@ const Voting = () => {
                       {proposal.state !== ProposalState.PENDING &&
                       proposal.scores ? (
                         <Text>
-                          {new BigNumber(proposal.scores[0])
-                            .plus(new BigNumber(proposal.scores[1]))
-                            .toString()}
+                          {getFullDisplayBalance(
+                            new BigNumber(proposal.scores[0]).plus(
+                              new BigNumber(proposal.scores[1]),
+                            ),
+                            zDAO.votingToken.decimals,
+                          )}
                         </Text>
                       ) : (
                         <Loader />
@@ -753,7 +763,7 @@ const Voting = () => {
                       )}
                     </>
                   ) : (
-                    proposal.state === ProposalState.BRIDGING && (
+                    proposal.state === ProposalState.AWAITING_EXECUTION && (
                       <>
                         {chainId && chainId !== SupportedChainId.GOERLI && (
                           <Button

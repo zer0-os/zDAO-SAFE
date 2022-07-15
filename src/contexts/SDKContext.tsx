@@ -26,7 +26,6 @@ const SDKProvider = ({ children }: SDKContextProps) => {
   const [instance, setInstance] = useState<
     Polygon.PolygonSDKInstance | undefined
   >(undefined);
-  const [zNAs, setZNAs] = useState<zNA[]>([]);
   const [zDAOs, setZDAOs] = useState<Polygon.PolygonZDAO[]>([]);
   const [refreshing, setRefreshing] = useState<boolean>(false);
 
@@ -51,10 +50,6 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     });
 
     const sdk = await Polygon.createSDKInstance(config);
-
-    const zNAAssociates = await sdk.listZNAs();
-    console.log('all the associated zNAs', zNAAssociates);
-    setZNAs(zNAAssociates);
 
     const zDAOsList = await sdk.listZDAOs();
     console.log('zDAOs', zDAOsList);
@@ -94,7 +89,6 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       value={{
         isInitialized: initialized,
         instance,
-        zNAs,
         zDAOs,
         refreshzDAO,
         refreshing,
