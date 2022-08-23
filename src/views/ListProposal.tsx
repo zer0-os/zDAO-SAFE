@@ -94,9 +94,13 @@ const ZDAOInfoCard = ({
             value={zDAO.votingToken.token}
           />
           <Text>Minimum Token Holding</Text>
-          <Text>{getFullDisplayBalance(new BigNumber(zDAO.amount))}</Text>
+          <Text>
+            {getFullDisplayBalance(
+              new BigNumber(zDAO.minimumVotingTokenAmount),
+            )}
+          </Text>
           <Text>Duration</Text>
-          <Text>{time2string(zDAO.duration)}</Text>
+          <Text>{time2string(zDAO.votingDuration)}</Text>
           <Text>Voting Threshold</Text>
           <Text>
             {zDAO.votingThreshold && `${zDAO.votingThreshold / 100.0}%`}

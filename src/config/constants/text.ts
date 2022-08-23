@@ -23,7 +23,7 @@ export const ProposalStateText = (state: ProposalState): string => {
     return 'Finalizing voting rsult';
   }
   if (state === ProposalState.AWAITING_EXECUTION) {
-    return 'Proposal can be executable';
+    return 'Proposal is executable';
   }
   if (state === ProposalState.FAILED) {
     return 'Proposal was failed';

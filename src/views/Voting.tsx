@@ -198,7 +198,7 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, account, proposal, toast, handleRefreshPage, myChoice]);
+  }, [zDAO, library, account, proposal, toast, myChoice]);
 
   const handleCollectProposal = useCallback(async () => {
     if (!zDAO || !library || !account || !proposal) return;

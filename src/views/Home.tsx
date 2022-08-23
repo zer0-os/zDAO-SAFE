@@ -9,7 +9,6 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import { Polygon } from '@zero-tech/zdao-sdk';
-import { formatBytes32String } from 'ethers/lib/utils';
 import React from 'react';
 import { Link } from 'react-router-dom';
 
@@ -21,6 +20,8 @@ import { shortenAddress } from '../utils/address';
 const ZDAOBlock = ({ zDAO }: { zDAO: Polygon.PolygonZDAO }) => {
   const textColor = useColorModeValue('gray.700', 'gray.400');
 
+  console.log('zDAO', zDAO);
+
   return (
     <Link
       to={`/${zDAO.zNAs[0]}`}
@@ -31,7 +32,7 @@ const ZDAOBlock = ({ zDAO }: { zDAO: Polygon.PolygonZDAO }) => {
           <Box position="relative" width="82px" height="82px">
             <Blockie
               alt={zDAO.name}
-              seed={formatBytes32String(zDAO.name)}
+              seed={zDAO.name}
               rounded="full"
               width="full"
               height="full"

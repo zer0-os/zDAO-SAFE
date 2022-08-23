@@ -1,6 +1,6 @@
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Polygon, zNA } from '@zero-tech/zdao-sdk';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { env } from '../config/env';
 import { useAppDispatch } from '../states';
@@ -9,7 +9,6 @@ import { ApplicationStatus, setApplicationStatus } from '../states/application';
 interface SDKContextValue {
   isInitialized: boolean;
   instance?: Polygon.PolygonSDKInstance;
-  zNAs: string[];
   zDAOs: Polygon.PolygonZDAO[];
   refreshzDAO: (zNA: zNA) => Promise<void>;
   refreshing: boolean;
@@ -31,15 +30,24 @@ const SDKProvider = ({ children }: SDKContextProps) => {
 
   const dispatch = useAppDispatch();
 
+  const ethereumProvider = useMemo(
+    () => new JsonRpcProvider(env.ethereum.rpcUrl, env.ethereum.network),
+    [],
+  );
+
+  const polygonProvider = useMemo(
+    () => new JsonRpcProvider(env.polygon.rpcUrl, env.polygon.network),
+    [],
+  );
+
   const createInstance = useCallback(async () => {
     console.log('creating instance');
     console.time('createInstance');
 
     setInitialized(false);
     const config = Polygon.developmentConfiguration({
-      ethereum: env.ethereum,
-      polygon: env.polygon,
-      zNA: env.zNA,
+      ethereumProvider,
+      polygonProvider,
       proof: env.proof,
       fleek: env.fleek,
       ipfsGateway: env.ipfsGateway,
@@ -49,7 +57,9 @@ const SDKProvider = ({ children }: SDKContextProps) => {
       ),
     });
 
+    console.time('createSDKInstance');
     const sdk = await Polygon.createSDKInstance(config);
+    console.timeEnd('createSDKInstance');
 
     const zDAOsList = await sdk.listZDAOs();
     console.log('zDAOs', zDAOsList);
@@ -60,7 +70,7 @@ const SDKProvider = ({ children }: SDKContextProps) => {
 
     dispatch(setApplicationStatus({ appStatus: ApplicationStatus.LIVE }));
     console.timeEnd('createInstance');
-  }, [dispatch]);
+  }, [dispatch, ethereumProvider, polygonProvider]);
 
   const refreshzDAO = useCallback(
     async (zNA: zNA) => {

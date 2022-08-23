@@ -153,19 +153,19 @@ const CreateZDAO = () => {
         name,
         network: SupportedChainId.GOERLI,
         gnosisSafe,
-        token: erc20 || (erc721 ?? ''),
-        amount: erc20Amount
+        votingToken: erc20 || (erc721 ?? ''),
+        minimumVotingTokenAmount: erc20Amount
           ? new BigNumber(erc20Amount)
               .multipliedBy(extendToDecimals())
               .toString()
-          : '1',
-        duration,
-        options: {
-          votingThreshold: Math.floor(votingThreshold * 100),
-          isRelativeMajority,
-          minimumVotingParticipants,
-          minimumTotalVotingTokens,
-        },
+          : '0',
+        votingDuration: duration,
+        votingThreshold: Math.floor(votingThreshold * 100),
+        isRelativeMajority,
+        minimumVotingParticipants,
+        minimumTotalVotingTokens: new BigNumber(minimumTotalVotingTokens)
+          .multipliedBy(extendToDecimals())
+          .toString(),
       });
 
       if (toast) {

@@ -30,7 +30,7 @@ export const env = {
     apiKey: process.env.REACT_APP_FLEEK_API_KEY!,
     apiSecret: process.env.REACT_APP_FLEEK_API_SECRET!,
   },
-  ipfsGateway: 'snapshot.mypinata.cloud',
+  ipfsGateway: 'zer0.infura-ipfs.io', // 'ipfs.fleek.co', // 'snapshot.mypinata.cloud',
   zNSProvider: {
     rpcUrl: process.env.REACT_APP_RINKEBY_RPC_URL!,
     network: SupportedChainId.RINKEBY,

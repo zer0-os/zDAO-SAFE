@@ -1,6 +1,7 @@
 import {
   Button,
   Container,
+  Flex,
   Heading,
   Input,
   Select,
@@ -41,6 +42,7 @@ import { setupNetwork } from '../utils/wallet';
 interface ProposalFormat {
   title: string;
   body: string;
+  choices: string[];
   startDateTime: Date;
   snapshot: number;
   abi: string;
@@ -58,6 +60,7 @@ const CreateProposal = () => {
   const [state, setState] = useState<ProposalFormat>({
     title: '',
     body: '',
+    choices: ['', ''],
     startDateTime: new Date(),
     snapshot: 0,
     abi: JSON.stringify(TransferAbi),
@@ -69,6 +72,7 @@ const CreateProposal = () => {
   const {
     title,
     body,
+    choices,
     startDateTime,
     snapshot,
     abi,
@@ -103,7 +107,7 @@ const CreateProposal = () => {
 
   const updateValue = (
     key: string,
-    value: string | number | Date | BigNumber | boolean,
+    value: string | number | Date | BigNumber | boolean | string[],
   ) => {
     setState((prevState) => ({
       ...prevState,
@@ -135,6 +139,16 @@ const CreateProposal = () => {
 
   const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
+    if (inputName.startsWith('choices')) {
+      const choiceIndex = Number(inputName.replace('choices', '')) - 1;
+      updateValue(
+        'choices',
+        choices.map((choice, index) =>
+          index === choiceIndex ? value : choice,
+        ),
+      );
+      return;
+    }
     updateValue(inputName, value);
   };
 
@@ -178,6 +192,7 @@ const CreateProposal = () => {
       const proposalId = await zDAO.createProposal(library, account, {
         title,
         body,
+        choices: choices.filter((choice) => choice.length > 0),
         transfer: {
           sender: zDAO.gnosisSafe,
           recipient,
@@ -227,11 +242,20 @@ const CreateProposal = () => {
     navigate,
     title,
     body,
-    abi,
+    choices,
     recipient,
     token,
     amount,
   ]);
+
+  const handleAddNewChoice = useCallback(async () => {
+    if (choices.length < 32) {
+      return;
+    }
+    const newChoices = [...choices];
+    newChoices.push('');
+    updateValue('choices', newChoices);
+  }, [choices]);
 
   return (
     <Container as={Stack} maxW="7xl">
@@ -283,6 +307,37 @@ const CreateProposal = () => {
             ></Textarea> */}
 
               <ReactMdEditor body={body} onChange={handleBodyChange} />
+
+              <Card title="Voting Choices">
+                <Flex direction="row">
+                  <Stack spacing={2} direction="column" flex={1}>
+                    {Array.from(
+                      { length: choices.length },
+                      (_, k) => k + 1,
+                    ).map((value) => (
+                      <Input
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`${value}`}
+                        borderColor={borderColor}
+                        fontSize="md"
+                        name={`choices${value}`}
+                        onChange={handleInputChange}
+                        placeholder={`Choice ${value}`}
+                        size="md"
+                        value={choices[value - 1]}
+                        _hover={{
+                          borderRadius: 'gray.900',
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                  <Stack direction="row" marginLeft={2} alignItems="flex-end">
+                    <PrimaryButton onClick={handleAddNewChoice}>
+                      +
+                    </PrimaryButton>
+                  </Stack>
+                </Flex>
+              </Card>
 
               <Card title="Transfer tokens">
                 <Stack spacing={2} direction="column">
@@ -393,7 +448,7 @@ const CreateProposal = () => {
                     alignItems="center"
                   >
                     <Text>Duration</Text>
-                    <Text>{time2string(zDAO.duration)}</Text>
+                    <Text>{time2string(zDAO.votingDuration)}</Text>
 
                     {account && (
                       <>
@@ -415,7 +470,9 @@ const CreateProposal = () => {
 
                     <Text>Minimum Token Holding</Text>
                     <Text>
-                      {getFullDisplayBalance(new BigNumber(zDAO.amount))}
+                      {getFullDisplayBalance(
+                        new BigNumber(zDAO.minimumVotingTokenAmount),
+                      )}
                     </Text>
 
                     <Text>Voting Type</Text>
