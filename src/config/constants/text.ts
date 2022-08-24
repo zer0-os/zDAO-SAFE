@@ -20,13 +20,13 @@ export const ProposalStateText = (state: ProposalState): string => {
     return 'Calculating voting result';
   }
   if (state === ProposalState.AWAITING_FINALIZATION) {
-    return 'Finalizing voting rsult';
+    return 'Finalizing voting result';
   }
   if (state === ProposalState.AWAITING_EXECUTION) {
     return 'Proposal is executable';
   }
-  if (state === ProposalState.FAILED) {
-    return 'Proposal was failed';
+  if (state === ProposalState.CLOSED) {
+    return 'Proposal was closed';
   }
   return 'Successfully executed';
 };
