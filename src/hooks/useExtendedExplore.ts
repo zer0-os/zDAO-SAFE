@@ -1,10 +1,10 @@
+import Client from '@snapshot-labs/snapshot.js';
+import orderBy from 'lodash/orderBy';
+import { useEffect, useState } from 'react';
+
 import { IPFS_GATEWAY, SNAPSHOT_HUB } from '@/config/constants/snapshot';
 import verified from '@/config/verified.json';
 import { useChainId } from '@/states/application/hooks';
-import Client from '@snapshot-labs/snapshot.js';
-import { useEffect, useState } from 'react';
-import orderBy from 'lodash/orderBy';
-import { SupportedChainId } from '@/config/constants/chain';
 
 const useExtendedExplore = () => {
   const [loading, setLoading] = useState(false);

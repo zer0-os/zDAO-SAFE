@@ -1,4 +1,4 @@
-import { SupportedChainId } from './chain';
+import { SupportedChainId } from '@zero-tech/zdao-sdk';
 
 const INFURA_KEY = process.env.REACT_APP_INFURA_KEY;
 if (typeof INFURA_KEY === 'undefined') {
@@ -8,13 +8,13 @@ if (typeof INFURA_KEY === 'undefined') {
 }
 
 export const INFURA_NETWORK_URLS: { [key in SupportedChainId]: string } = {
-  [SupportedChainId.ETHEREUM]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
+  [SupportedChainId.MAINNET]: `https://mainnet.infura.io/v3/${INFURA_KEY}`,
   [SupportedChainId.ROPSTEN]: `https://ropsten.infura.io/v3/${INFURA_KEY}`,
   [SupportedChainId.RINKEBY]: `https://rinkeby.infura.io/v3/${INFURA_KEY}`,
 };
 
 export const SCAN_EXPLORER_URLS: { [key in SupportedChainId]: string } = {
-  [SupportedChainId.ETHEREUM]: 'https://etherscan.io/',
+  [SupportedChainId.MAINNET]: 'https://etherscan.io/',
   [SupportedChainId.ROPSTEN]: 'https://ropsten.etherscan.io/',
   [SupportedChainId.RINKEBY]: 'https://rinkeby.etherscan.io/',
 };

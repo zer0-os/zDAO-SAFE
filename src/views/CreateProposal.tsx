@@ -1,23 +1,7 @@
-import TransferAbi from '@/config/abi/transfer.json';
-import { SPACE_ID } from '@/config/constants/snapshot';
-import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
-import { DECIMALS, extendToDecimals } from '@/config/constants/number';
 import {
-  MAINNET_TOKEN_LIST,
-  TESTNET_TOKEN_LIST,
-  getToken,
-} from '@/config/constants/tokens';
-import { SupportedChainId } from '@/config/constants/chain';
-import { LinkButton, PrimaryButton } from '@/components/Button';
-import Card from '@/components/Card';
-import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
-import useActiveWeb3React from '@/hooks/useActiveWeb3React';
-import useClient from '@/hooks/useClient';
-import useExtendedSpace from '@/hooks/useExtendedSpace';
-import { useBlockNumber } from '@/states/application/hooks';
-import { SpinnerIcon } from '@chakra-ui/icons';
-import {
+  Button,
   Container,
+  Flex,
   Heading,
   Input,
   Select,
@@ -25,16 +9,35 @@ import {
   Stack,
   Text,
   useColorModeValue,
+  useToast,
   VStack,
 } from '@chakra-ui/react';
+import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import BigNumber from 'bignumber.js';
-import { addSeconds, format } from 'date-fns';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
-
-import { useNavigate } from 'react-router-dom';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { IoArrowBack } from 'react-icons/io5';
-import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
+import { useNavigate, useParams } from 'react-router-dom';
+
+import { LinkButton, PrimaryButton } from '@/components/Button';
+import ConnectWalletButton from '@/components/Button/ConnectWalletButton';
+import Card from '@/components/Card';
+import { Loader } from '@/components/Loader';
 import ReactMdEditor from '@/components/ReactMdEditor';
+import TransferAbi from '@/config/abi/transfer.json';
+import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
+import {
+  DECIMALS,
+  extendToDecimals,
+  getFullDisplayBalance,
+} from '@/config/constants/number';
+import { getToken, TESTNET_TOKEN_LIST } from '@/config/constants/tokens';
+import useActiveWeb3React from '@/hooks/useActiveWeb3React';
+import useCurrentZDAO from '@/hooks/useCurrentZDAO';
+import { useBlockNumber } from '@/states/application/hooks';
+import { time2string } from '@/utils/strings';
+import { setupNetwork } from '@/utils/wallet';
+
+import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 
 const Choices = ['Yes', 'No'];
 
@@ -48,6 +51,7 @@ const Periods = {
 interface ProposalFormat {
   title: string;
   body: string;
+  choices: ['', ''];
   startDateTime: Date;
   snapshot: number;
   abi: string;
@@ -58,9 +62,14 @@ interface ProposalFormat {
 }
 
 const CreateProposal = () => {
+  const { zNA } = useParams();
+  const zDAO = useCurrentZDAO(zNA);
+  const toast = useToast();
+
   const [state, setState] = useState<ProposalFormat>({
     title: '',
     body: '',
+    choices: ['', ''],
     startDateTime: new Date(),
     snapshot: 0,
     abi: JSON.stringify(TransferAbi),
@@ -72,6 +81,7 @@ const CreateProposal = () => {
   const {
     title,
     body,
+    choices,
     startDateTime,
     snapshot,
     abi,
@@ -80,21 +90,21 @@ const CreateProposal = () => {
     token,
     amount,
   } = state;
-  const { account, chainId } = useActiveWeb3React();
+  const { account, chainId, library } = useActiveWeb3React();
   const navigate = useNavigate();
-  const { sendEIP712, clientLoading } = useClient();
   const blockNumber = useBlockNumber();
-  const { space, spaceLoading } = useExtendedSpace(SPACE_ID);
-  const [period, setPeriod] = useState(86400);
   const borderColor = useColorModeValue('gray.200', 'gray.600');
+  const [executing, setExecuting] = useState<boolean>(false);
 
   const isValid =
     !!account &&
+    chainId === SupportedChainId.RINKEBY &&
     title.length > 0 &&
     body.length > 0 &&
     // token.length > 0 &&
     recipient.length > 0 &&
-    Number(amount) > 0;
+    Number(amount) > 0 &&
+    !executing;
 
   useEffect(() => {
     if (blockNumber)
@@ -106,7 +116,7 @@ const CreateProposal = () => {
 
   const updateValue = (
     key: string,
-    value: string | number | Date | BigNumber
+    value: string | number | Date | BigNumber | boolean | string[]
   ) => {
     setState((prevState) => ({
       ...prevState,
@@ -122,26 +132,25 @@ const CreateProposal = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const tokenList = useMemo(() => {
-    if (!chainId) return MAINNET_TOKEN_LIST;
-
-    if (chainId === SupportedChainId.ETHEREUM) {
-      return MAINNET_TOKEN_LIST;
-    }
-
-    return TESTNET_TOKEN_LIST;
-  }, [chainId]);
-
   const handleBodyChange = (text: string) => {
     updateValue('body', text);
   };
 
-  const handleSelectToken = (evt) => {
-    updateValue('token', evt.target.value);
+  const handleSelectChange = (evt: ChangeEvent<HTMLSelectElement>) => {
+    const { name: inputName, value } = evt.currentTarget;
+    updateValue(inputName, value);
   };
 
   const handleInputChange = (evt: ChangeEvent<HTMLInputElement>) => {
     const { name: inputName, value } = evt.currentTarget;
+    if (inputName.startsWith('choices')) {
+      const choiceIndex = Number(inputName.replace('choices', '')) - 1;
+      updateValue(
+        'choices',
+        choices.map((choice, index) => (index === choiceIndex ? value : choice))
+      );
+      return;
+    }
     updateValue(inputName, value);
   };
 
@@ -157,73 +166,136 @@ const CreateProposal = () => {
     }
   };
 
-  const handleSubmitProposal = async () => {
+  const handleSubmitProposal = useCallback(async () => {
+    if (!chainId) return;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const tokenType = getToken(chainId!, token);
     if (!tokenType) {
       return;
     }
-    const payload = {
-      from: account,
-      space: SPACE_ID,
-      timestamp: parseInt((new Date().getTime() / 1e3).toFixed()),
-      type: 'single-choice',
-      title,
-      body,
-      choices: Choices,
-      start: Math.floor(startDateTime.getTime() / 1e3),
-      end: Math.floor(addSeconds(startDateTime, period).getTime() / 1e3),
-      snapshot: blockNumber,
-      plugins: {},
-      metadata: {
-        abi,
-        sender,
-        recipient,
-        token,
-        amount: new BigNumber(amount)
-          .multipliedBy(extendToDecimals(tokenType?.decimals))
-          .toString(),
-      },
-    };
-    // console.log(payload);
-    const resp = await sendEIP712(space, 'proposal', payload);
-    if (resp && resp.id) {
-      navigate(`/voting/${resp.id}`);
+    if (!zDAO || !library || !account) return;
+
+    setExecuting(true);
+    try {
+      console.log('proposal params', {
+        title,
+        body,
+        transfer: {
+          sender: zDAO.safeAddress,
+          recipient,
+          token,
+          decimals: tokenType.decimals,
+          symbol: tokenType.symbol,
+          amount: new BigNumber(amount)
+            .multipliedBy(extendToDecimals(tokenType.decimals))
+            .toString(),
+        },
+      });
+
+      const proposalId = await zDAO.createProposal(library, account, {
+        title,
+        body,
+        choices: choices.filter((choice) => choice.length > 0),
+        transfer: {
+          sender: zDAO.safeAddress,
+          recipient,
+          token,
+          decimals: tokenType.decimals,
+          symbol: tokenType.symbol,
+          amount: new BigNumber(amount)
+            .multipliedBy(extendToDecimals(tokenType.decimals))
+            .toString(),
+        },
+      });
+      console.log('Proposal created, id', proposalId);
+
+      if (toast) {
+        toast({
+          title: 'Proposal created',
+          description: "We've created your proposal.",
+          status: 'success',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
+
+      navigate(`/${zNA}/${proposalId}`);
+    } catch (error: any) {
+      console.error('Proposal creation error', error);
+      if (toast) {
+        toast({
+          title: 'Error',
+          description: `Failed to create a proposal - ${
+            error.data?.message ?? error.message
+          }`,
+          status: 'error',
+          duration: 4000,
+          isClosable: true,
+        });
+      }
     }
-  };
+    setExecuting(false);
+  }, [
+    zNA,
+    zDAO,
+    chainId,
+    library,
+    toast,
+    navigate,
+    title,
+    body,
+    choices,
+    recipient,
+    token,
+    amount,
+  ]);
+
+  const handleAddNewChoice = useCallback(async () => {
+    if (choices.length < 32) {
+      return;
+    }
+    const newChoices = [...choices];
+    newChoices.push('');
+    updateValue('choices', newChoices);
+  }, [choices]);
 
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <LinkButton href={'/'}>
+        <LinkButton href={`/${zNA}`}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
           </Stack>
         </LinkButton>
 
-        <Stack
-          spacing={12}
-          flex={2}
-          direction={{ base: 'column', md: 'row' }}
-          w={'full'}
-        >
-          <VStack spacing={6} flex={1}>
-            {/* Proposal title & content */}
-            <Input
-              borderColor={borderColor}
-              fontSize={'md'}
-              name={'title'}
-              onChange={handleInputChange}
-              placeholder={'Proposal title'}
-              size={'lg'}
-              value={title}
-              _hover={{
-                borderRadius: 'gray.300',
-              }}
-              required
-            ></Input>
-            {/* <Textarea
+        {!zDAO ? (
+          <Stack justifyContent="center">
+            <Loader />
+          </Stack>
+        ) : (
+          <Stack
+            spacing={12}
+            flex={2}
+            direction={{ base: 'column', md: 'row' }}
+            w={'full'}
+          >
+            <VStack spacing={6} flex={1}>
+              {/* Proposal title & content */}
+              <Input
+                borderColor={borderColor}
+                fontSize={'md'}
+                name={'title'}
+                onChange={handleInputChange}
+                placeholder={'Proposal title'}
+                size={'lg'}
+                value={title}
+                _hover={{
+                  borderRadius: 'gray.300',
+                }}
+                required
+              ></Input>
+              {/* <Textarea
               borderColor={borderColor}
               fontSize={'md'}
               name={'body'}
@@ -236,37 +308,67 @@ const CreateProposal = () => {
               }}
             ></Textarea> */}
 
-            <ReactMdEditor body={body} onChange={handleBodyChange} />
+              <ReactMdEditor body={body} onChange={handleBodyChange} />
 
-            <Card title={'Transfer tokens'}>
-              <Stack spacing={2} direction={'column'}>
-                <Select
-                  borderColor={borderColor}
-                  onChange={handleSelectToken}
-                  onClick={handleSelectToken}
-                  defaultValue={token}
-                >
-                  {Object.keys(tokenList).map((key) => (
-                    <option key={key} value={tokenList[key].address}>
-                      {key}
-                    </option>
-                  ))}
-                </Select>
-                <Input
-                  borderColor={borderColor}
-                  fontSize={'md'}
-                  name={'token'}
-                  onChange={handleInputChange}
-                  placeholder={'ERC20 Token Address'}
-                  size={'md'}
-                  value={token}
-                  _hover={{
-                    borderRadius: 'gray.900',
-                  }}
-                  readOnly
-                  required
-                ></Input>
-                {/* <Textarea
+              <Card title="Voting Choices">
+                <Flex direction="row">
+                  <Stack spacing={2} direction="column" flex={1}>
+                    {Array.from(
+                      { length: choices.length },
+                      (_, k) => k + 1
+                    ).map((value) => (
+                      <Input
+                        // eslint-disable-next-line react/no-array-index-key
+                        key={`${value}`}
+                        borderColor={borderColor}
+                        fontSize="md"
+                        name={`choices${value}`}
+                        onChange={handleInputChange}
+                        placeholder={`Choice ${value}`}
+                        size="md"
+                        value={choices[value - 1]}
+                        _hover={{
+                          borderRadius: 'gray.900',
+                        }}
+                      />
+                    ))}
+                  </Stack>
+                  <Stack direction="row" marginLeft={2} alignItems="flex-end">
+                    <PrimaryButton onClick={handleAddNewChoice}>
+                      +
+                    </PrimaryButton>
+                  </Stack>
+                </Flex>
+              </Card>
+
+              <Card title={'Transfer tokens'}>
+                <Stack spacing={2} direction={'column'}>
+                  <Select
+                    borderColor={borderColor}
+                    onChange={handleSelectChange}
+                    defaultValue={token}
+                  >
+                    {Object.keys(TESTNET_TOKEN_LIST).map((key) => (
+                      <option key={key} value={TESTNET_TOKEN_LIST[key].address}>
+                        {key}
+                      </option>
+                    ))}
+                  </Select>
+                  <Input
+                    borderColor={borderColor}
+                    fontSize={'md'}
+                    name={'token'}
+                    onChange={handleInputChange}
+                    placeholder={'ERC20 Token Address'}
+                    size={'md'}
+                    value={token}
+                    _hover={{
+                      borderRadius: 'gray.900',
+                    }}
+                    readOnly
+                    required
+                  ></Input>
+                  {/* <Textarea
                   borderColor={borderColor}
                   fontSize={'md'}
                   name={'abi'}
@@ -280,7 +382,7 @@ const CreateProposal = () => {
                     borderRadius: 'gray.900',
                   }}
                 ></Textarea> */}
-                {/* <Input
+                  {/* <Input
                   borderColor={'gray.300'}
                   fontSize={'md'}
                   name={'sender'}
@@ -294,116 +396,157 @@ const CreateProposal = () => {
                   }}
                   required
                 ></Input> */}
-                <Input
-                  borderColor={borderColor}
-                  fontSize={'md'}
-                  name={'recipient'}
-                  onChange={handleInputChange}
-                  placeholder={'Recipient Address'}
-                  size={'md'}
-                  value={recipient}
-                  _hover={{
-                    borderRadius: 'gray.900',
-                  }}
-                  required
-                ></Input>
-                <SimpleGrid
-                  columns={2}
-                  spacing={4}
-                  templateColumns={{ base: '1fr 100px' }}
-                  justifyContent={'center'}
-                  alignItems={'center'}
-                >
                   <Input
                     borderColor={borderColor}
                     fontSize={'md'}
-                    name={'amount'}
-                    inputMode={'decimal'}
-                    min={0}
-                    pattern={`^[0-9]*[.,]?[0-9]{0,${DECIMALS}}$`}
-                    placeholder={'Trasnfer Token Amount'}
+                    name={'recipient'}
+                    onChange={handleInputChange}
+                    placeholder={'Recipient Address'}
                     size={'md'}
-                    value={amount}
-                    onChange={handleAmountChange}
+                    value={recipient}
                     _hover={{
                       borderRadius: 'gray.900',
                     }}
                     required
                   ></Input>
-                  <Text textAlign={'center'}>Tokens</Text>
-                </SimpleGrid>
-              </Stack>
-            </Card>
-          </VStack>
-
-          {/* Action */}
-          <VStack width={{ base: 'full', sm: '400px' }}>
-            <Card title={'Action'}>
-              <Stack spacing={4} direction={'column'}>
-                <SimpleGrid
-                  columns={2}
-                  templateColumns={{ base: '1fr 2fr' }}
-                  alignItems={'center'}
-                >
-                  <Text>Period</Text>
-                  <Select
-                    onChange={(evt) => setPeriod(Number(evt.target.value))}
-                    value={period.toString()}
+                  <SimpleGrid
+                    columns={2}
+                    spacing={4}
+                    templateColumns={{ base: '1fr 100px' }}
+                    justifyContent={'center'}
+                    alignItems={'center'}
                   >
-                    {Object.keys(Periods).map((key) => (
-                      <option key={key} value={key}>
-                        {Periods[key]}
-                      </option>
-                    ))}
-                  </Select>
-                </SimpleGrid>
+                    <Input
+                      borderColor={borderColor}
+                      fontSize={'md'}
+                      name={'amount'}
+                      inputMode={'decimal'}
+                      min={0}
+                      pattern={`^[0-9]*[.,]?[0-9]{0,${DECIMALS}}$`}
+                      placeholder={'Trasnfer Token Amount'}
+                      size={'md'}
+                      value={amount}
+                      onChange={handleAmountChange}
+                      _hover={{
+                        borderRadius: 'gray.900',
+                      }}
+                      required
+                    ></Input>
+                    <Text textAlign={'center'}>Tokens</Text>
+                  </SimpleGrid>
+                </Stack>
+              </Card>
+            </VStack>
 
-                <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
-                  <Text>Start DateTime</Text>
-                  <Text>{format(startDateTime, 'yyyy-MM-dd HH:mm:ss')}</Text>
-                </SimpleGrid>
-                <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
-                  <Text>End DateTime</Text>
-                  <Text>
-                    {format(
-                      addSeconds(startDateTime, period),
-                      'yyyy-MM-dd HH:mm:ss'
+            {/* Action */}
+            <VStack width={{ base: 'full', sm: '400px' }}>
+              <Card title={'Action'}>
+                <Stack spacing={4} direction={'column'}>
+                  <SimpleGrid
+                    columns={2}
+                    templateColumns={{ base: '1fr 2fr' }}
+                    alignItems={'center'}
+                  >
+                    <Text>Duration</Text>
+                    <Text>{time2string(zDAO.duration)}</Text>
+
+                    {account && (
+                      <>
+                        <Text>Creator</Text>
+                        <LinkExternal
+                          chainId={SupportedChainId.RINKEBY}
+                          type={ExternalLinkType.address}
+                          value={account}
+                        />
+                      </>
                     )}
-                  </Text>
-                </SimpleGrid>
 
-                {account && (
-                  <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
-                    <Text>Creator</Text>
+                    <Text>Voting Token</Text>
                     <LinkExternal
+                      chainId={SupportedChainId.RINKEBY}
                       type={ExternalLinkType.address}
-                      value={account}
+                      value={zDAO.votingToken.token}
+                    />
+
+                    <Text>Minimum Token Holding</Text>
+                    <Text>
+                      {getFullDisplayBalance(
+                        new BigNumber(zDAO.minimumTotalVotingTokens)
+                      )}
+                    </Text>
+
+                    <Text>Voting Type</Text>
+                    <Text>
+                      {zDAO.isRelativeMajority
+                        ? 'Relative Majority'
+                        : 'Absolute Majority'}
+                    </Text>
+
+                    <Text>Minimum Voting Participants</Text>
+                    <Text>{zDAO.minimumVotingParticipants}</Text>
+
+                    <Text>Minimum Total Voting Tokens</Text>
+                    <Text>
+                      {getFullDisplayBalance(
+                        new BigNumber(zDAO.minimumTotalVotingTokens),
+                        zDAO.votingToken.decimals
+                      )}
+                    </Text>
+                  </SimpleGrid>
+
+                  {account && (
+                    <SimpleGrid
+                      columns={2}
+                      templateColumns={{ base: '1fr 2fr' }}
+                    >
+                      <Text>Creator</Text>
+                      <LinkExternal
+                        chainId={SupportedChainId.RINKEBY}
+                        type={ExternalLinkType.address}
+                        value={account}
+                      />
+                    </SimpleGrid>
+                  )}
+                  <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
+                    <Text>Snapshot</Text>
+                    <LinkExternal
+                      chainId={SupportedChainId.RINKEBY}
+                      type={ExternalLinkType.block}
+                      value={snapshot}
                     />
                   </SimpleGrid>
-                )}
-                <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
-                  <Text>Snapshot</Text>
-                  <LinkExternal
-                    type={ExternalLinkType.block}
-                    value={snapshot}
-                  />
-                </SimpleGrid>
 
-                {account ? (
-                  <PrimaryButton
-                    disabled={clientLoading || spaceLoading || !isValid}
-                    leftIcon={clientLoading ? <SpinnerIcon /> : undefined}
-                    onClick={handleSubmitProposal}
-                  >
-                    Publish
-                  </PrimaryButton>
-                ) : (
-                  <ConnectWalletButton />
-                )}
-              </Stack>
-            </Card>
-          </VStack>
-        </Stack>
+                  {account ? (
+                    <>
+                      {chainId && chainId !== SupportedChainId.RINKEBY && (
+                        <Button
+                          borderWidth="1px"
+                          borderRadius="md"
+                          px={4}
+                          py={2}
+                          _hover={{
+                            borderColor,
+                          }}
+                          onClick={() => setupNetwork(SupportedChainId.RINKEBY)}
+                        >
+                          <Heading size="sm">Switch to Rinkeby</Heading>
+                        </Button>
+                      )}
+                      <PrimaryButton
+                        disabled={!isValid}
+                        onClick={handleSubmitProposal}
+                      >
+                        Publish
+                      </PrimaryButton>
+                    </>
+                  ) : (
+                    <ConnectWalletButton />
+                  )}
+                </Stack>
+              </Card>
+            </VStack>
+          </Stack>
+        )}
       </VStack>
     </Container>
   );

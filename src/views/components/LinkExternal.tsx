@@ -1,30 +1,34 @@
-import LinkButton from '@/components/Button/LinkButton';
-import useActiveWeb3React from '@/hooks/useActiveWeb3React';
-import { getExternalLink, shortenAddress } from '@/utils/address';
-import { shortenProposalId } from '@/utils/proposal';
 import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Stack, Text } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
+import LinkButton from '@/components/Button/LinkButton';
+import { getExternalLink, shortenAddress, shortenTx } from '@/utils/address';
+
 export enum ExternalLinkType {
   address = 'address',
+  tx = 'tx',
   block = 'block',
   proposal = 'proposal',
 }
 
 const LinkExternal = ({
+  chainId,
   type,
   value,
+  shortenize = true,
 }: {
+  chainId: number;
   type: ExternalLinkType;
   value: string | number;
+  shortenize?: boolean;
 }) => {
-  const { chainId } = useActiveWeb3React();
-
   const link = useMemo(() => {
-    if (!chainId) return '';
-
-    if (type === ExternalLinkType.address || type === ExternalLinkType.block) {
+    if (
+      type === ExternalLinkType.address ||
+      type === ExternalLinkType.tx ||
+      type === ExternalLinkType.block
+    ) {
       return getExternalLink(chainId, type, value);
     }
     return '';
@@ -32,18 +36,22 @@ const LinkExternal = ({
 
   const display = useMemo(() => {
     if (type === ExternalLinkType.address) {
-      return shortenAddress(value as string);
-    } else if (type === ExternalLinkType.proposal) {
-      return shortenProposalId(value as string);
+      return shortenize ? shortenAddress(value as string) : (value as string);
+    }
+    if (type === ExternalLinkType.tx) {
+      return shortenize ? shortenTx(value as string) : (value as string);
+    }
+    if (type === ExternalLinkType.proposal) {
+      return value as string;
     }
     return value;
-  }, [type, value]);
+  }, [type, shortenize, value]);
 
   return (
     <LinkButton href={link} isExternal>
-      <Stack direction={'row'} spacing={2} alignItems={'center'}>
+      <Stack direction="row" spacing={2} alignItems="center">
         <Text>{display}</Text>
-        <ExternalLinkIcon mx={'2px'} />
+        <ExternalLinkIcon mx="2px" />
       </Stack>
     </LinkButton>
   );

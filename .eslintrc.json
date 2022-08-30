@@ -9,7 +9,9 @@
     "@typescript-eslint",
     "@typescript-eslint/eslint-plugin",
     "react",
-    "prettier"
+    "prettier",
+    "unused-imports",
+    "simple-import-sort"
   ],
   "rules": {
     "@typescript-eslint/interface-name-prefix": "off",
@@ -19,10 +21,13 @@
     "prettier/prettier": ["error", {"semi": true}],
     "max-len": 0,
     "@typescript-eslint/require-await": "off",
+    "unused-imports/no-unused-imports": "error",
     "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/camelcase": "off",
     "@typescript-eslint/no-misused-promises": "off",
-    "semi": ["error", "always"]
+    "semi": ["error", "always"],
+    "simple-import-sort/exports": "error",
+    "simple-import-sort/imports": "error"
   },
   "globals": {
     "React": "writable"

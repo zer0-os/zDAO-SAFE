@@ -1,6 +1,11 @@
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import { useSelector } from 'react-redux';
+import { ApplicationStatus } from '.';
 import { AppState } from '../';
+
+export const useApplicationStatus = (): ApplicationStatus => {
+  return useSelector((state: AppState) => state.application.applicationStatus);
+};
 
 export function useBlockNumber(): number | undefined {
   const { chainId } = useActiveWeb3React();

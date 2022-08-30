@@ -1,12 +1,15 @@
 import { useColorModeValue } from '@chakra-ui/color-mode';
-import Loader from '@/components/Loader';
-import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
-import { Header } from '@/components/Header';
 import BigNumber from 'bignumber.js';
 import { lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import styled from 'styled-components';
-import useEagerConnect from './hooks/useEagerConnect';
+
+import { Header } from '@/components/Header';
+import { FullScreenLoader, Loader } from '@/components/Loader';
+import SuspenseWithChunkError from '@/components/SuspenseWithChunkError';
+import useEagerConnect from '@/hooks/useEagerConnect';
+import { ApplicationStatus } from '@/states/application';
+import { useApplicationStatus } from '@/states/application/hooks';
 
 const GnosisSafe = lazy(() => import('@/views/GnosisSafe'));
 const Home = lazy(() => import('@/views/Home'));
@@ -42,6 +45,12 @@ function App() {
   const color = useColorModeValue('#F7FAFC', '#060514');
   useEagerConnect();
 
+  const applicationStatus = useApplicationStatus();
+
+  if (applicationStatus === ApplicationStatus.INITIAL) {
+    return <FullScreenLoader />;
+  }
+
   return (
     <AppWrapper>
       <Header />
@@ -50,10 +59,13 @@ function App() {
           <SuspenseWithChunkError fallback={<Loader />}>
             <Routes>
               <Route path="/" element={<Home />}></Route>
-              <Route path="/:space" element={<ListProposal />}></Route>
-              <Route path="/gnosis-safe" element={<GnosisSafe />}></Route>
-              <Route path="/create" element={<CreateProposal />}></Route>
-              <Route path="/voting/:id" element={<Voting />}></Route>
+              <Route path="/:zNA" element={<ListProposal />}></Route>
+              <Route path="/:zNA/:proposalId" element={<Voting />}></Route>
+              <Route path="/:zNA/gnosis-safe" element={<GnosisSafe />}></Route>
+              <Route
+                path="/:zNA/create-proposal"
+                element={<CreateProposal />}
+              ></Route>
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>
           </SuspenseWithChunkError>

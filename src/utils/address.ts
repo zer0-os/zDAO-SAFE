@@ -1,5 +1,6 @@
-import { SCAN_EXPLORER_URLS } from '@/config/constants/infura';
 import { getAddress } from '@ethersproject/address';
+
+import { SCAN_EXPLORER_URLS } from '@/config/constants/infura';
 
 /**
  * Calculate the checksummed address
@@ -27,6 +28,12 @@ export const shortenAddress = (address: string, chars = 4): string => {
     return address;
   }
   return `${parsed.substring(0, chars + 2)}...${parsed.substring(42 - chars)}`;
+};
+
+export const shortenTx = (txhash: string, chars = 4): string => {
+  return `${txhash.substring(0, chars + 2)}...${txhash.substring(
+    txhash.length - chars
+  )}`;
 };
 
 export const getExternalLink = (
