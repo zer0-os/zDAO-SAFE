@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
 import { /* UnsupportedChainIdError, */ useWeb3React } from '@web3-react/core';
+import { useCallback, useState } from 'react';
+
 // import {
 //   NoEthereumProviderError,
 //   UserRejectedRequestError as UserRejectedRequestErrorInjected,
@@ -9,8 +10,8 @@ import { /* UnsupportedChainIdError, */ useWeb3React } from '@web3-react/core';
 //   WalletConnectConnector,
 // } from '@web3-react/walletconnect-connector';
 import {
-  ConnectorNames,
   connectorLocalStorageKey,
+  ConnectorNames,
   CONNECTORS_BY_NAMES,
 } from '@/config/constants/wallet';
 

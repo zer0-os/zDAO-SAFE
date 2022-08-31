@@ -1,5 +1,6 @@
-import useIsWindowVisible from '@/hooks/useIsWindowVisible';
 import React, { useEffect, useState } from 'react';
+
+import useIsWindowVisible from '@/hooks/useIsWindowVisible';
 
 const FAST_INTERVAL = 10000;
 const SLOW_INTERVAL = 60000;

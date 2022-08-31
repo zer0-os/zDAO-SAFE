@@ -1,8 +1,11 @@
-import ApplicationUpdater from '@/states/application/updater';
+import './index.css';
+
 import React from 'react';
 import ReactDOM from 'react-dom';
+
+import ApplicationUpdater from '@/states/application/updater';
+
 import App from './App';
-import './index.css';
 import Providers from './Providers';
 import reportWebVitals from './reportWebVitals';
 

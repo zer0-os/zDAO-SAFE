@@ -1,6 +1,6 @@
 import { getAddress } from '@ethersproject/address';
 
-import { SCAN_EXPLORER_URLS } from '@/config/constants/infura';
+import { SCAN_EXPLORER_URLS } from '@/config/constants/network';
 
 /**
  * Calculate the checksummed address

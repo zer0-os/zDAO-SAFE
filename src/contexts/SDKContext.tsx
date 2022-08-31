@@ -1,3 +1,4 @@
+import { JsonRpcProvider } from '@ethersproject/providers';
 import {
   createSDKInstance,
   developmentConfiguration,
@@ -6,11 +7,11 @@ import {
   zNA,
 } from '@zero-tech/zdao-sdk';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { JsonRpcProvider } from '@ethersproject/providers';
 
 import { env } from '@/config/env';
-import { useAppDispatch } from '../states';
 import { ApplicationStatus, setApplicationStatus } from '@/states/application';
+
+import { useAppDispatch } from '../states';
 
 interface SDKContextValue {
   instance?: SDKInstance;

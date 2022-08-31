@@ -24,7 +24,6 @@ import Card from '@/components/Card';
 import { Loader } from '@/components/Loader';
 import ReactMdEditor from '@/components/ReactMdEditor';
 import TransferAbi from '@/config/abi/transfer.json';
-import { SAFE_ADDRESS } from '@/config/constants/gnosis-safe';
 import {
   DECIMALS,
   extendToDecimals,
@@ -73,7 +72,7 @@ const CreateProposal = () => {
     startDateTime: new Date(),
     snapshot: 0,
     abi: JSON.stringify(TransferAbi),
-    sender: SAFE_ADDRESS,
+    sender: '',
     recipient: '',
     token: '',
     amount: 0,
@@ -173,7 +172,7 @@ const CreateProposal = () => {
     if (!tokenType) {
       return;
     }
-    if (!zDAO || !library || !account) return;
+    if (!zDAO || !library || !account || !blockNumber) return;
 
     setExecuting(true);
     try {
@@ -196,6 +195,7 @@ const CreateProposal = () => {
         title,
         body,
         choices: choices.filter((choice) => choice.length > 0),
+        snapshot: blockNumber,
         transfer: {
           sender: zDAO.safeAddress,
           recipient,
@@ -248,15 +248,18 @@ const CreateProposal = () => {
     recipient,
     token,
     amount,
+    blockNumber,
   ]);
 
   const handleAddNewChoice = useCallback(async () => {
-    if (choices.length < 32) {
+    if (choices.length > 32) {
       return;
     }
     const newChoices = [...choices];
     newChoices.push('');
     updateValue('choices', newChoices);
+
+    console.log('newChoices', newChoices);
   }, [choices]);
 
   return (
@@ -444,6 +447,7 @@ const CreateProposal = () => {
                 <Stack spacing={4} direction={'column'}>
                   <SimpleGrid
                     columns={2}
+                    spacing={4}
                     templateColumns={{ base: '1fr 2fr' }}
                     alignItems={'center'}
                   >

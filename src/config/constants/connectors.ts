@@ -1,10 +1,11 @@
 import { InjectedConnector } from '@web3-react/injected-connector';
+import { SupportedChainId } from '@zero-tech/zdao-sdk';
+
 // import { WalletConnectConnector } from '@web3-react/walletconnect-connector';
-import { ALL_SUPPORTED_CHAIN_IDS } from './chain';
 // import { INFURA_NETWORK_URLS } from './infura';
 
 export const injected = new InjectedConnector({
-  supportedChainIds: ALL_SUPPORTED_CHAIN_IDS,
+  supportedChainIds: [SupportedChainId.RINKEBY],
 });
 
 // export const walletconnect = new WalletConnectConnector({

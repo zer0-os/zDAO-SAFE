@@ -34,7 +34,7 @@ export default function Loader({
 }) {
   const borderColor = useColorModeValue(
     'var(--chakra-colors-gray-700)',
-    'var(--chakra-colors-gray-300)',
+    'var(--chakra-colors-gray-300)'
   );
 
   return (
