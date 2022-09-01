@@ -38,15 +38,6 @@ import { setupNetwork } from '@/utils/wallet';
 
 import LinkExternal, { ExternalLinkType } from './components/LinkExternal';
 
-const Choices = ['Yes', 'No'];
-
-const Periods = {
-  300: '5 Minutes',
-  900: '15 Minutes',
-  3600: '1 Hour',
-  86400: '1 Day',
-};
-
 interface ProposalFormat {
   title: string;
   body: string;
@@ -101,8 +92,8 @@ const CreateProposal = () => {
     title.length > 0 &&
     body.length > 0 &&
     // token.length > 0 &&
-    recipient.length > 0 &&
-    Number(amount) > 0 &&
+    // recipient.length > 0 &&
+    // Number(amount) > 0 &&
     !executing;
 
   useEffect(() => {
@@ -179,6 +170,7 @@ const CreateProposal = () => {
       console.log('proposal params', {
         title,
         body,
+        choices: choices.filter((choice) => choice.length > 0),
         transfer: {
           sender: zDAO.safeAddress,
           recipient,
@@ -196,16 +188,19 @@ const CreateProposal = () => {
         body,
         choices: choices.filter((choice) => choice.length > 0),
         snapshot: blockNumber,
-        transfer: {
-          sender: zDAO.safeAddress,
-          recipient,
-          token,
-          decimals: tokenType.decimals,
-          symbol: tokenType.symbol,
-          amount: new BigNumber(amount)
-            .multipliedBy(extendToDecimals(tokenType.decimals))
-            .toString(),
-        },
+        transfer:
+          amount > 0
+            ? {
+                sender: zDAO.safeAddress,
+                recipient,
+                token,
+                decimals: tokenType.decimals,
+                symbol: tokenType.symbol,
+                amount: new BigNumber(amount)
+                  .multipliedBy(extendToDecimals(tokenType.decimals))
+                  .toString(),
+              }
+            : undefined,
       });
       console.log('Proposal created, id', proposalId);
 
@@ -258,14 +253,12 @@ const CreateProposal = () => {
     const newChoices = [...choices];
     newChoices.push('');
     updateValue('choices', newChoices);
-
-    console.log('newChoices', newChoices);
   }, [choices]);
 
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <LinkButton href={`/${zNA}`}>
+        <LinkButton to={`/${zNA}`}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
@@ -348,6 +341,7 @@ const CreateProposal = () => {
                 <Stack spacing={2} direction={'column'}>
                   <Select
                     borderColor={borderColor}
+                    name="token"
                     onChange={handleSelectChange}
                     defaultValue={token}
                   >

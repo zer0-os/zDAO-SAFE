@@ -1,15 +1,25 @@
-import { Link, LinkProps } from '@chakra-ui/react';
+import { Box, TextProps } from '@chakra-ui/react';
 import React from 'react';
+import { Link, To } from 'react-router-dom';
 
-interface LinkButtonProps extends LinkProps {
+interface LinkButtonProps extends TextProps {
+  to: To;
+  isExternal?: boolean;
   children: React.ReactNode;
 }
 
-const LinkButton = ({ children, ...props }: LinkButtonProps) => {
+const LinkButton = ({
+  to,
+  isExternal = false,
+  children,
+  ...props
+}: LinkButtonProps) => {
   return (
-    <Link _hover={{ textDecoration: 'none' }} {...props}>
-      {children}
-    </Link>
+    <Box _hover={{ textDecoration: 'none' }} {...props}>
+      <Link to={to} target={isExternal ? '_blank' : '_self'}>
+        {children}
+      </Link>
+    </Box>
   );
 };
 

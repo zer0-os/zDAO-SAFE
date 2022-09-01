@@ -36,6 +36,12 @@ export const shortenTx = (txhash: string, chars = 4): string => {
   )}`;
 };
 
+export const shortenProposal = (proposalId: string, chars = 4): string => {
+  return `${proposalId.substring(0, chars + 2)}...${proposalId.substring(
+    proposalId.length - chars
+  )}`;
+};
+
 export const getExternalLink = (
   chainId: number,
   type: string,

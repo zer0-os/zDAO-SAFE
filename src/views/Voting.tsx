@@ -36,7 +36,10 @@ import Card from '@/components/Card';
 import { EventCountDown } from '@/components/CountDown';
 import { Loader } from '@/components/Loader';
 import ReactMarkdown from '@/components/ReactMarkDown';
-import { getFullDisplayBalance } from '@/config/constants/number';
+import {
+  extendToDecimals,
+  getFullDisplayBalance,
+} from '@/config/constants/number';
 import { ProposalStateText } from '@/config/constants/text';
 import useActiveWeb3React from '@/hooks/useActiveWeb3React';
 import useCurrentZDAO from '@/hooks/useCurrentZDAO';
@@ -111,26 +114,23 @@ const Voting = () => {
     handleRefreshPage();
   }, [handleRefreshPage]);
 
+  const handleRefreshVotes = useCallback(async () => {
+    if (!zDAO || !proposal) return;
+
+    setVotesLoading(true);
+    const items = await proposal.listVotes();
+    console.log('votes', items);
+    setVotes(items);
+    setVotesLoading(false);
+  }, [zDAO, proposal]);
+
   useEffect(() => {
-    const fetch = async () => {
-      if (!zDAO || !proposal) return;
-
-      setVotesLoading(true);
-      const items = await proposal.listVotes();
-      console.log('votes', items);
-      setVotes(items);
-      setVotesLoading(false);
-    };
-
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    fetch();
-  }, [proposal, zDAO]);
+    handleRefreshVotes();
+  }, [handleRefreshVotes]);
 
   const alreadyVoted = useMemo(() => {
-    if (!votes) return false;
-    if (votes.find((vote) => vote.voter === account) !== undefined) {
-      return true;
-    }
+    // if (!votes) retuf
     return false;
   }, [votes, account]);
 
@@ -155,6 +155,7 @@ const Voting = () => {
         });
       }
       await proposal.updateScoresAndVotes();
+      handleRefreshVotes();
     } catch (error: any) {
       console.error('Vote', error);
       if (toast) {
@@ -170,39 +171,7 @@ const Voting = () => {
       }
     }
     setProcessingTx(false);
-  }, [zDAO, library, account, proposal, toast, myChoice]);
-
-  const handleExecuteProposal = useCallback(async () => {
-    if (!library || !account || !proposal) return;
-    setProcessingTx(true);
-    try {
-      await proposal.execute(library.getSigner());
-      if (toast) {
-        toast({
-          title: 'Success',
-          description: 'Proposal has been executed. Updating page now ...',
-          status: 'success',
-          duration: 4000,
-          isClosable: true,
-        });
-      }
-      await handleRefreshPage();
-    } catch (error: any) {
-      console.error('Execute proposal', error);
-      if (toast) {
-        toast({
-          title: 'Error',
-          description: `Executing proposal failed - ${
-            error.data?.message ?? error.message
-          }`,
-          status: 'error',
-          duration: 4000,
-          isClosable: true,
-        });
-      }
-    }
-    setProcessingTx(false);
-  }, [library, account, proposal, handleRefreshPage, toast]);
+  }, [zDAO, library, account, proposal, toast, myChoice, handleRefreshVotes]);
 
   const handleShowAll = () => {
     setShowAll(true);
@@ -211,7 +180,7 @@ const Voting = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <LinkButton href={`/${zNA}`}>
+        <LinkButton to={`/${zNA}`}>
           <Stack align={'center'} direction={'row'}>
             <IoArrowBack size={15} />
             <Heading size={'sm'}>Back</Heading>
@@ -252,36 +221,34 @@ const Voting = () => {
                         proposal.metadata.decimals
                       )}
                       token to this address: `}
+                    </Text>
+                    <LinkButton
+                      to={getExternalLink(
+                        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+                        chainId!,
+                        'address',
+                        proposal.metadata.recipient
+                      )}
+                      isExternal
+                    >
+                      {proposal.metadata.recipient}
+                    </LinkButton>
+                    <Text color={textColor}>{`ERC20 token address: `}</Text>
+                    {proposal.metadata.token.length > 0 ? (
                       <LinkButton
-                        href={getExternalLink(
+                        to={getExternalLink(
                           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                           chainId!,
                           'address',
-                          proposal.metadata.recipient
+                          proposal.metadata.token
                         )}
                         isExternal
                       >
-                        {proposal.metadata.recipient}
+                        {proposal.metadata.token}
                       </LinkButton>
-                    </Text>
-                    <Text color={textColor}>
-                      {`ERC20 token address: `}
-                      {proposal.metadata.token.length > 0 ? (
-                        <LinkButton
-                          href={getExternalLink(
-                            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-                            chainId!,
-                            'address',
-                            proposal.metadata.token
-                          )}
-                          isExternal
-                        >
-                          {proposal.metadata.token}
-                        </LinkButton>
-                      ) : (
-                        'ETH'
-                      )}
-                    </Text>
+                    ) : (
+                      'ETH'
+                    )}
                   </Stack>
                 )}
 
@@ -291,12 +258,14 @@ const Voting = () => {
                     <Stack spacing={2} direction={'column'}>
                       {account ? (
                         <>
-                          {votingPower && (
+                          {votingPower !== undefined && (
                             <Stack spacing={2} direction="row">
                               <Text>Your Voting Power</Text>
                               <Text>
                                 {getFullDisplayBalance(
-                                  new BigNumber(votingPower),
+                                  extendToDecimals(
+                                    zDAO.votingToken.decimals
+                                  ).multipliedBy(new BigNumber(votingPower)),
                                   zDAO.votingToken.decimals
                                 )}
                               </Text>
@@ -409,7 +378,9 @@ const Voting = () => {
                           </Text>
                           <Text textAlign="right">
                             {getFullDisplayBalance(
-                              new BigNumber(vote.power),
+                              extendToDecimals(
+                                zDAO.votingToken.decimals
+                              ).multipliedBy(new BigNumber(vote.power)),
                               zDAO.votingToken.decimals
                             )}
                           </Text>
@@ -417,13 +388,13 @@ const Voting = () => {
                       ))
                     )}
                     {!showAll && votes && MAX_VISIBLE_COUNT < votes.length && (
-                      <LinkButton
+                      <Button
                         textAlign="center"
                         width="full"
                         onClick={handleShowAll}
                       >
                         Show All
-                      </LinkButton>
+                      </Button>
                     )}
                   </Stack>
                 </Card>
@@ -598,15 +569,6 @@ const Voting = () => {
                     </SimpleGrid>
                   </Stack>
                 </Card>
-                <Box pt={1} />
-                <PrimaryButton
-                  disabled={
-                    isProcessingTx || chainId !== SupportedChainId.RINKEBY
-                  }
-                  onClick={handleExecuteProposal}
-                >
-                  Execute Proposal
-                </PrimaryButton>
                 <Spacer pt={2} />
               </Stack>
             </Stack>

@@ -2,8 +2,12 @@ import { ExternalLinkIcon } from '@chakra-ui/icons';
 import { Stack, Text } from '@chakra-ui/react';
 import { useMemo } from 'react';
 
-import LinkButton from '@/components/Button/LinkButton';
-import { getExternalLink, shortenAddress, shortenTx } from '@/utils/address';
+import {
+  getExternalLink,
+  shortenAddress,
+  shortenProposal,
+  shortenTx,
+} from '@/utils/address';
 
 export enum ExternalLinkType {
   address = 'address',
@@ -42,18 +46,18 @@ const LinkExternal = ({
       return shortenize ? shortenTx(value as string) : (value as string);
     }
     if (type === ExternalLinkType.proposal) {
-      return value as string;
+      return shortenize ? shortenProposal(value as string) : (value as string);
     }
     return value;
   }, [type, shortenize, value]);
 
   return (
-    <LinkButton href={link} isExternal>
+    <a href={link} target={'_blank'} rel="noreferrer">
       <Stack direction="row" spacing={2} alignItems="center">
         <Text>{display}</Text>
         <ExternalLinkIcon mx="2px" />
       </Stack>
-    </LinkButton>
+    </a>
   );
 };
 

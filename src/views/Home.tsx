@@ -22,7 +22,7 @@ const ZDAOBlock = ({ zDAO }: { zDAO: zDAO }) => {
 
   return (
     <LinkButton
-      href={`/${zDAO.zNAs[0]}`}
+      to={`/${zDAO.zNAs[0]}`}
       style={{ width: '100%', textDecoration: 'none' }}
     >
       <Card height={'100%'} _hover={{ borderColor: textColor }}>

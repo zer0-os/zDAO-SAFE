@@ -40,7 +40,7 @@ const ProposalCard = ({ zNA, proposal }: ProposalCardProps) => {
 
   return (
     <LinkButton
-      href={`/${zNA}/${proposal.id}`}
+      to={`/${zNA}/${proposal.id}`}
       style={{ width: '100%', textDecoration: 'none' }}
     >
       <Card title={proposal.title} _hover={{ borderColor: textColor }}>
@@ -130,7 +130,7 @@ const ListProposal = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <VStack spacing={{ base: 6, sm: 12 }} alignItems={'flex-start'}>
-        <LinkButton href="/">
+        <LinkButton to={'/'}>
           <Stack align="center" direction="row">
             <IoArrowBack size={15} />
             <Heading size="sm">Back</Heading>
@@ -144,7 +144,7 @@ const ListProposal = () => {
         ) : (
           <>
             <Stack direction="row" spacing={2}>
-              <LinkButton href={`/${zNA}/gnosis-safe`}>
+              <LinkButton to={`/${zNA}/gnosis-safe`}>
                 <Button
                   borderWidth="1px"
                   borderRadius="md"
@@ -158,7 +158,7 @@ const ListProposal = () => {
                 </Button>
               </LinkButton>
 
-              <LinkButton href={`/${zNA}/create-proposal`}>
+              <LinkButton to={`/${zNA}/create-proposal`}>
                 <Button
                   borderWidth="1px"
                   borderRadius="md"
@@ -172,7 +172,7 @@ const ListProposal = () => {
                 </Button>
               </LinkButton>
 
-              <LinkButton href={`/${zNA}/stake`}>
+              <LinkButton to={`/${zNA}/stake`}>
                 <Button
                   borderWidth="1px"
                   borderRadius="md"

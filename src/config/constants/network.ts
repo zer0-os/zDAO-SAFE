@@ -2,13 +2,6 @@ import { SupportedChainId } from '@zero-tech/zdao-sdk';
 
 import { env } from '../env';
 
-const INFURA_KEY = process.env.REACT_APP_INFURA_KEY;
-if (typeof INFURA_KEY === 'undefined') {
-  throw new Error(
-    `REACT_APP_INFURA_KEY must be a defined environment variable`
-  );
-}
-
 export const INFURA_NETWORK_URLS: { [key: number]: string } = {
   [SupportedChainId.RINKEBY]: env.ethereum.rpcUrl,
 };

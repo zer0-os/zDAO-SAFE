@@ -64,7 +64,7 @@ const GnosisSafe = () => {
   return (
     <Container as={Stack} maxW={'7xl'}>
       <Stack direction={'column'} spacing={4}>
-        <LinkButton href={`/${zNA}`}>
+        <LinkButton to={`/${zNA}`}>
           <Stack align="center" direction="row">
             <IoArrowBack size={15} />
             <Heading size="sm">Back</Heading>
