@@ -135,18 +135,17 @@ const Voting = () => {
       setVotesLoading(false);
 
       const hashes = await proposal.getCheckPointingHashes();
-      console.log('collected hashes', hashes);
 
       const promises: Promise<boolean>[] = hashes.map((hash) =>
         zDAO.isCheckPointed(hash),
       );
       const checked = await Promise.all(promises);
-      setCollectedHashes(
-        hashes.map((hash, index) => ({
-          hash,
-          isCheckPointed: checked[index],
-        })),
-      );
+      const collectedHashes = hashes.map((hash, index) => ({
+        hash,
+        isCheckPointed: checked[index],
+      }));
+      setCollectedHashes(collectedHashes);
+      console.log('collected hashes', collectedHashes);
       setCollectHashesLoading(false);
     };
 
@@ -269,38 +268,6 @@ const Voting = () => {
     },
     [library, account, proposal, toast, handleRefreshPage],
   );
-
-  const handleExecuteProposal = useCallback(async () => {
-    if (!library || !account || !proposal) return;
-    setProcessingTx(true);
-    try {
-      await proposal.execute(library, account, {});
-      if (toast) {
-        toast({
-          title: 'Success',
-          description: 'Proposal has been executed. Updating page now ...',
-          status: 'success',
-          duration: 4000,
-          isClosable: true,
-        });
-      }
-      await handleRefreshPage();
-    } catch (error: any) {
-      console.error('Execute proposal', error);
-      if (toast) {
-        toast({
-          title: 'Error',
-          description: `Executing proposal failed - ${
-            error.data?.message ?? error.message
-          }`,
-          status: 'error',
-          duration: 4000,
-          isClosable: true,
-        });
-      }
-    }
-    setProcessingTx(false);
-  }, [library, account, proposal, handleRefreshPage, toast]);
 
   const handleShowAll = () => {
     setShowAll(true);
@@ -763,35 +730,7 @@ const Voting = () => {
                       )}
                     </>
                   ) : (
-                    proposal.state === ProposalState.AWAITING_EXECUTION && (
-                      <>
-                        {chainId && chainId !== SupportedChainId.GOERLI && (
-                          <Button
-                            borderWidth="1px"
-                            borderRadius="md"
-                            px={4}
-                            py={2}
-                            _hover={{
-                              borderColor,
-                            }}
-                            onClick={() =>
-                              // eslint-disable-next-line prettier/prettier
-                              setupNetwork(SupportedChainId.GOERLI)}
-                          >
-                            <Heading size="sm">Switch to Goerli</Heading>
-                          </Button>
-                        )}
-                        <PrimaryButton
-                          disabled={
-                            isProcessingTx ||
-                            chainId !== SupportedChainId.GOERLI
-                          }
-                          onClick={handleExecuteProposal}
-                        >
-                          Execute Proposal
-                        </PrimaryButton>
-                      </>
-                    )
+                    <></>
                   )
                 }
                 <Spacer pt={2} />
