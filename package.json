@@ -19,7 +19,7 @@
     "@web3-react/core": "6.1.9",
     "@web3-react/injected-connector": "6.0.7",
     "@web3-react/walletconnect-connector": "6.2.13",
-    "@zero-tech/zdao-sdk": "github:zer0-os/zdao-sdk#merge/update-from-initial",
+    "@zero-tech/zdao-sdk": "github:zer0-os/zdao-sdk#feat/with-polygon",
     "bignumber.js": "9.0.2",
     "date-fns": "2.28.0",
     "ethereum-blockies-base64": "1.0.2",
