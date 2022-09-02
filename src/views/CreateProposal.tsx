@@ -93,8 +93,8 @@ const CreateProposal = () => {
     title.length > 0 &&
     body.length > 0 &&
     // token.length > 0 &&
-    recipient.length > 0 &&
-    Number(amount) > 0 &&
+    // recipient.length > 0 &&
+    // Number(amount) > 0 &&
     !executing;
 
   useEffect(() => {
@@ -193,16 +193,19 @@ const CreateProposal = () => {
         title,
         body,
         choices: choices.filter((choice) => choice.length > 0),
-        transfer: {
-          sender: zDAO.gnosisSafe,
-          recipient,
-          token,
-          decimals: tokenType.decimals,
-          symbol: tokenType.symbol,
-          amount: new BigNumber(amount)
-            .multipliedBy(extendToDecimals(tokenType.decimals))
-            .toString(),
-        },
+        transfer:
+          Number(amount) > 0
+            ? {
+                sender: zDAO.gnosisSafe,
+                recipient,
+                token,
+                decimals: tokenType.decimals,
+                symbol: tokenType.symbol,
+                amount: new BigNumber(amount)
+                  .multipliedBy(extendToDecimals(tokenType.decimals))
+                  .toString(),
+              }
+            : undefined,
       });
       console.log('Proposal created, id', proposalId);
 
@@ -249,7 +252,7 @@ const CreateProposal = () => {
   ]);
 
   const handleAddNewChoice = useCallback(async () => {
-    if (choices.length < 32) {
+    if (choices.length > 32) {
       return;
     }
     const newChoices = [...choices];
@@ -492,6 +495,29 @@ const CreateProposal = () => {
                         zDAO.votingToken.decimals,
                       )}
                     </Text>
+                  </SimpleGrid>
+
+                  {account && (
+                    <SimpleGrid
+                      columns={2}
+                      templateColumns={{ base: '1fr 2fr' }}
+                    >
+                      <Text>Creator</Text>
+                      <LinkExternal
+                        chainId={SupportedChainId.RINKEBY}
+                        type={ExternalLinkType.address}
+                        value={account}
+                      />
+                    </SimpleGrid>
+                  )}
+
+                  <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
+                    <Text>Snapshot</Text>
+                    <LinkExternal
+                      chainId={SupportedChainId.RINKEBY}
+                      type={ExternalLinkType.block}
+                      value={snapshot}
+                    />
                   </SimpleGrid>
 
                   {account ? (
