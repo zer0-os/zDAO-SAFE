@@ -189,7 +189,7 @@ const CreateProposal = () => {
         choices: choices.filter((choice) => choice.length > 0),
         snapshot: blockNumber,
         transfer:
-          amount > 0
+          Number(amount) > 0
             ? {
                 sender: zDAO.safeAddress,
                 recipient,
