@@ -48,7 +48,6 @@ const SDKProvider = ({ children }: SDKContextProps) => {
     const config = Polygon.developmentConfiguration({
       ethereumProvider,
       polygonProvider,
-      proof: env.proof,
       fleek: env.fleek,
       ipfsGateway: env.ipfsGateway,
       zNSProvider: new JsonRpcProvider(
