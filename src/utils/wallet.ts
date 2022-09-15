@@ -1,6 +1,5 @@
 // Set of helper functions to facilitate wallet setup
 
-import { ExternalProvider } from '@ethersproject/providers';
 import { SupportedChainId } from '@zero-tech/zdao-sdk';
 
 const BAD_SRCS: { [imageSrc: string]: true } = {};
@@ -10,11 +9,12 @@ const BAD_SRCS: { [imageSrc: string]: true } = {};
  * @returns {boolean} true if the setup succeeded, false otherwise
  */
 export const setupNetwork = async (
-  requestedChainId: SupportedChainId,
-  externalProvider?: ExternalProvider
+  _: SupportedChainId
+  // externalProvider?: ExternalProvider
+  // requestedChainId: SupportedChainId,
+  // externalProvider?: ExternalProvider
 ) => {
-  const provider = externalProvider || window.ethereum;
-
+  // const provider = externalProvider || window.ethereum;
   // todo
   // if (provider) {
   //   try {
@@ -84,6 +84,7 @@ export const registerToken = async (
       : tokenLogo
     : undefined;
 
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const tokenAdded = await window.ethereum.request!({
     method: 'wallet_watchAsset',
     params: {
