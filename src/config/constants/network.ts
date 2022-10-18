@@ -3,11 +3,11 @@ import { SupportedChainId } from '@zero-tech/zdao-sdk';
 import { env } from '../env';
 
 export const INFURA_NETWORK_URLS: { [key: number]: string } = {
-  [SupportedChainId.RINKEBY]: env.ethereum.rpcUrl,
+  [SupportedChainId.GOERLI]: env.ethereum.rpcUrl,
 };
 
 export const SCAN_EXPLORER_URLS: { [key: number]: string } = {
-  [SupportedChainId.RINKEBY]: 'https://rinkeby.etherscan.io/',
+  [SupportedChainId.GOERLI]: 'https://goerli.etherscan.io/',
 };
 
 interface NativeCurrencyInfo {
@@ -25,15 +25,15 @@ interface NetworkInfo {
 }
 
 export const network: { [key: number]: NetworkInfo } = {
-  [SupportedChainId.RINKEBY]: {
-    chainId: SupportedChainId.RINKEBY,
-    chainName: 'Rinkeby',
+  [SupportedChainId.GOERLI]: {
+    chainId: SupportedChainId.GOERLI,
+    chainName: 'Goerli',
     nativeCurrency: {
       name: 'ETH',
       symbol: 'ETH',
       decimals: 18,
     },
-    blockExplorerUrl: SCAN_EXPLORER_URLS[SupportedChainId.RINKEBY],
-    nodes: [INFURA_NETWORK_URLS[SupportedChainId.RINKEBY]],
+    blockExplorerUrl: SCAN_EXPLORER_URLS[SupportedChainId.GOERLI],
+    nodes: [INFURA_NETWORK_URLS[SupportedChainId.GOERLI]],
   },
 };

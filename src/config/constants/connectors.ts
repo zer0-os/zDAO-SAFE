@@ -5,7 +5,7 @@ import { SupportedChainId } from '@zero-tech/zdao-sdk';
 // import { INFURA_NETWORK_URLS } from './infura';
 
 export const injected = new InjectedConnector({
-  supportedChainIds: [SupportedChainId.RINKEBY],
+  supportedChainIds: [SupportedChainId.GOERLI],
 });
 
 // export const walletconnect = new WalletConnectConnector({

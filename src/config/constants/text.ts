@@ -1,7 +1,7 @@
 import { ProposalState, SupportedChainId } from '@zero-tech/zdao-sdk';
 
 export const ChainText = (chainId: SupportedChainId): string => {
-  if (chainId === SupportedChainId.RINKEBY) return 'Rinkeby';
+  if (chainId === SupportedChainId.GOERLI) return 'Goerli';
   if (chainId === SupportedChainId.MAINNET) return 'Mainnet';
   return '';
 };

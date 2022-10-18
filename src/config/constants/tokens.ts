@@ -42,7 +42,7 @@ export const getToken = (
   chainId: number,
   address: string
 ): TokenType | undefined => {
-  if (chainId === SupportedChainId.RINKEBY) {
+  if (chainId === SupportedChainId.GOERLI) {
     const key = Object.keys(TESTNET_TOKEN_LIST).find(
       (token: string) => TESTNET_TOKEN_LIST[token].address === address
     );

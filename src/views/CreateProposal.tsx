@@ -88,7 +88,7 @@ const CreateProposal = () => {
 
   const isValid =
     !!account &&
-    chainId === SupportedChainId.RINKEBY &&
+    chainId === SupportedChainId.GOERLI &&
     title.length > 0 &&
     body.length > 0 &&
     // token.length > 0 &&
@@ -452,7 +452,7 @@ const CreateProposal = () => {
                       <>
                         <Text>Creator</Text>
                         <LinkExternal
-                          chainId={SupportedChainId.RINKEBY}
+                          chainId={SupportedChainId.GOERLI}
                           type={ExternalLinkType.address}
                           value={account}
                         />
@@ -461,7 +461,7 @@ const CreateProposal = () => {
 
                     <Text>Voting Token</Text>
                     <LinkExternal
-                      chainId={SupportedChainId.RINKEBY}
+                      chainId={SupportedChainId.GOERLI}
                       type={ExternalLinkType.address}
                       value={zDAO.votingToken.token}
                     />
@@ -499,7 +499,7 @@ const CreateProposal = () => {
                     >
                       <Text>Creator</Text>
                       <LinkExternal
-                        chainId={SupportedChainId.RINKEBY}
+                        chainId={SupportedChainId.GOERLI}
                         type={ExternalLinkType.address}
                         value={account}
                       />
@@ -508,7 +508,7 @@ const CreateProposal = () => {
                   <SimpleGrid columns={2} templateColumns={{ base: '1fr 2fr' }}>
                     <Text>Snapshot</Text>
                     <LinkExternal
-                      chainId={SupportedChainId.RINKEBY}
+                      chainId={SupportedChainId.GOERLI}
                       type={ExternalLinkType.block}
                       value={snapshot}
                     />
@@ -516,7 +516,7 @@ const CreateProposal = () => {
 
                   {account ? (
                     <>
-                      {chainId && chainId !== SupportedChainId.RINKEBY && (
+                      {chainId && chainId !== SupportedChainId.GOERLI && (
                         <Button
                           borderWidth="1px"
                           borderRadius="md"
@@ -525,9 +525,9 @@ const CreateProposal = () => {
                           _hover={{
                             borderColor,
                           }}
-                          onClick={() => setupNetwork(SupportedChainId.RINKEBY)}
+                          onClick={() => setupNetwork(SupportedChainId.GOERLI)}
                         >
-                          <Heading size="sm">Switch to Rinkeby</Heading>
+                          <Heading size="sm">Switch to Goerli</Heading>
                         </Button>
                       )}
                       <PrimaryButton

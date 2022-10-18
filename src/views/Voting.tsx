@@ -304,13 +304,13 @@ const Voting = () => {
                             spacing={4}
                             templateColumns={{
                               base:
-                                chainId && chainId !== SupportedChainId.RINKEBY
+                                chainId && chainId !== SupportedChainId.GOERLI
                                   ? '1fr 2fr'
                                   : '1fr',
                             }}
                             alignItems="center"
                           >
-                            {chainId && chainId !== SupportedChainId.RINKEBY && (
+                            {chainId && chainId !== SupportedChainId.GOERLI && (
                               <Button
                                 borderWidth="1px"
                                 borderRadius="md"
@@ -321,7 +321,7 @@ const Voting = () => {
                                 }}
                                 onClick={() =>
                                   // eslint-disable-next-line prettier/prettier
-                                  setupNetwork(SupportedChainId.RINKEBY)
+                                  setupNetwork(SupportedChainId.GOERLI)
                                 }
                               >
                                 <Heading size="sm">Switch to Mumbai</Heading>
@@ -333,7 +333,7 @@ const Voting = () => {
                                 proposalLoading ||
                                 votesLoading ||
                                 proposal.state !== ProposalState.ACTIVE ||
-                                chainId !== SupportedChainId.RINKEBY ||
+                                chainId !== SupportedChainId.GOERLI ||
                                 isProcessingTx
                               }
                               width="full"
@@ -369,7 +369,7 @@ const Voting = () => {
                       sortedVotes.map((vote) => (
                         <SimpleGrid columns={3} key={vote.voter} spacing={10}>
                           <LinkExternal
-                            chainId={SupportedChainId.RINKEBY}
+                            chainId={SupportedChainId.GOERLI}
                             type={ExternalLinkType.address}
                             value={vote.voter}
                           />
@@ -412,7 +412,7 @@ const Voting = () => {
                       {/* identifier */}
                       <Text>Identifier</Text>
                       <LinkExternal
-                        chainId={SupportedChainId.RINKEBY}
+                        chainId={SupportedChainId.GOERLI}
                         type={ExternalLinkType.proposal}
                         value={proposal.id}
                       />
@@ -422,7 +422,7 @@ const Voting = () => {
                         <>
                           <Text>Creator</Text>
                           <LinkExternal
-                            chainId={SupportedChainId.RINKEBY}
+                            chainId={SupportedChainId.GOERLI}
                             type={ExternalLinkType.address}
                             value={proposal.author}
                           />
@@ -431,7 +431,7 @@ const Voting = () => {
 
                       <Text>Voting Token</Text>
                       <LinkExternal
-                        chainId={SupportedChainId.RINKEBY}
+                        chainId={SupportedChainId.GOERLI}
                         type={ExternalLinkType.address}
                         value={zDAO.votingToken.token}
                       />
@@ -457,7 +457,7 @@ const Voting = () => {
                       {/* snapshot */}
                       <Text>Snapshot</Text>
                       <LinkExternal
-                        chainId={SupportedChainId.RINKEBY}
+                        chainId={SupportedChainId.GOERLI}
                         type={ExternalLinkType.block}
                         value={proposal.snapshot}
                       />
